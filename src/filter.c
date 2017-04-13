@@ -45,8 +45,14 @@ bimageFilter(bimage *im, float *K, int Ks, float divisor, float offset)
     px.depth = bimageTypeSize(im->type);
     px.data[3] = bimageTypeMax(im->type);
 
+    // Ignore alpha channel
     if (channels > 3){
         channels = 3;
+    }
+
+    // Divisor can never be zero
+    if (divisor == 0.0){
+        divisor = 1.0;
     }
 
     for(ix = 0; ix < im->width; ix++){
