@@ -60,7 +60,7 @@ bimageOpenTIFF(const char *filename)
     }
 
     tstrip_t strip;
-    uint8_t *buf = bimageMemoryAlloc(TIFFStripSize(tif));
+    uint8_t *buf = bAlloc(TIFFStripSize(tif));
     if (!buf){
         goto error;
     }
@@ -75,7 +75,7 @@ bimageOpenTIFF(const char *filename)
     }
 
 done:
-    if (buf) bimageMemoryFree(buf);
+    if (buf) bFree(buf);
     TIFFClose(tif);
 
     return im;

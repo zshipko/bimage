@@ -195,7 +195,7 @@ bimageTypeSize(BIMAGE_TYPE t)
 /* BIMAGE */
 
 bimage*
-bimageCreateWithData (int64_t width, int64_t height, BIMAGE_TYPE t, void *data, bool owner, bool ondisk)
+bimageCreateWithData (uint32_t width, uint32_t height, BIMAGE_TYPE t, void *data, bool owner, bool ondisk)
 {
 
     if (data == NULL){
@@ -204,15 +204,15 @@ bimageCreateWithData (int64_t width, int64_t height, BIMAGE_TYPE t, void *data, 
 
     if (width == 0 || height == 0){
         if (owner){
-            bimageMemoryFree(data);
+            bFree(data);
         }
         return NULL;
     }
 
-    bimage *im = bimageMemoryAlloc(sizeof(bimage));
+    bimage *im = bAlloc(sizeof(bimage));
     if (!im){
         if (owner){
-            bimageMemoryFree(data);
+            bFree(data);
         }
         return NULL;
     }
@@ -228,13 +228,13 @@ bimageCreateWithData (int64_t width, int64_t height, BIMAGE_TYPE t, void *data, 
 }
 
 bimage*
-bimageCreate (int64_t width, int64_t height, BIMAGE_TYPE t)
+bimageCreate (uint32_t width, uint32_t height, BIMAGE_TYPE t)
 {
     if (width == 0 || height == 0){
         return NULL;
     }
 
-    void* data = bimageMemoryAlloc(bimageTotalSize(width, height, t));
+    void* data = bAlloc(bimageTotalSize(width, height, t));
     if (!data){
         return NULL;
     }
@@ -243,20 +243,12 @@ bimageCreate (int64_t width, int64_t height, BIMAGE_TYPE t)
 }
 
 bimage*
-bimageCreateOnDisk (char *filename, int64_t width, int64_t height, BIMAGE_TYPE t)
+bimageCreateOnDiskFd (int fd, uint32_t width, uint32_t height, BIMAGE_TYPE t)
 {
-    int fd = open(filename, O_RDWR|O_CREAT, 0655);
-    if (fd < 0){
-        return NULL;
-    }
-
     // Allocate enough memory on disk
     lseek(fd, bimageTotalSize(width, height, t), SEEK_SET);
 
     void *data = mmap(NULL, bimageTotalSize(width, height, t), PROT_READ|PROT_WRITE, MAP_SHARED, fd, false);
-
-    // Close file descriptor file mmap file
-    close(fd);
 
     // Check data
     if (!data){
@@ -264,7 +256,39 @@ bimageCreateOnDisk (char *filename, int64_t width, int64_t height, BIMAGE_TYPE t
     }
 
     return bimageCreateWithData(width, height, t, data, true, true);
+}
 
+bimage*
+bimageCreateOnDisk (char *filename, uint32_t width, uint32_t height, BIMAGE_TYPE t)
+{
+    int fd = open(filename, O_RDWR|O_CREAT, 0655);
+    if (fd < 0){
+        return NULL;
+    }
+
+    bimage *im = bimageCreateOnDiskFd(fd, width, height, t);
+
+    close(fd);
+    return im;
+}
+
+bool
+bimageIsValid(bimage *im)
+{
+    return im && im->data && im->width > 0 && im->height > 0;
+}
+
+static inline void
+bimageReleaseData(bimage* im)
+{
+    if (im->data){
+        if (im->ondisk){
+            munmap(im->data, bimageTotalSize(im->width, im->height, im->type));
+        } else {
+            bFree(im->data);
+        }
+        im->data = NULL;
+    }
 }
 
 void
@@ -272,19 +296,42 @@ bimageRelease(bimage *im)
 {
     if (im){
         if (im->owner){
-            if (im->ondisk){
-                munmap(im->data, bimageTotalSize(im->width, im->height, im->type));
-            } else {
-                bimageMemoryFree(im->data);
-            }
+            bimageReleaseData(im);
         }
 
-        bimageMemoryFree(im);
+        bFree(im);
     }
 }
 
+void
+bimageDestroy(bimage **im)
+{
+    if (im){
+        bimageRelease(*im);
+        *im = NULL;
+    }
+}
+
+bimage*
+bimageConsume(bimage **dst, bimage *src)
+{
+    bimageReleaseData(*dst);
+    (*dst)->width = src->width;
+    (*dst)->height = src->height;
+    (*dst)->type = src->type;
+    (*dst)->owner = src->owner;
+    (*dst)->ondisk = src->ondisk;
+
+    // Free source image
+    src->owner = false;
+    bimageRelease(src);
+
+    return *dst;
+}
+
+
 BIMAGE_STATUS
-bimageGetPixel(bimage *im, int64_t x, int64_t y, pixel *p)
+bimageGetPixel(bimage *im, uint32_t x, uint32_t y, pixel *p)
 {
     if (im->width <= x || im->height <= y){
         return BIMAGE_ERR;
@@ -314,23 +361,31 @@ bimageGetPixel(bimage *im, int64_t x, int64_t y, pixel *p)
         }
     }
 
+    // Grayscale pixels should have the same value for RGB channels
+    if (channels == 1){
+        p->data[1] = p->data[2] = p->data[0];
+    }
+
     return BIMAGE_OK;
 }
 
 BIMAGE_STATUS
-bimageSetPixel(bimage *im, int64_t x, int64_t y, pixel p)
+bimageSetPixel(bimage *im, uint32_t x, uint32_t y, pixel p)
 {
 
-    if (p.depth < 0){
-        p.depth = bimageTypeSize(im->type);
-    } else if (p.depth != bimageTypeSize(im->type)) {
-        if (pixelConvertDepth(p, bimageTypeSize(im->type), &p) != BIMAGE_OK){
-            puts("NOT OK");
-        }
+    // Bounds check
+    if (im->width <= x || im->height <= y){
+        return BIMAGE_ERR;
     }
 
-    if (im->width <= x || im->height <= y || p.depth != bimageTypeSize(im->type)){
-        return BIMAGE_ERR;
+    // Set pixel depth based on image
+    int size = bimageTypeSize(im->type);
+    if (p.depth < 0){
+        p.depth = size;
+    } else if (p.depth != size) {
+        if (pixelConvertDepth(p, bimageTypeSize(im->type), &p) != BIMAGE_OK){
+            return BIMAGE_ERR;
+        }
     }
 
     int8_t channels = bimageTypeChannels(im->type), i;

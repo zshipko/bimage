@@ -8,6 +8,7 @@ bimage
 * GNU make
 * libtiff
 * C99 compiler
+* check (for building tests)
 
 ## Installation
 

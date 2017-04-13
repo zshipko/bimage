@@ -104,7 +104,16 @@ START_TEST (test_pixelConvert)
             ck_assert(px2.data[0] == bimageTypeMax(t) && px2.data[1] == 0);
         }
     }
+} END_TEST
 
+START_TEST (test_bimageConsume)
+{
+    bimage *a = bimageCreate(100, 100, RGBA32);
+    bimageConsume(&a, bimageCreate(50, 50, RGBA64));
+    ck_assert_int_eq(a->width, 50);
+    ck_assert_int_eq(a->height, 50);
+    ck_assert_int_eq(a->type, RGBA64);
+    bimageRelease(a);
 } END_TEST
 
 Suite *bimage_suite(void)
@@ -118,6 +127,7 @@ Suite *bimage_suite(void)
     tcase_add_test(tc, test_bimageCreate);
     tcase_add_test(tc, test_bimageChannels);
     tcase_add_test(tc, test_bimageSize);
+    tcase_add_test(tc, test_bimageConsume);
     tcase_add_test(tc, test_pixelConvert);
     suite_add_tcase(s, tc);
     return s;

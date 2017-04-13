@@ -22,7 +22,7 @@ typedef enum BIMAGE_TYPE {
 } BIMAGE_TYPE;
 
 typedef struct bimage {
-    uint64_t width, height;
+    uint32_t width, height;
     BIMAGE_TYPE type;
     void* data;
     bool owner;
@@ -38,11 +38,20 @@ typedef struct pixel {
 #define U16 16
 #define U32 32
 
-#define bimageMemoryAlloc(n) calloc(n, 1)
-#define bimageMemoryFree(x) if(x) free(x)
-#define bimageTotalSize(w, h, t) w * h * (int64_t)bimageTypeSize(t) * (int64_t)bimageTypeChannels(t)
+#define bAlloc(n) calloc(n, 1)
+#define bFree(x) if(x) free(x)
+#define bimageTotalSize(w, h, t) (int64_t)w * (int64_t)h * (int64_t)bimageTypeSize(t) * (int64_t)bimageTypeChannels(t)
 #define bimageIndex(im, x, y) y * bimageTypeChannels(im->type) * im->width + x * bimageTypeChannels(im->type)
 #define bimageAt(im, index, t) (((t*)im->data)[index])
+#define bimageIter(im, x, y, _x, _y, _w, _h) \
+    int32_t x, y; \
+    for(y = _y; y < im->height && y < _y + _h; y++) \
+        for(x = _x; x < im->width && x < _x + _w; x++)
+#define bimageIterAll(im, x, y) \
+    int32_t x, y; \
+    for(y = 0; y < im->height; y++) \
+        for(x = 0; x < im->width; x++)
+
 
 /* BIMAGE */
 
@@ -65,22 +74,31 @@ int8_t
 bimageTypeSize(BIMAGE_TYPE t);
 
 bimage*
-bimageCreateWithData (int64_t width, int64_t height, BIMAGE_TYPE t, void *data, bool owner, bool ondisk);
+bimageCreateWithData (uint32_t width, uint32_t height, BIMAGE_TYPE t, void *data, bool owner, bool ondisk);
 
 bimage*
-bimageCreate (int64_t width, int64_t height, BIMAGE_TYPE t);
+bimageCreate (uint32_t width, uint32_t height, BIMAGE_TYPE t);
 
 bimage*
-bimageCreateOnDisk (char* filename, int64_t width, int64_t height, BIMAGE_TYPE t);
+bimageCreateOnDiskFd (int fd, uint32_t width, uint32_t height, BIMAGE_TYPE t);
+
+bimage*
+bimageCreateOnDisk (char* filename, uint32_t width, uint32_t height, BIMAGE_TYPE t);
 
 void
 bimageRelease(bimage* im);
 
-BIMAGE_STATUS
-bimageGetPixel(bimage* im, int64_t x, int64_t y, pixel *p);
+void
+bimageDestroy(bimage** im);
+
+bimage*
+bimageConsume(bimage **dst, bimage *src);
 
 BIMAGE_STATUS
-bimageSetPixel(bimage* im, int64_t x, int64_t y, pixel p);
+bimageGetPixel(bimage* im, uint32_t x, uint32_t y, pixel *p);
+
+BIMAGE_STATUS
+bimageSetPixel(bimage* im, uint32_t x, uint32_t y, pixel p);
 
 /* TIFF */
 
