@@ -9,95 +9,6 @@
 #include <math.h>
 #include <string.h>
 
-/* PIXEL */
-
-pixel
-pixelCreate (float r, float g, float b, float a, int depth)
-{
-    pixel px;
-    bzero(&px, sizeof(pixel));
-    px.depth = depth;
-    px.data[0] = r;
-    px.data[1] = g;
-    px.data[2] = b;
-    px.data[3] = a;
-    return px;
-}
-
-BIMAGE_STATUS
-pixelConvertDepth (pixel a, uint8_t depth, pixel *dst)
-{
-    if (!dst){
-        return BIMAGE_ERR;
-    }
-
-    int i;
-    switch (a.depth) {
-    case 8:
-        switch (depth) {
-        case 8:
-            *dst = a;
-            break;
-        case 16:
-            for (i = 0; i < 4; i++){
-                (*dst).data[i] = (uint32_t)a.data[i] << 8;
-            }
-            break;
-        case 32:
-            for (i = 0; i < 4; i++){
-                (*dst).data[i] = (uint32_t)a.data[i] << 24;
-            }
-            break;
-        default:
-            return BIMAGE_ERR;
-        }
-        break;
-    case 16:
-       switch (depth) {
-        case 8:
-            for (i = 0; i < 4; i++){
-                (*dst).data[i] = (uint32_t)a.data[i] >> 8;
-            }
-            break;
-        case 16:
-            *dst = a;
-            break;
-        case 32:
-            for (i = 0; i < 4; i++){
-                (*dst).data[i] = (uint32_t)a.data[i] << 16;
-            }
-            break;
-        default:
-            return BIMAGE_ERR;
-        }
-       break;
-    case 32:
-       switch (depth) {
-        case 8:
-            for (i = 0; i < 4; i++){
-                (*dst).data[i] = (uint32_t)a.data[i] >> 24;
-            }
-            break;
-        case 16:
-            for (i = 0; i < 4; i++){
-                (*dst).data[i] = (uint32_t)a.data[i] >> 16;
-            }
-            break;
-        case 32:
-            *dst = a;
-            break;
-        default:
-            return BIMAGE_ERR;
-        }
-       break;
-    default:
-       return BIMAGE_ERR;
-    }
-
-    (*dst).depth = depth;
-    return BIMAGE_OK;
-}
-
 /* BIMAGE TYPE */
 BIMAGE_STATUS
 bimageTypeFromChannelsAndDepth(int8_t channels, int8_t depth, BIMAGE_TYPE *dst)
@@ -315,17 +226,8 @@ bimageDestroy(bimage **im)
 bimage*
 bimageConsume(bimage **dst, bimage *src)
 {
-    bimageReleaseData(*dst);
-    (*dst)->width = src->width;
-    (*dst)->height = src->height;
-    (*dst)->type = src->type;
-    (*dst)->owner = src->owner;
-    (*dst)->ondisk = src->ondisk;
-
-    // Free source image
-    src->owner = false;
-    bimageRelease(src);
-
+    bimageRelease(*dst);
+    *dst = src;
     return *dst;
 }
 
@@ -410,4 +312,29 @@ bimageSetPixel(bimage *im, uint32_t x, uint32_t y, pixel p)
 
     return BIMAGE_OK;
 }
+
+bimage*
+bimageConvertDepth(bimage *im, int8_t depth)
+{
+    pixel px, dst;
+    BIMAGE_TYPE t;
+    if (bimageTypeFromChannelsAndDepth(bimageTypeChannels(im->type), depth, &t) == BIMAGE_ERR){
+        return NULL;
+    }
+
+    bimage *im2 = bimageCreate(im->width, im->height, t);
+    if (!im2){
+        return NULL;
+    }
+
+    bimageIterAll(im, x, y){
+        bimageGetPixel(im, x, y, &px);
+        pixelConvertDepth(px, depth, &dst);
+        bimageSetPixel(im2, x, y, dst);
+    }
+
+    return im2;
+}
+
+
 

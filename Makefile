@@ -1,4 +1,4 @@
-SRC=src/image.c src/tiff.c src/io.c src/resize.c
+SRC=src/pixel.c src/image.c src/tiff.c src/io.c src/resize.c src/filter.c
 OBJ=$(SRC:.c=.o)
 
 CFLAGS+=-I/usr/local/include

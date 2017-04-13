@@ -122,10 +122,21 @@ bimageOpen32(const char* filename);
 BIMAGE_STATUS
 bimageSave(bimage *im, const char *filename);
 
+bimage*
+bimageConvertDepth(bimage *im, int8_t depth);
+
 /* RESIZE */
 
 bimage*
 bimageResize(bimage *im, int32_t width, int32_t height);
+
+/* FILTER */
+
+bimage*
+bimageGrayscale(bimage *im);
+
+bimage*
+bimageFilter(bimage *im, float *K, int Ks, float divisor, float offset);
 
 
 #endif // __BIMAGE_HEADER_GUARD
