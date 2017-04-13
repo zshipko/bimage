@@ -6,9 +6,9 @@ bimage*
 bimageGrayscale(bimage *im)
 {
     BIMAGE_TYPE t;
-    pixel p, px;
+    bpixel p, px;
 
-    if (bimageTypeFromChannelsAndDepth(1, bimageTypeSize(im->type), &t) == BIMAGE_ERR){
+    if (bimageMakeType(1, bimageTypeSize(im->type), &t) == BIMAGE_ERR){
         return NULL;
     }
 
@@ -41,7 +41,7 @@ bimageFilter(bimage *im, float *K, int Ks, float divisor, float offset)
     int channels = bimageTypeChannels(im->type);
     int32_t ix, iy;
     int kx, ky, l;
-    pixel p, px;
+    bpixel p, px;
     px.depth = bimageTypeSize(im->type);
     px.data[3] = bimageTypeMax(im->type);
 

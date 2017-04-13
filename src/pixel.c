@@ -4,11 +4,11 @@
 
 /* PIXEL */
 
-pixel
-pixelCreate (float r, float g, float b, float a, int depth)
+bpixel
+bpixelCreate (float r, float g, float b, float a, int depth)
 {
-    pixel px;
-    bzero(&px, sizeof(pixel));
+    bpixel px;
+    bzero(&px, sizeof(bpixel));
     px.depth = depth;
     px.data[0] = r;
     px.data[1] = g;
@@ -18,7 +18,7 @@ pixelCreate (float r, float g, float b, float a, int depth)
 }
 
 BIMAGE_STATUS
-pixelConvertDepth (pixel a, uint8_t depth, pixel *dst)
+bpixelConvertDepth (bpixel a, uint8_t depth, bpixel *dst)
 {
     if (!dst){
         return BIMAGE_ERR;

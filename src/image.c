@@ -10,8 +10,9 @@
 #include <string.h>
 
 /* BIMAGE TYPE */
+
 BIMAGE_STATUS
-bimageTypeFromChannelsAndDepth(int8_t channels, int8_t depth, BIMAGE_TYPE *dst)
+bimageMakeType(int8_t channels, int8_t depth, BIMAGE_TYPE *dst)
 {
     switch (channels) {
     case 1:
@@ -233,7 +234,7 @@ bimageConsume(bimage **dst, bimage *src)
 
 
 BIMAGE_STATUS
-bimageGetPixel(bimage *im, uint32_t x, uint32_t y, pixel *p)
+bimageGetPixel(bimage *im, uint32_t x, uint32_t y, bpixel *p)
 {
     if (im->width <= x || im->height <= y){
         return BIMAGE_ERR;
@@ -243,7 +244,7 @@ bimageGetPixel(bimage *im, uint32_t x, uint32_t y, pixel *p)
     int64_t offs = bimageIndex(im, x, y);
     float mx = (float)bimageTypeMax(im->type);
 
-    // Set pixel depth
+    // Set bpixel depth
     p->depth = bimageTypeSize(im->type);
     p->data[3] = bimageTypeMax(im->type);
 
@@ -263,7 +264,7 @@ bimageGetPixel(bimage *im, uint32_t x, uint32_t y, pixel *p)
         }
     }
 
-    // Grayscale pixels should have the same value for RGB channels
+    // Grayscale bpixels should have the same value for RGB channels
     if (channels == 1){
         p->data[1] = p->data[2] = p->data[0];
     }
@@ -272,7 +273,7 @@ bimageGetPixel(bimage *im, uint32_t x, uint32_t y, pixel *p)
 }
 
 BIMAGE_STATUS
-bimageSetPixel(bimage *im, uint32_t x, uint32_t y, pixel p)
+bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bpixel p)
 {
 
     // Bounds check
@@ -280,12 +281,12 @@ bimageSetPixel(bimage *im, uint32_t x, uint32_t y, pixel p)
         return BIMAGE_ERR;
     }
 
-    // Set pixel depth based on image
+    // Set bpixel depth based on image
     int size = bimageTypeSize(im->type);
     if (p.depth < 0){
         p.depth = size;
     } else if (p.depth != size) {
-        if (pixelConvertDepth(p, bimageTypeSize(im->type), &p) != BIMAGE_OK){
+        if (bpixelConvertDepth(p, bimageTypeSize(im->type), &p) != BIMAGE_OK){
             return BIMAGE_ERR;
         }
     }
@@ -313,28 +314,72 @@ bimageSetPixel(bimage *im, uint32_t x, uint32_t y, pixel p)
     return BIMAGE_OK;
 }
 
+/* bimageConvertDepth converts between 8, 16 and 32 bit images */
 bimage*
 bimageConvertDepth(bimage *im, int8_t depth)
 {
-    pixel px, dst;
+    bpixel px, dst;
     BIMAGE_TYPE t;
-    if (bimageTypeFromChannelsAndDepth(bimageTypeChannels(im->type), depth, &t) == BIMAGE_ERR){
+    if (bimageMakeType(bimageTypeChannels(im->type), depth, &t) == BIMAGE_ERR){
         return NULL;
     }
 
-    bimage *im2 = bimageCreate(im->width, im->height, t);
+    bimage* im2 = bimageCreate(im->width, im->height, t);
     if (!im2){
         return NULL;
     }
 
     bimageIterAll(im, x, y){
-        bimageGetPixel(im, x, y, &px);
-        pixelConvertDepth(px, depth, &dst);
-        bimageSetPixel(im2, x, y, dst);
+        if (bimageGetPixel(im, x, y, &px) == BIMAGE_ERR
+                || bpixelConvertDepth(px, depth, &dst) != BIMAGE_ERR){
+            bimageSetPixel(im2, x, y, dst);
+        }
     }
 
     return im2;
 }
 
+/* bimageConvertChannels converts between 1, 3, and 4 channel images
+ * */
+bimage*
+bimageConvertChannels(bimage *im, int8_t nchannels)
+{
+    BIMAGE_TYPE t;
+
+    if (bimageMakeType(nchannels, bimageTypeSize(im->type), &t) == BIMAGE_ERR){
+        return NULL;
+    }
+
+    bimage* dst = bimageCreate(im->width, im->height, t);
+    if (!dst){
+        return NULL;
+    }
+
+    bpixel px;
+    bimageIterAll(im, x, y){
+        if (bimageGetPixel(im, x, y, &px) != BIMAGE_ERR){
+            bimageSetPixel(dst, x, y, px);
+        }
+    }
+
+    return dst;
+}
 
 
+bimage*
+bimageCrop (bimage *im, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
+{
+    bimage* dst = bimageCreate(w, h, im->type);
+    if (!dst){
+        return NULL;
+    }
+
+    bpixel px;
+    bimageIter(im, i, j, x, y, w, h){
+        if (bimageGetPixel(im, i, j, &px) != BIMAGE_ERR){
+            bimageSetPixel(dst, i-x, j-y, px);
+        }
+    }
+
+    return dst;
+}

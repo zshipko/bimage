@@ -29,10 +29,10 @@ typedef struct bimage {
     bool ondisk;
 } bimage;
 
-typedef struct pixel {
+typedef struct bpixel {
     float data[4];
     int8_t depth;
-} pixel;
+} bpixel;
 
 #define U8  8
 #define U16 16
@@ -55,14 +55,14 @@ typedef struct pixel {
 
 /* BIMAGE */
 
-pixel
-pixelCreate (float r, float g, float b, float a, int depth);
+bpixel
+bpixelCreate (float r, float g, float b, float a, int depth);
 
 BIMAGE_STATUS
-pixelConvertDepth (pixel a, uint8_t depth, pixel *dst);
+bpixelConvertDepth (bpixel a, uint8_t depth, bpixel *dst);
 
 BIMAGE_STATUS
-bimageTypeFromChannelsAndDepth(int8_t channels, int8_t depth, BIMAGE_TYPE *dst);
+bimageMakeType(int8_t channels, int8_t depth, BIMAGE_TYPE *dst);
 
 uint8_t
 bimageTypeChannels(BIMAGE_TYPE t);
@@ -95,10 +95,13 @@ bimage*
 bimageConsume(bimage **dst, bimage *src);
 
 BIMAGE_STATUS
-bimageGetPixel(bimage* im, uint32_t x, uint32_t y, pixel *p);
+bimageGetPixel(bimage* im, uint32_t x, uint32_t y, bpixel *p);
 
 BIMAGE_STATUS
-bimageSetPixel(bimage* im, uint32_t x, uint32_t y, pixel p);
+bimageSetPixel(bimage* im, uint32_t x, uint32_t y, bpixel p);
+
+bimage*
+bimageCrop(bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
 /* TIFF */
 

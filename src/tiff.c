@@ -53,7 +53,7 @@ bimageOpenTIFF(const char *filename)
     TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &channels);
 
     BIMAGE_TYPE t;
-    if (bimageTypeFromChannelsAndDepth(channels, depth, &t) == BIMAGE_OK){
+    if (bimageMakeType(channels, depth, &t) == BIMAGE_OK){
         im = bimageCreate(w, h,t);
     } else {
         goto done;

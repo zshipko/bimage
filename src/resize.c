@@ -6,6 +6,16 @@
 bimage*
 bimageResize(bimage* im, int32_t w, int32_t h)
 {
+    // Scale if one dimension is <= 0,
+    // but fail if both `w` and `h`are <= 0
+    if (w <= 0 && h <= 0){
+        return NULL;
+    } else if (w <= 0){
+        w = im->width * (h / im->height);
+    } else if (h <= 0){
+        h = im->height * (w / im->width);
+    }
+
     int dt;
 
     switch (bimageTypeSize(im->type)){

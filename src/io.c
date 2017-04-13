@@ -17,7 +17,7 @@ bimage* bimageOpen8(const char *filename)
         return bimageOpenTIFF(filename);
     }
 
-    if (bimageTypeFromChannelsAndDepth(c, 8, &t) == BIMAGE_OK){
+    if (bimageMakeType(c, 8, &t) == BIMAGE_OK){
         return bimageCreateWithData(w, h, t, data, true, false);
     }
 
@@ -34,7 +34,7 @@ bimage *bimageOpen16(const char *filename)
         return bimageOpenTIFF(filename);
     }
 
-    if (bimageTypeFromChannelsAndDepth(c, 16, &t) == BIMAGE_OK){
+    if (bimageMakeType(c, 16, &t) == BIMAGE_OK){
         return bimageCreateWithData(w, h, t, (uint32_t*)data, true, false);
     }
 
@@ -53,7 +53,7 @@ bimage* bimageOpen32(const char *filename)
         return bimageOpenTIFF(filename);
     }
 
-    if (bimageTypeFromChannelsAndDepth(c, 32, &t) == BIMAGE_OK){
+    if (bimageMakeType(c, 32, &t) == BIMAGE_OK){
         // De-normalize floats
         for(i = 0; i < w * h * c; i++){
             data[i] = data[i] * bimageTypeMax(t);
