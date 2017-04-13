@@ -1,0 +1,9 @@
+*.tif
+*.tiff
+*.png
+*.o
+*.dylib
+*.so
+*.a
+test/test
+*.core
