@@ -1,7 +1,7 @@
 bimage
 ======
 
-`bimage` is a basic imaging library for C.
+`bimage` is a basic image library for C.
 
 ## Dependencies
 
@@ -17,5 +17,9 @@ bimage
 To uninstall:
 
     make uninstall
+
+## Usage
+
+Coming soon
 
 
