@@ -114,13 +114,10 @@ bimageSaveTIFF(bimage* im, const char* filename);
 /* IO */
 
 bimage*
-bimageOpen8(const char* filename);
+bimageOpen(const char* filename);
 
 bimage*
 bimageOpen16(const char* filename);
-
-bimage*
-bimageOpen32(const char* filename);
 
 BIMAGE_STATUS
 bimageSave(bimage *im, const char *filename);

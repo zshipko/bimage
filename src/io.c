@@ -8,7 +8,10 @@
 
 #include <string.h>
 
-bimage* bimageOpen8(const char *filename)
+#define max(a, b) a>b?a:b
+#define min(a, b) a<b?a:b
+
+bimage* bimageOpen(const char *filename)
 {
     int w, h, c;
     BIMAGE_TYPE t;
@@ -37,38 +40,13 @@ bimage *bimageOpen16(const char *filename)
     }
 
     if (bimageMakeType(c, 16, &t) == BIMAGE_OK){
-        return bimageCreateWithData(w, h, t, (uint32_t*)data, true, false);
+        return bimageCreateWithData(w, h, t, data, true, false);
     }
 
     bFree(data);
     return NULL;
 }
 
-
-bimage* bimageOpen32(const char *filename)
-{
-    int w, h, c;
-    int64_t i;
-    BIMAGE_TYPE t;
-
-    float* data = NULL;
-    data = stbi_loadf(filename, &w, &h, &c, 0);
-    if (!data){
-        return bimageOpenTIFF(filename);
-    }
-
-    if (bimageMakeType(c, 32, &t) == BIMAGE_OK){
-        // De-normalize floats
-        for(i = 0; i < w * h * c; i++){
-            data[i] = data[i] * (float)bimageTypeMax(t);
-        }
-
-        return bimageCreateWithData(w, h, t, (uint32_t*)data, true, false);
-    }
-
-    bFree(data);
-    return NULL;
-}
 
 const char *get_ext(const char *filename)
 {

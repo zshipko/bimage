@@ -16,6 +16,7 @@ static void
 tiffInit()
 {
     TIFFSetWarningHandler(tiffErrorHandler);
+    TIFFSetErrorHandler(tiffErrorHandler);
     tiffInitialized = true;
 }
 
