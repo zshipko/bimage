@@ -242,7 +242,6 @@ bimageGetPixel(bimage *im, uint32_t x, uint32_t y, bpixel *p)
 
     int channels = bimageTypeChannels(im->type), i;
     int64_t offs = bimageIndex(im, x, y);
-    float mx = (float)bimageTypeMax(im->type);
 
     // Set bpixel depth
     p->depth = bimageTypeSize(im->type);
@@ -293,7 +292,6 @@ bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bpixel p)
 
     int8_t channels = bimageTypeChannels(im->type), i;
     int64_t offs = bimageIndex(im, x, y);
-    float mx = (float)bimageTypeMax(im->type);
 
     for (i = 0; i < channels; i++){
         switch (p.depth){

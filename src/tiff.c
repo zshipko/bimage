@@ -4,9 +4,29 @@
 #include <string.h>
 #include <tiffio.h>
 
+static void
+tiffErrorHandler (const char* module, const char* fmt, va_list ap)
+{
+    // ignore
+}
+
+static bool tiffInitialized = false;
+
+static void
+tiffInit()
+{
+    TIFFSetWarningHandler(tiffErrorHandler);
+    tiffInitialized = true;
+}
+
+
 BIMAGE_STATUS
 bimageSaveTIFF(bimage *im, const char *filename)
 {
+    if (!tiffInitialized){
+        tiffInit();
+    }
+
     TIFF *tif = TIFFOpen(filename, "w");
     if (!tif){
         return BIMAGE_ERR;
@@ -35,6 +55,10 @@ bimageSaveTIFF(bimage *im, const char *filename)
 bimage*
 bimageOpenTIFF(const char *filename)
 {
+    if (!tiffInitialized){
+        tiffInit();
+    }
+
     TIFF *tif = TIFFOpen(filename, "r");
     bimage *im = NULL;
 
@@ -62,27 +86,27 @@ bimageOpenTIFF(const char *filename)
     tstrip_t strip;
     uint8_t *buf = bAlloc(TIFFStripSize(tif));
     if (!buf){
-        goto error;
+        goto error0;
     }
 
     for(strip = 0; strip < TIFFNumberOfStrips(tif); strip++){
         tsize_t n = TIFFReadEncodedStrip(tif, strip, buf, -1);
         if (n < 0){
-            goto error;
+            goto error1;
         }
 
         memcpy(im->data + TIFFStripSize(tif) * strip, buf, n);
     }
 
+    bFree(buf);
 done:
-    if (buf) bFree(buf);
     TIFFClose(tif);
-
     return im;
 
-error:
-    if (im) bimageRelease(im);
-    im = NULL;
+error1:
+    bFree(buf);
+error0:
+    if (im) bimageDestroy(&im);
     goto done;
 }
 

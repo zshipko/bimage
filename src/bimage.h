@@ -141,5 +141,16 @@ bimageGrayscale(bimage *im);
 bimage*
 bimageFilter(bimage *im, float *K, int Ks, float divisor, float offset);
 
+/* HASH */
+
+uint64_t
+bimageHash(bimage *im);
+
+void
+bimageHashString(char dst[9], uint64_t hash);
+
+int
+bimageHashCompare(uint64_t a, uint64_t b);
+
 
 #endif // __BIMAGE_HEADER_GUARD

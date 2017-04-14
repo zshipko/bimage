@@ -28,6 +28,8 @@ bimageResize(bimage* im, int32_t w, int32_t h)
     case 32:
         dt = 2;
         break;
+    default:
+        return NULL;
     }
 
     bimage *dst = bimageCreate(w, h, im->type);

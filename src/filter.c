@@ -7,8 +7,9 @@ bimageGrayscale(bimage *im)
 {
     BIMAGE_TYPE t;
     bpixel p, px;
+    int depth = bimageTypeSize(im->type);
 
-    if (bimageMakeType(1, bimageTypeSize(im->type), &t) == BIMAGE_ERR){
+    if (bimageMakeType(1, depth, &t) == BIMAGE_ERR){
         return NULL;
     }
 
@@ -16,6 +17,8 @@ bimageGrayscale(bimage *im)
     if (!dst){
         return NULL;
     }
+
+    p.depth = depth;
 
 
     bimageIterAll(im, x, y){
