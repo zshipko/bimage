@@ -125,6 +125,9 @@ bimageSave(bimage *im, const char *filename);
 bimage*
 bimageConvertDepth(bimage *im, int8_t depth);
 
+bimage*
+bimageConvertChannels(bimage *im, int8_t channels);
+
 /* RESIZE */
 
 bimage*
@@ -148,6 +151,5 @@ bimageHashString(char dst[9], uint64_t hash);
 
 int
 bimageHashDiff(uint64_t a, uint64_t b);
-
 
 #endif // __BIMAGE_HEADER_GUARD
