@@ -150,7 +150,7 @@ void
 bimageHashString(char dst[9], uint64_t hash);
 
 int
-bimageHashCompare(uint64_t a, uint64_t b);
+bimageHashDiff(uint64_t a, uint64_t b);
 
 
 #endif // __BIMAGE_HEADER_GUARD
