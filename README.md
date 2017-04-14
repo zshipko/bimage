@@ -3,6 +3,9 @@ bimage
 
 `bimage` is a basic image library for C.
 
+* Simple API
+* 8, 16 and 32 bit images
+
 ## Dependencies
 
 * GNU make
