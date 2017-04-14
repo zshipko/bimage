@@ -5,6 +5,8 @@ bimage
 
 * Simple API
 * 8, 16 and 32 bit images
+* Opens/writes 8, 16, 32bit TIFF files
+* Opens 8, 16 bit PNG, JPG, PSD, GIF, HDR, BMP files using `stb_image`
 
 ## Dependencies
 
