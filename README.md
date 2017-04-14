@@ -4,9 +4,7 @@ bimage
 `bimage` is a basic image library for C.
 
 * Simple API
-* 8, 16 and 32 bit images
-* Opens/writes 8, 16, 32bit TIFF files
-* Opens 8, 16 bit PNG, JPG, PSD, GIF, HDR, BMP files using `stb_image`
+* Handles 8, 16 and 32 bit images
 
 ## Dependencies
 
@@ -23,6 +21,12 @@ bimage
 To uninstall:
 
     make uninstall
+
+## Formats
+
+* [R/W] 8, 16 and 32 bit TIFF files
+* [R/W] 8 bit PNG files
+* [R] 8 and 16 bit PNG, JPG, PSD, GIF, BMP files (using `stb_image`)
 
 ## Usage
 
