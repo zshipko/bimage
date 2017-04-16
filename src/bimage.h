@@ -1,6 +1,10 @@
 #ifndef __BIMAGE_HEADER_GUARD
 #define __BIMAGE_HEADER_GUARD
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -151,5 +155,9 @@ bimageHashString(char dst[9], uint64_t hash);
 
 int
 bimageHashDiff(uint64_t a, uint64_t b);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __BIMAGE_HEADER_GUARD
