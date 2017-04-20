@@ -14,16 +14,29 @@ typedef enum BIMAGE_STATUS {
 } BIMAGE_STATUS;
 
 typedef enum BIMAGE_TYPE {
-    GRAY8,
-    GRAY16,
-    GRAY32,
-    RGB24,
-    RGB48,
-    RGB96,
-    RGBA32,
-    RGBA64,
-    RGBA128
+    BIMAGE_GRAY8,
+    BIMAGE_GRAY16,
+    BIMAGE_GRAY32,
+    BIMAGE_RGB24,
+    BIMAGE_RGB48,
+    BIMAGE_RGB96,
+    BIMAGE_RGBA32,
+    BIMAGE_RGBA64,
+    BIMAGE_RGBA128
 } BIMAGE_TYPE;
+
+typedef enum BIMAGE_CHANNEL {
+    BIMAGE_GRAY = 1,
+    BIMAGE_RGB = 3,
+    BIMAGE_RGBA = 4
+} BIMAGE_CHANNEL;
+
+typedef enum BIMAGE_DEPTH {
+    BIMAGE_UNKNOWN = -1,
+    BIMAGE_U8 = 8,
+    BIMAGE_U16 = 16,
+    BIMAGE_U32 = 32
+} BIMAGE_DEPTH;
 
 typedef struct bimage {
     uint32_t width, height;
@@ -35,16 +48,12 @@ typedef struct bimage {
 
 typedef struct bpixel {
     float data[4];
-    int8_t depth;
+    BIMAGE_DEPTH depth;
 } bpixel;
-
-#define U8  8
-#define U16 16
-#define U32 32
 
 #define bAlloc(n) calloc(n, 1)
 #define bFree(x) if(x) free(x)
-#define bimageTotalSize(w, h, t) (int64_t)w * (int64_t)h * (int64_t)bimageTypeSize(t) * (int64_t)bimageTypeChannels(t)
+#define bimageTotalSize(w, h, t) (int64_t)w * (int64_t)h * (int64_t)bimageTypeDepth(t) * (int64_t)bimageTypeChannels(t)
 #define bimageIndex(im, x, y) y * bimageTypeChannels(im->type) * im->width + x * bimageTypeChannels(im->type)
 #define bimageAt(im, index, t) (((t*)im->data)[index])
 #define bimageIter(im, x, y, _x, _y, _w, _h) \
@@ -60,22 +69,25 @@ typedef struct bpixel {
 /* BIMAGE */
 
 bpixel
-bpixelCreate (float r, float g, float b, float a, int depth);
+bpixelCreate (float r, float g, float b, float a, BIMAGE_DEPTH depth);
+
+bpixel
+bpixelZero(BIMAGE_DEPTH depth);
 
 BIMAGE_STATUS
-bpixelConvertDepth (bpixel a, uint8_t depth, bpixel *dst);
+bpixelConvertDepth (bpixel a, BIMAGE_DEPTH depth, bpixel *dst);
 
 BIMAGE_STATUS
-bimageMakeType(int8_t channels, int8_t depth, BIMAGE_TYPE *dst);
+bimageMakeType(BIMAGE_CHANNEL channels, BIMAGE_DEPTH depth, BIMAGE_TYPE *dst);
 
-uint8_t
+BIMAGE_CHANNEL
 bimageTypeChannels(BIMAGE_TYPE t);
 
 int64_t
 bimageTypeMax(BIMAGE_TYPE t);
 
-int8_t
-bimageTypeSize(BIMAGE_TYPE t);
+BIMAGE_DEPTH
+bimageTypeDepth(BIMAGE_TYPE t);
 
 bimage*
 bimageCreateWithData (uint32_t width, uint32_t height, BIMAGE_TYPE t, void *data, bool owner, bool ondisk);
@@ -99,13 +111,22 @@ bimage*
 bimageConsume(bimage **dst, bimage *src);
 
 BIMAGE_STATUS
+bimageGetPixelUnsafe(bimage* im, uint32_t x, uint32_t y, bpixel *p);
+
+BIMAGE_STATUS
+bimageSetPixelUnsafe(bimage* im, uint32_t x, uint32_t y, bpixel p);
+
+BIMAGE_STATUS
 bimageGetPixel(bimage* im, uint32_t x, uint32_t y, bpixel *p);
 
 BIMAGE_STATUS
 bimageSetPixel(bimage* im, uint32_t x, uint32_t y, bpixel p);
 
 bimage*
-bimageCrop(bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+bimageCrop(bimage** dst, bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+
+void
+bimageCopyTo(bimage *dst, bimage *src, uint32_t x, uint32_t y);
 
 /* TIFF */
 
@@ -124,26 +145,26 @@ bimage*
 bimageOpen16(const char* filename);
 
 BIMAGE_STATUS
-bimageSave(bimage *im, const char *filename);
+bimageSave(bimage* im, const char* filename);
 
 bimage*
-bimageConvertDepth(bimage *im, int8_t depth);
+bimageConvertDepth(bimage** dst, bimage* im, BIMAGE_DEPTH depth);
 
 bimage*
-bimageConvertChannels(bimage *im, int8_t channels);
+bimageConvertChannels(bimage** dst, bimage* im, BIMAGE_CHANNEL channels);
 
 /* RESIZE */
 
 bimage*
-bimageResize(bimage *im, int32_t width, int32_t height);
+bimageResize(bimage** dst, bimage* im, int32_t width, int32_t height);
 
 /* FILTER */
 
 bimage*
-bimageGrayscale(bimage *im);
+bimageGrayscale(bimage** dst, bimage* im);
 
 bimage*
-bimageFilter(bimage *im, float *K, int Ks, float divisor, float offset);
+bimageFilter(bimage** dst, bimage* im, float *K, int Ks, float divisor, float offset);
 
 /* HASH */
 
@@ -155,6 +176,12 @@ bimageHashString(char dst[9], uint64_t hash);
 
 int
 bimageHashDiff(uint64_t a, uint64_t b);
+
+#define BIMAGE_CREATE_DEST(dst, w, h, t) \
+    dst && *dst \
+        ? ((*dst)->width >= w && (*dst)->height >= h && (*dst)->type == t ? *dst : NULL) \
+        : bimageCreate(w, h, t)
+
 
 #ifdef __cplusplus
 }

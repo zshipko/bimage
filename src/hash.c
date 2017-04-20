@@ -12,14 +12,14 @@ uint64_t bimageHash(bimage *im)
     bpixel apx;          // Average pixel
     int i, j, n = 0;
 
-    apx = bpixelCreate(0, 0, 0, 0, bimageTypeSize(im->type));
+    apx = bpixelZero(bimageTypeDepth(im->type));
 
-    bimage *sm = bimageResize(im, HASH_SIZE, HASH_SIZE);
+    bimage *sm = bimageResize(NULL, im, HASH_SIZE, HASH_SIZE);
     if (!sm){
         return 0UL;
     }
 
-    bimageConsume(&sm, bimageGrayscale(sm));
+    bimageConsume(&sm, bimageGrayscale(NULL, sm));
     if (!sm){
         return 0UL;
     }
@@ -27,7 +27,7 @@ uint64_t bimageHash(bimage *im)
     for(j = 0; j < HASH_SIZE; j++){
         for(i = 0; i < HASH_SIZE; i++){
             // Set current pixel
-            if (bimageGetPixel(sm, i, j, &px) == BIMAGE_ERR){
+            if (bimageGetPixelUnsafe(sm, i, j, &px) == BIMAGE_ERR){
                 continue;
             }
 

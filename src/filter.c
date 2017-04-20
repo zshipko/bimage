@@ -3,40 +3,39 @@
 #include "bimage.h"
 
 bimage*
-bimageGrayscale(bimage *im)
+bimageGrayscale(bimage** dst, bimage *im)
 {
     BIMAGE_TYPE t;
     bpixel p, px;
-    int depth = bimageTypeSize(im->type);
+    int depth = bimageTypeDepth(im->type);
 
     if (bimageMakeType(1, depth, &t) == BIMAGE_ERR){
         return NULL;
     }
 
-    bimage *dst = bimageCreate(im->width, im->height, t);
+    bimage *im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, t);
     if (!dst){
         return NULL;
     }
 
     p.depth = depth;
-
-
     bimageIterAll(im, x, y){
-        bimageGetPixel(im, x, y, &px);
+        bimageGetPixelUnsafe(im, x, y, &px);
 
         p.data[0] = p.data[1] = p.data[2] = (px.data[0] * 0.2126) + (px.data[1] * 0.7152) + (px.data[2] * 0.0722) * (px.data[3] / (float)bimageTypeMax(im->type));
 
-        bimageSetPixel(dst, x, y, p);
+        bimageSetPixel(im2, x, y, p);
     }
 
-    return dst;
+    *dst = im2;
+    return *dst;
 }
 
 // Convolution filter
 bimage*
-bimageFilter(bimage *im, float *K, int Ks, float divisor, float offset)
+bimageFilter(bimage** dst, bimage* im, float* K, int Ks, float divisor, float offset)
 {
-    bimage *oi = bimageCreate(im->width, im->height, im->type);
+    bimage *oi = BIMAGE_CREATE_DEST(dst, im->width, im->height, im->type);
     if (oi == NULL){
         return NULL;
     }
@@ -45,12 +44,12 @@ bimageFilter(bimage *im, float *K, int Ks, float divisor, float offset)
     int32_t ix, iy;
     int kx, ky, l;
     bpixel p, px;
-    px.depth = bimageTypeSize(im->type);
+    px.depth = bimageTypeDepth(im->type);
     px.data[3] = bimageTypeMax(im->type);
 
     // Ignore alpha channel
-    if (channels > 3){
-        channels = 3;
+    if (channels > BIMAGE_RGB){
+        channels = BIMAGE_RGB;
     }
 
     // Divisor can never be zero
@@ -64,7 +63,6 @@ bimageFilter(bimage *im, float *K, int Ks, float divisor, float offset)
             for(kx = -Ks; kx <= Ks; kx++){
                 for(ky = -Ks; ky <= Ks; ky++){
                     bimageGetPixel(im, ix+kx, iy+ky, &p);
-
                     for (l = 0; l < channels; l++){
                         px.data[l] += (K[(kx+Ks) + (ky+Ks)*(2*Ks+1)]/divisor) * p.data[l] + offset;
                     }
@@ -79,5 +77,6 @@ bimageFilter(bimage *im, float *K, int Ks, float divisor, float offset)
         }
     }
 
-    return oi;
+    *dst = oi;
+    return *dst;
 }

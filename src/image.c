@@ -12,30 +12,30 @@
 /* BIMAGE TYPE */
 
 BIMAGE_STATUS
-bimageMakeType(int8_t channels, int8_t depth, BIMAGE_TYPE *dst)
+bimageMakeType(BIMAGE_CHANNEL channels, BIMAGE_DEPTH depth, BIMAGE_TYPE *dst)
 {
     switch (channels) {
-    case 1:
+    case BIMAGE_GRAY:
         switch (depth) {
-        case 8: *dst = GRAY8; break;
-        case 16: *dst = GRAY16; break;
-        case 32: *dst = GRAY32; break;
+        case BIMAGE_U8: *dst = BIMAGE_GRAY8; break;
+        case BIMAGE_U16: *dst = BIMAGE_GRAY16; break;
+        case BIMAGE_U32: *dst = BIMAGE_GRAY32; break;
         default: return BIMAGE_ERR;
         }
         break;
-    case 3:
+    case BIMAGE_RGB:
         switch (depth) {
-        case 8: *dst = RGB24; break;
-        case 16: *dst = RGB48; break;
-        case 32: *dst = RGB96; break;
+        case BIMAGE_U8: *dst = BIMAGE_RGB24; break;
+        case BIMAGE_U16: *dst = BIMAGE_RGB48; break;
+        case BIMAGE_U32: *dst = BIMAGE_RGB96; break;
         default: return BIMAGE_ERR;
         }
         break;
-    case 4:
+    case BIMAGE_RGBA:
         switch (depth) {
-        case 8: *dst = RGBA32; break;
-        case 16: *dst = RGBA64; break;
-        case 32: *dst = RGBA128; break;
+        case BIMAGE_U8: *dst = BIMAGE_RGBA32; break;
+        case BIMAGE_U16: *dst = BIMAGE_RGBA64; break;
+        case BIMAGE_U32: *dst = BIMAGE_RGBA128; break;
         default: return BIMAGE_ERR;
         }
         break;
@@ -46,22 +46,24 @@ bimageMakeType(int8_t channels, int8_t depth, BIMAGE_TYPE *dst)
     return BIMAGE_OK;
 }
 
-uint8_t
+BIMAGE_CHANNEL
 bimageTypeChannels(BIMAGE_TYPE t)
 {
     switch(t){
-    case GRAY8:
-    case GRAY16:
-    case GRAY32:
-        return 1;
-    case RGB24:
-    case RGB48:
-    case RGB96:
-        return 3;
-    case RGBA32:
-    case RGBA64:
-    case RGBA128:
-        return 4;
+    case BIMAGE_GRAY8:
+    case BIMAGE_GRAY16:
+    case BIMAGE_GRAY32:
+        return BIMAGE_GRAY;
+    case BIMAGE_RGB24:
+    case BIMAGE_RGB48:
+    case BIMAGE_RGB96:
+        return BIMAGE_RGB;
+    case BIMAGE_RGBA32:
+    case BIMAGE_RGBA64:
+    case BIMAGE_RGBA128:
+        return BIMAGE_RGBA;
+    default:
+        return 0;
     }
 }
 
@@ -69,38 +71,42 @@ int64_t
 bimageTypeMax(BIMAGE_TYPE t)
 {
     switch(t){
-    case GRAY8:
-    case RGB24:
-    case RGBA32:
+    case BIMAGE_GRAY8:
+    case BIMAGE_RGB24:
+    case BIMAGE_RGBA32:
         return 0xFF;
-    case GRAY16:
-    case RGB48:
-    case RGBA64:
+    case BIMAGE_GRAY16:
+    case BIMAGE_RGB48:
+    case BIMAGE_RGBA64:
         return 0xFFFF;
-    case GRAY32:
-    case RGB96:
-    case RGBA128:
+    case BIMAGE_GRAY32:
+    case BIMAGE_RGB96:
+    case BIMAGE_RGBA128:
         return 0xFFFFFFFF;
+    default:
+        return 0;
     }
 }
 
 
-int8_t
-bimageTypeSize(BIMAGE_TYPE t)
+BIMAGE_DEPTH
+bimageTypeDepth(BIMAGE_TYPE t)
 {
     switch(t){
-    case GRAY8:
-    case RGB24:
-    case RGBA32:
-        return 8;
-    case GRAY16:
-    case RGB48:
-    case RGBA64:
-        return 16;
-    case GRAY32:
-    case RGB96:
-    case RGBA128:
-        return 32;
+    case BIMAGE_GRAY8:
+    case BIMAGE_RGB24:
+    case BIMAGE_RGBA32:
+        return BIMAGE_U8;
+    case BIMAGE_GRAY16:
+    case BIMAGE_RGB48:
+    case BIMAGE_RGBA64:
+        return BIMAGE_U16;
+    case BIMAGE_GRAY32:
+    case BIMAGE_RGB96:
+    case BIMAGE_RGBA128:
+        return BIMAGE_U32;
+    default:
+        return BIMAGE_UNKNOWN;
     }
 }
 
@@ -232,19 +238,14 @@ bimageConsume(bimage **dst, bimage *src)
     return *dst;
 }
 
-
 BIMAGE_STATUS
-bimageGetPixel(bimage *im, uint32_t x, uint32_t y, bpixel *p)
+bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bpixel *p)
 {
-    if (im->width <= x || im->height <= y){
-        return BIMAGE_ERR;
-    }
-
     int channels = bimageTypeChannels(im->type), i;
     int64_t offs = bimageIndex(im, x, y);
 
     // Set bpixel depth
-    p->depth = bimageTypeSize(im->type);
+    p->depth = bimageTypeDepth(im->type);
     p->data[3] = bimageTypeMax(im->type);
 
     for (i = 0; i < channels; i++){
@@ -271,37 +272,34 @@ bimageGetPixel(bimage *im, uint32_t x, uint32_t y, bpixel *p)
     return BIMAGE_OK;
 }
 
-BIMAGE_STATUS
-bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bpixel p)
-{
 
-    // Bounds check
+
+BIMAGE_STATUS
+bimageGetPixel(bimage *im, uint32_t x, uint32_t y, bpixel *p)
+{
     if (im->width <= x || im->height <= y){
         return BIMAGE_ERR;
     }
 
-    // Set bpixel depth based on image
-    int size = bimageTypeSize(im->type);
-    if (p.depth < 0){
-        p.depth = size;
-    } else if (p.depth != size) {
-        if (bpixelConvertDepth(p, bimageTypeSize(im->type), &p) != BIMAGE_OK){
-            return BIMAGE_ERR;
-        }
-    }
+    return bimageGetPixelUnsafe(im, x, y, p);
+}
 
-    int8_t channels = bimageTypeChannels(im->type), i;
+BIMAGE_STATUS
+bimageSetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bpixel p)
+{
+
+    BIMAGE_CHANNEL channels = bimageTypeChannels(im->type), i;
     int64_t offs = bimageIndex(im, x, y);
 
     for (i = 0; i < channels; i++){
         switch (p.depth){
-        case 8:
+        case BIMAGE_U8:
             bimageAt(im, offs+i, uint8_t) = (uint8_t)p.data[i];
             break;
-        case 16:
+        case BIMAGE_U16:
             bimageAt(im, offs+i, uint16_t) = (uint16_t)p.data[i];
             break;
-        case 32:
+        case BIMAGE_U32:
             bimageAt(im, offs+i, uint32_t) = (uint32_t)p.data[i];
             break;
         default:
@@ -312,62 +310,91 @@ bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bpixel p)
     return BIMAGE_OK;
 }
 
+
+BIMAGE_STATUS
+bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bpixel p)
+{
+
+    // Bounds check
+    if (im->width <= x || im->height <= y){
+        return BIMAGE_ERR;
+    }
+
+    // Set bpixel depth based on image
+    BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
+    if (p.depth < 0){
+        p.depth = depth;
+    } else if (p.depth != depth) {
+        if (bpixelConvertDepth(p, bimageTypeDepth(im->type), &p) != BIMAGE_OK){
+            return BIMAGE_ERR;
+        }
+    }
+
+    return bimageSetPixelUnsafe(im, x, y, p);
+}
+
 /* bimageConvertDepth converts between 8, 16 and 32 bit images */
 bimage*
-bimageConvertDepth(bimage *im, int8_t depth)
+bimageConvertDepth(bimage **dst, bimage *im, BIMAGE_DEPTH depth)
 {
-    bpixel px, dst;
+    bpixel px, pdst;
     BIMAGE_TYPE t;
     if (bimageMakeType(bimageTypeChannels(im->type), depth, &t) == BIMAGE_ERR){
         return NULL;
     }
 
-    bimage* im2 = bimageCreate(im->width, im->height, t);
+    bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, t);
     if (!im2){
         return NULL;
     }
 
     bimageIterAll(im, x, y){
-        if (bimageGetPixel(im, x, y, &px) == BIMAGE_ERR
-                || bpixelConvertDepth(px, depth, &dst) != BIMAGE_ERR){
-            bimageSetPixel(im2, x, y, dst);
+        if (bimageGetPixelUnsafe(im, x, y, &px) == BIMAGE_ERR
+                || bpixelConvertDepth(px, depth, &pdst) != BIMAGE_ERR){
+            bimageSetPixel(im2, x, y, pdst);
+        } else {
+            break;
         }
     }
 
-    return im2;
+    *dst = im2;
+    return *dst;
 }
 
 /* bimageConvertChannels converts between 1, 3, and 4 channel images
  * */
 bimage*
-bimageConvertChannels(bimage *im, int8_t nchannels)
+bimageConvertChannels(bimage** dst, bimage* im, BIMAGE_CHANNEL nchannels)
 {
     BIMAGE_TYPE t;
 
-    if (bimageMakeType(nchannels, bimageTypeSize(im->type), &t) == BIMAGE_ERR){
+    if (bimageMakeType(nchannels, bimageTypeDepth(im->type), &t) == BIMAGE_ERR){
         return NULL;
     }
 
-    bimage* dst = bimageCreate(im->width, im->height, t);
+    bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, t);
     if (!dst){
         return NULL;
     }
 
     bpixel px;
     bimageIterAll(im, x, y){
-        if (bimageGetPixel(im, x, y, &px) != BIMAGE_ERR){
-            bimageSetPixel(dst, x, y, px);
+        if (bimageGetPixelUnsafe(im, x, y, &px) != BIMAGE_ERR){
+            bimageSetPixel(im2, x, y, px);
+        } else {
+            break;
         }
     }
 
-    return dst;
+    *dst = im2;
+    return *dst;
 }
 
 
 bimage*
-bimageCrop (bimage *im, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
+bimageCrop (bimage** dst, bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
-    bimage* dst = bimageCreate(w, h, im->type);
+    bimage* im2 = BIMAGE_CREATE_DEST(dst, w, h, im->type);
     if (!dst){
         return NULL;
     }
@@ -375,10 +402,26 @@ bimageCrop (bimage *im, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
     bpixel px;
     bimageIter(im, i, j, x, y, w, h){
         if (bimageGetPixel(im, i, j, &px) != BIMAGE_ERR){
-            bimageSetPixel(dst, i-x, j-y, px);
+            bimageSetPixel(im2, i-x, j-y, px);
+        } else {
+            break;
         }
     }
 
-    return dst;
+    *dst= im2;
+    return *dst;
 }
 
+void
+bimageCopyTo (bimage* dst, bimage* src, uint32_t offs_x, uint32_t offs_y)
+{
+    if (offs_x >= dst->width || offs_y >= dst->height){
+        return;
+    }
+
+    bpixel px;
+    bimageIterAll(src, x, y){
+        bimageGetPixelUnsafe(src, x, y, &px);
+        bimageSetPixel(dst, x+offs_x, y+offs_y, px);
+    }
+}

@@ -21,7 +21,7 @@ bimage* bimageOpen(const char *filename)
         return bimageOpenTIFF(filename);
     }
 
-    if (bimageMakeType(c, 8, &t) == BIMAGE_OK){
+    if (bimageMakeType(c, BIMAGE_U8, &t) == BIMAGE_OK){
         return bimageCreateWithData(w, h, t, data, true, false);
     }
 
@@ -39,7 +39,7 @@ bimage *bimageOpen16(const char *filename)
         return bimageOpenTIFF(filename);
     }
 
-    if (bimageMakeType(c, 16, &t) == BIMAGE_OK){
+    if (bimageMakeType(c, BIMAGE_U16, &t) == BIMAGE_OK){
         return bimageCreateWithData(w, h, t, data, true, false);
     }
 
@@ -59,7 +59,7 @@ BIMAGE_STATUS
 bimageSave(bimage *im, const char *filename)
 {
     const char *x = get_ext(filename);
-    if (strncasecmp(x, "png", 3) == 0 && bimageTypeSize(im->type) == 8){
+    if (strncasecmp(x, "png", 3) == 0 && bimageTypeDepth(im->type) == BIMAGE_U8){
 		return stbi_write_png(filename,
                 im->width,
                 im->height,

@@ -5,7 +5,7 @@
 /* PIXEL */
 
 bpixel
-bpixelCreate (float r, float g, float b, float a, int depth)
+bpixelCreate (float r, float g, float b, float a, BIMAGE_DEPTH depth)
 {
     bpixel px;
     bzero(&px, sizeof(bpixel));
@@ -17,8 +17,14 @@ bpixelCreate (float r, float g, float b, float a, int depth)
     return px;
 }
 
+bpixel
+bpixelZero(BIMAGE_DEPTH depth)
+{
+    return bpixelCreate(0, 0, 0, 0, depth);
+}
+
 BIMAGE_STATUS
-bpixelConvertDepth (bpixel a, uint8_t depth, bpixel *dst)
+bpixelConvertDepth (bpixel a, BIMAGE_DEPTH depth, bpixel *dst)
 {
     if (!dst){
         return BIMAGE_ERR;
@@ -26,17 +32,17 @@ bpixelConvertDepth (bpixel a, uint8_t depth, bpixel *dst)
 
     int i;
     switch (a.depth) {
-    case 8:
+    case BIMAGE_U8:
         switch (depth) {
-        case 8:
+        case BIMAGE_U8:
             *dst = a;
             break;
-        case 16:
+        case BIMAGE_U16:
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)a.data[i] << 8;
             }
             break;
-        case 32:
+        case BIMAGE_U32:
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)a.data[i] << 24;
             }
@@ -45,17 +51,17 @@ bpixelConvertDepth (bpixel a, uint8_t depth, bpixel *dst)
             return BIMAGE_ERR;
         }
         break;
-    case 16:
+    case BIMAGE_U16:
        switch (depth) {
-        case 8:
+        case BIMAGE_U8:
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)a.data[i] >> 8;
             }
             break;
-        case 16:
+        case BIMAGE_U16:
             *dst = a;
             break;
-        case 32:
+        case BIMAGE_U32:
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)a.data[i] << 16;
             }
@@ -64,19 +70,19 @@ bpixelConvertDepth (bpixel a, uint8_t depth, bpixel *dst)
             return BIMAGE_ERR;
         }
        break;
-    case 32:
+    case BIMAGE_U32:
        switch (depth) {
-        case 8:
+        case BIMAGE_U8:
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)a.data[i] >> 24;
             }
             break;
-        case 16:
+        case BIMAGE_U16:
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)a.data[i] >> 16;
             }
             break;
-        case 32:
+        case BIMAGE_U32:
             *dst = a;
             break;
         default:
