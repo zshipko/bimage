@@ -7,4 +7,4 @@
 *.a
 test/test
 *.core
-bimage.lua
+bimage-view
