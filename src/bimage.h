@@ -153,6 +153,9 @@ bimageConvertDepth(bimage** dst, bimage* im, BIMAGE_DEPTH depth);
 bimage*
 bimageConvertChannels(bimage** dst, bimage* im, BIMAGE_CHANNEL channels);
 
+void
+bimageAdjustGamma(bimage* im, float gamma);
+
 /* RESIZE */
 
 bimage*
@@ -161,10 +164,16 @@ bimageResize(bimage** dst, bimage* im, int32_t width, int32_t height);
 /* FILTER */
 
 bimage*
+bimageColor(bimage** dst, bimage* im, BIMAGE_CHANNEL c);
+
+bimage*
 bimageGrayscale(bimage** dst, bimage* im);
 
 bimage*
 bimageFilter(bimage** dst, bimage* im, float *K, int Ks, float divisor, float offset);
+
+bimage*
+bimageInvert(bimage** dst, bimage* im);
 
 /* HASH */
 
@@ -178,9 +187,17 @@ int
 bimageHashDiff(uint64_t a, uint64_t b);
 
 #define BIMAGE_CREATE_DEST(dst, w, h, t) \
-    dst && *dst \
-        ? ((*dst)->width >= w && (*dst)->height >= h && (*dst)->type == t ? *dst : NULL) \
-        : bimageCreate(w, h, t)
+    (dst ==  NULL || *dst == NULL \
+        ? bimageCreate(w, h, t) \
+        : ((*dst)->width >= w && (*dst)->height >= h && (*dst)->type == t ? *dst : NULL))
+
+#define BIMAGE_RETURN_DEST(dst, im) \
+    if (dst) { \
+        *dst = im; \
+        return *dst; \
+    } else { \
+        return im; \
+    }
 
 
 #ifdef __cplusplus

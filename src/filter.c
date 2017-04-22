@@ -3,18 +3,47 @@
 #include "bimage.h"
 
 bimage*
-bimageGrayscale(bimage** dst, bimage *im)
+bimageColor(bimage** dst, bimage* im, BIMAGE_CHANNEL c)
+{
+
+    if (c < 3){
+        return NULL;
+    }
+
+    BIMAGE_TYPE t;
+    BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
+    bpixel px;
+
+    if (bimageMakeType(c, depth, &t) == BIMAGE_ERR){
+        return NULL;
+    }
+
+    bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, t);
+    if (im2 == NULL){
+        return NULL;
+    }
+
+    bimageIterAll(im2, x, y){
+        bimageGetPixelUnsafe(im, x, y, &px);
+        bimageSetPixel(im2, x, y, px);
+    }
+
+    BIMAGE_RETURN_DEST(dst, im2);
+}
+
+bimage*
+bimageGrayscale(bimage** dst, bimage* im)
 {
     BIMAGE_TYPE t;
     bpixel p, px;
-    int depth = bimageTypeDepth(im->type);
+    BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
 
-    if (bimageMakeType(1, depth, &t) == BIMAGE_ERR){
+    if (bimageMakeType(BIMAGE_GRAY, depth, &t) == BIMAGE_ERR){
         return NULL;
     }
 
     bimage *im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, t);
-    if (!dst){
+    if (im2 == NULL){
         return NULL;
     }
 
@@ -27,8 +56,7 @@ bimageGrayscale(bimage** dst, bimage *im)
         bimageSetPixel(im2, x, y, p);
     }
 
-    *dst = im2;
-    return *dst;
+    BIMAGE_RETURN_DEST(dst, im2);
 }
 
 // Convolution filter
@@ -77,6 +105,29 @@ bimageFilter(bimage** dst, bimage* im, float* K, int Ks, float divisor, float of
         }
     }
 
-    *dst = oi;
-    return *dst;
+    BIMAGE_RETURN_DEST(dst, oi);
+}
+
+bimage*
+bimageInvert(bimage** dst, bimage* src)
+{
+    bpixel px;
+    int i;
+    bimage *im2 = BIMAGE_CREATE_DEST(dst, src->width, src->height, src->type);
+    if (im2 == NULL){
+        return NULL;
+    }
+
+    BIMAGE_CHANNEL ch = bimageTypeChannels(src->type);
+    float mx = bimageTypeMax(src->type);
+
+    bimageIterAll(im2, x, y){
+        bimageGetPixelUnsafe(im2, x, y, &px);
+        for(i = 0; i < ch; i++){
+            px.data[i] = mx - px.data[i];
+        }
+        bimageSetPixelUnsafe(im2, x, y, px);
+    }
+
+    BIMAGE_RETURN_DEST(dst, im2);
 }

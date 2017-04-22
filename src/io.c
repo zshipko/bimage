@@ -36,7 +36,13 @@ bimage *bimageOpen16(const char *filename)
 
     uint16_t* data = stbi_load_16(filename, &w, &h, &c, 0);
     if (!data){
-        return bimageOpenTIFF(filename);
+        // Make sure TIFF
+        bimage *im = bimageOpenTIFF(filename);
+        if (bimageTypeDepth(im->type) != BIMAGE_U16){
+            bimageRelease(im);
+            return NULL;
+        }
+        return im;
     }
 
     if (bimageMakeType(c, BIMAGE_U16, &t) == BIMAGE_OK){

@@ -46,6 +46,7 @@ bimageResize(bimage** dst, bimage* im, int32_t w, int32_t h)
         return NULL;
     }
 
-    *dst = im2;
-    return *dst;;
+    BIMAGE_RETURN_DEST(dst, im2);
 }
+
+

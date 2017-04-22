@@ -357,8 +357,7 @@ bimageConvertDepth(bimage **dst, bimage *im, BIMAGE_DEPTH depth)
         }
     }
 
-    *dst = im2;
-    return *dst;
+    BIMAGE_RETURN_DEST(dst, im2);
 }
 
 /* bimageConvertChannels converts between 1, 3, and 4 channel images
@@ -386,8 +385,7 @@ bimageConvertChannels(bimage** dst, bimage* im, BIMAGE_CHANNEL nchannels)
         }
     }
 
-    *dst = im2;
-    return *dst;
+    BIMAGE_RETURN_DEST(dst, im2);
 }
 
 
@@ -408,8 +406,7 @@ bimageCrop (bimage** dst, bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32
         }
     }
 
-    *dst= im2;
-    return *dst;
+    BIMAGE_RETURN_DEST(dst, im2);
 }
 
 void
@@ -423,5 +420,23 @@ bimageCopyTo (bimage* dst, bimage* src, uint32_t offs_x, uint32_t offs_y)
     bimageIterAll(src, x, y){
         bimageGetPixelUnsafe(src, x, y, &px);
         bimageSetPixel(dst, x+offs_x, y+offs_y, px);
+    }
+}
+
+void
+bimageAdjustGamma (bimage* im, float g)
+{
+    int i, c = bimageTypeChannels(im->type);
+    c = c > 3 ? 3 : c;
+    float mx = (float)bimageTypeMax(im->type);
+
+    bimageIterAll(im, x, y){
+        bpixel px;
+
+        bimageGetPixelUnsafe(im, x, y, &px);
+        for(i = 0; i < c; i++){
+            px.data[i] = mx * pow((px.data[i]/mx), (1.0/g));
+        }
+        bimageSetPixel(im, x, y, px);
     }
 }
