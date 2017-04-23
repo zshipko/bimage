@@ -19,7 +19,7 @@ static void release (uint8_t* unused, void* data)
 }
 
 GdkPixbuf*
-bimageGtkPixbuf(bimage* im, bool owner)
+bimagePixbuf(bimage* im, bool owner)
 {
     if (bimageTypeChannels(im->type) == BIMAGE_GRAY || bimageTypeDepth(im->type) != 8){
         return NULL;
@@ -38,7 +38,7 @@ bimageGtkPixbuf(bimage* im, bool owner)
 GtkWidget*
 bimageGtkImage(bimage* im, bool owner)
 {
-    return gtk_image_new_from_pixbuf(bimageGtkPixbuf(im, owner));
+    return gtk_image_new_from_pixbuf(bimagePixbuf(im, owner));
 }
 
 GtkWidget*
@@ -50,6 +50,6 @@ bimageGtkWindow(bimage* im, bool owner)
     gtk_container_add(GTK_CONTAINER(scroll), image);
     gtk_container_add(GTK_CONTAINER(win), scroll);
     gtk_window_set_default_size(GTK_WINDOW(win), 800, 600);
-    gtk_widget_show_all(scroll);
+    gtk_widget_show_all(win);
     return win;
 }

@@ -11,7 +11,7 @@ bimage* bimageGetDefaultImage();
 void bimageSetDefaultImage(bimage*, bool);
 
 GdkPixbuf*
-bimageGtkPixbuf(bimage* im, bool owner);
+bimagePixbuf(bimage* im, bool owner);
 
 GtkWidget*
 bimageGtkImage(bimage* im, bool owner);
