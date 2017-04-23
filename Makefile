@@ -16,6 +16,9 @@ endif
 
 lib: shared static
 
+debug:
+	$(MAKE) CFLAGS="$(CFLAGS) -Wall"
+
 shared: $(OBJ)
 	$(CC) -shared -fPIC -I/usr/local/include $(OBJ) -o libbimage.$(EXT) $(LDFLAGS)
 
@@ -26,7 +29,7 @@ static: $(SRC)
 	$(CC) -O3 -fPIC -c $*.c $(CFLAGS) -o $@
 
 clean:
-	rm src/*.o libbimage.*
+	rm -f src/*.o libbimage.*
 
 install:
 	install libbimage.a libbimage.$(EXT) $(PREFIX)/lib

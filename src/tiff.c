@@ -69,8 +69,6 @@ bimageOpenTIFF(const char *filename)
     }
 
     uint32_t w, h;
-    size_t npix;
-    uint32_t* raster;
     uint16_t depth, channels;
 
     TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);

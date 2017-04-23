@@ -1,5 +1,18 @@
 #include "bimage-gtk.h"
 
+bimage* bimageDefaultImage = NULL;
+
+bimage* bimageGetDefaultImage(){
+    return bimageDefaultImage;
+}
+
+void bimageSetDefaultImage(bimage* im, bool free_){
+    if (free_){
+        bimageRelease(bimageDefaultImage);
+    }
+    bimageDefaultImage = im;
+}
+
 static void release (uint8_t* unused, void* data)
 {
     bimageRelease((bimage*)data);
@@ -37,7 +50,6 @@ bimageGtkWindow(bimage* im, bool owner)
     gtk_container_add(GTK_CONTAINER(scroll), image);
     gtk_container_add(GTK_CONTAINER(win), scroll);
     gtk_window_set_default_size(GTK_WINDOW(win), 800, 600);
-    gtk_widget_show(image);
-    gtk_widget_show(scroll);
+    gtk_widget_show_all(scroll);
     return win;
 }

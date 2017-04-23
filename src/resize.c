@@ -33,6 +33,10 @@ bimageResize(bimage** dst, bimage* im, int32_t w, int32_t h)
     }
 
     bimage *im2 = BIMAGE_CREATE_DEST(dst, w, h, im->type);
+    if (!im2){
+        return NULL;
+    }
+
     int channels =  bimageTypeChannels(im->type);
     if (stbir_resize(
             im->data, im->width, im->height, 0,

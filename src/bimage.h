@@ -192,12 +192,7 @@ bimageHashDiff(uint64_t a, uint64_t b);
         : ((*dst)->width >= w && (*dst)->height >= h && (*dst)->type == t ? *dst : NULL))
 
 #define BIMAGE_RETURN_DEST(dst, im) \
-    if (dst) { \
-        *dst = im; \
-        return *dst; \
-    } else { \
-        return im; \
-    }
+    if (dst) { *dst = im; return *dst; } else { return im; }
 
 
 #ifdef __cplusplus

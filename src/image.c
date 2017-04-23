@@ -316,7 +316,7 @@ bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bpixel p)
 {
 
     // Bounds check
-    if (im->width <= x || im->height <= y){
+    if (!im || im->width <= x || im->height <= y){
         return BIMAGE_ERR;
     }
 

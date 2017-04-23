@@ -8,7 +8,7 @@ endif
 lib: static shared bin
 
 static:
-	$(CC) -c -o bimage-gtk.o `pkg-config --cflags gtk+-3.0` bimage-gtk.c
+	$(CC) -fPIC -c -o bimage-gtk.o `pkg-config --cflags gtk+-3.0` bimage-gtk.c
 	ar rcs libbimage-gtk.a bimage-gtk.o
 
 shared:
@@ -17,6 +17,7 @@ shared:
 .PHONY: bin
 bin:
 	$(CC) -o bin/bimage-gtk `pkg-config --cflags --libs  gtk+-3.0` -lbimage bimage-gtk.c bin/main.c
+	$(MAKE) -C editor
 
 install:
 	install libbimage-gtk.$(EXT) libbimage-gtk.a /usr/local/lib

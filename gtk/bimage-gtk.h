@@ -7,6 +7,9 @@
 
 #include <stdbool.h>
 
+bimage* bimageGetDefaultImage();
+void bimageSetDefaultImage(bimage*, bool);
+
 GdkPixbuf*
 bimageGtkPixbuf(bimage* im, bool owner);
 
