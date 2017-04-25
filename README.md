@@ -1,6 +1,8 @@
 bimage
 ======
 
+[![Build Status](https://travis-ci.org/zshipko/bimage.svg?branch=master)](https://travis-ci.org/zshipko/bimage)
+
 `bimage` is a basic image library for C.
 
 * Simple API

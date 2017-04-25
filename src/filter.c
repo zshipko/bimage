@@ -182,19 +182,20 @@ bimageSobelY(bimage** dst, bimage* src)
 bimage*
 bimageSobel(bimage**dst, bimage* src){
     bimage* src2 = bimageSobelX(dst, src);
-    if (src2){
-        bimage* tmp = bimageSobelY(NULL, src2);
-        if (!tmp){
-            if (!dst || !*dst){
-                bimageRelease(src2);
-            }
-            return NULL;
-        }
-
-        bimageAdd(*dst, tmp);
+    if (!src2){
+        return NULL;
     }
 
-    return *dst;
+    bimage* tmp = bimageSobelY(NULL, src2);
+    if (!tmp){
+        if (!dst || !*dst){
+            bimageRelease(src2);
+        }
+        return NULL;
+    }
+
+    bimageAdd(src2, tmp);
+    return src2;
 }
 
 static float prewitt_x[9] = {
@@ -224,19 +225,21 @@ bimagePrewittY(bimage** dst, bimage* src)
 bimage*
 bimagePrewitt(bimage**dst, bimage* src){
     bimage* src2 = bimagePrewittX(dst, src);
-    if (src2){
-        bimage* tmp = bimagePrewittY(NULL, src2);
-        if (!tmp){
-            if (!dst || !*dst){
-                bimageRelease(src2);
-            }
-            return NULL;
-        }
-
-        bimageAdd(*dst, tmp);
+    if (!src2){
+        return NULL;
     }
 
-    return *dst;
+    bimage* tmp = bimagePrewittY(NULL, src2);
+    if (!tmp){
+        if (!dst || !*dst){
+            bimageRelease(src2);
+        }
+        return NULL;
+    }
+
+    bimageAdd(src2, tmp);
+
+    return src2;
 }
 
 static float outline[9] = {
