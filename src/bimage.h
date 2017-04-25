@@ -65,6 +65,8 @@ typedef struct bpixel {
     for(y = 0; y < im->height; y++) \
         for(x = 0; x < im->width; x++)
 
+typedef float (*bpixelOp)(float, float);
+typedef void (*bimageOp)(bimage **dst, bimage*, bimage*, bpixelOp);
 
 /* BIMAGE */
 
@@ -80,8 +82,22 @@ bpixelZero(bpixel *px, BIMAGE_DEPTH depth);
 BIMAGE_STATUS
 bpixelConvertDepth (bpixel *dst, bpixel *src, BIMAGE_DEPTH depth);
 
-void
+BIMAGE_STATUS
 bpixelClamp(bpixel *p);
+
+BIMAGE_STATUS
+bpixelAdd(bpixel *p, bpixel *q);
+
+BIMAGE_STATUS
+bpixelSub(bpixel *p, bpixel *q);
+
+BIMAGE_STATUS
+bpixelMul(bpixel *p, bpixel *q);
+
+BIMAGE_STATUS
+bpixelDiv(bpixel *p, bpixel *q);
+
+
 
 BIMAGE_STATUS
 bimageMakeType(BIMAGE_CHANNEL channels, BIMAGE_DEPTH depth, BIMAGE_TYPE *dst);
@@ -169,6 +185,18 @@ bimageResize(bimage** dst, bimage* im, int32_t width, int32_t height);
 
 /* FILTER */
 
+BIMAGE_STATUS
+bimageAdd(bimage* dst, bimage* b);
+
+BIMAGE_STATUS
+bimageSub(bimage* dst, bimage* b);
+
+BIMAGE_STATUS
+bimageMul(bimage* dst, bimage* b);
+
+BIMAGE_STATUS
+bimageDiv(bimage* dst, bimage* b);
+
 bimage*
 bimageColor(bimage** dst, bimage* im, BIMAGE_CHANNEL c);
 
@@ -177,6 +205,36 @@ bimageGrayscale(bimage** dst, bimage* im);
 
 bimage*
 bimageFilter(bimage** dst, bimage* im, float *K, int Ks, float divisor, float offset);
+
+bimage*
+bimageSobelX(bimage** dst, bimage* src);
+
+bimage*
+bimageSobelY(bimage** dst, bimage* src);
+
+bimage*
+bimageSobel(bimage** dst, bimage* src);
+
+bimage*
+bimagePrewittX(bimage** dst, bimage* src);
+
+bimage*
+bimagePrewittY(bimage** dst, bimage* src);
+
+bimage*
+bimagePrewitt(bimage** dst, bimage* src);
+
+bimage*
+bimageOutline(bimage** dst, bimage* src);
+
+bimage*
+bimageSharpen(bimage** dst, bimage* src);
+
+bimage*
+bimageBlur(bimage** dst, bimage* src);
+
+bimage*
+bimageGaussianBlur(bimage** dst, bimage* src);
 
 bimage*
 bimageInvert(bimage** dst, bimage* im);
@@ -198,7 +256,7 @@ bimageHashDiff(uint64_t a, uint64_t b);
         : ((*dst)->width >= w && (*dst)->height >= h && (*dst)->type == t ? *dst : NULL))
 
 #define BIMAGE_RETURN_DEST(dst, im) \
-    if (dst) { *dst = im; return *dst; } else { return im; }
+    if (dst) { if (*dst != im) *dst = im; return *dst; } else { return im; }
 
 
 #ifdef __cplusplus

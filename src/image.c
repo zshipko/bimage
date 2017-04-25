@@ -278,6 +278,7 @@ BIMAGE_STATUS
 bimageGetPixel(bimage *im, uint32_t x, uint32_t y, bpixel *p)
 {
     if (im->width <= x || im->height <= y){
+        bpixelZero(p, p->depth);
         return BIMAGE_ERR;
     }
 

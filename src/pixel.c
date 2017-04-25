@@ -107,16 +107,45 @@ bpixelConvertDepth (bpixel *dst, bpixel *src, BIMAGE_DEPTH depth)
     return BIMAGE_OK;
 }
 
-void bpixelClamp(bpixel *px){
+BIMAGE_STATUS
+bpixelClamp(bpixel *px)
+{
     int i;
     BIMAGE_TYPE t;
 
     if (!px || bimageMakeType(1, px->depth, &t) == BIMAGE_ERR){
-        return;
+        return BIMAGE_ERR;
     }
 
     float mx = (float)bimageTypeMax(t);
     for(i = 0; i < 4; i++){
         px->data[i] = px->data[i] < 0 ? 0 : (px->data[i] > mx ? mx : px->data[i]);
     }
+
+    return BIMAGE_OK;
 }
+
+#define PIXEL_OP(name, op) \
+BIMAGE_STATUS \
+bpixel##name(bpixel *a, bpixel *b) \
+{ \
+    if (!a || !b){ \
+        return BIMAGE_ERR; \
+    } \
+    int i; \
+    bpixel c; \
+    if (a->depth != b->depth){ \
+        bpixelConvertDepth(&c, b, a->depth); \
+        b = &c; \
+    } \
+    for (i = 0; i < 3; i++){ \
+        a->data[i] = a->data[i] op b->data[i]; \
+    } \
+    bpixelClamp(a); \
+    return BIMAGE_OK; \
+}
+
+PIXEL_OP(Add, +);
+PIXEL_OP(Sub, -);
+PIXEL_OP(Mul, *);
+PIXEL_OP(Div, /);

@@ -2,6 +2,27 @@
 
 #include "bimage.h"
 
+#define IMAGE_OP(name) \
+BIMAGE_STATUS \
+bimage##name(bimage* a, bimage* b) \
+{ \
+    bpixel p, q; \
+    bimageIterAll(a, x, y){ \
+        if (bimageGetPixelUnsafe(a, x, y, &p) == BIMAGE_ERR  || \
+            bimageGetPixel(b, x, y, &q) == BIMAGE_ERR || \
+            bpixel##name(&p, &q) == BIMAGE_ERR){ \
+            break; \
+        } \
+        bimageSetPixelUnsafe(a, x, y, &p); \
+    } \
+    return BIMAGE_OK; \
+}
+
+IMAGE_OP(Add);
+IMAGE_OP(Sub);
+IMAGE_OP(Mul);
+IMAGE_OP(Div);
+
 bimage*
 bimageColor(bimage** dst, bimage* im, BIMAGE_CHANNEL c)
 {
@@ -68,6 +89,8 @@ bimageFilter(bimage** dst, bimage* im, float* K, int Ks, float divisor, float of
         return NULL;
     }
 
+    Ks = Ks/2;
+
     int channels = bimageTypeChannels(im->type);
     int32_t ix, iy;
     int kx, ky, l;
@@ -130,4 +153,139 @@ bimageInvert(bimage** dst, bimage* src)
     }
 
     BIMAGE_RETURN_DEST(dst, im2);
+}
+
+static float sobel_x[9] = {
+    1, 0, -1,
+    2, 0, -2,
+    1, 0, -1
+};
+
+bimage*
+bimageSobelX(bimage** dst, bimage* src)
+{
+    return bimageFilter(dst, src, sobel_x, 3, 1, 0);
+}
+
+static float sobel_y[9] = {
+    1, 2, 1,
+    0, 0, 0,
+    -1, -2, -1
+};
+
+bimage*
+bimageSobelY(bimage** dst, bimage* src)
+{
+    return bimageFilter(dst, src, sobel_y, 3, 1, 0);
+}
+
+bimage*
+bimageSobel(bimage**dst, bimage* src){
+    bimage* src2 = bimageSobelX(dst, src);
+    if (src2){
+        bimage* tmp = bimageSobelY(NULL, src2);
+        if (!tmp){
+            if (!dst || !*dst){
+                bimageRelease(src2);
+            }
+            return NULL;
+        }
+
+        bimageAdd(*dst, tmp);
+    }
+
+    return *dst;
+}
+
+static float prewitt_x[9] = {
+    1, 0, -1,
+    1, 0, -1,
+    1, 0, -1
+};
+
+bimage*
+bimagePrewittX(bimage** dst, bimage* src)
+{
+    return bimageFilter(dst, src, sobel_x, 3, 1, 0);
+}
+
+static float prewitt_y[9] = {
+    1, 1, 1,
+    0, 0, 0,
+    -1, -1, -1
+};
+
+bimage*
+bimagePrewittY(bimage** dst, bimage* src)
+{
+    return bimageFilter(dst, src, sobel_y, 3, 1, 0);
+}
+
+bimage*
+bimagePrewitt(bimage**dst, bimage* src){
+    bimage* src2 = bimagePrewittX(dst, src);
+    if (src2){
+        bimage* tmp = bimagePrewittY(NULL, src2);
+        if (!tmp){
+            if (!dst || !*dst){
+                bimageRelease(src2);
+            }
+            return NULL;
+        }
+
+        bimageAdd(*dst, tmp);
+    }
+
+    return *dst;
+}
+
+static float outline[9] = {
+    -1, -1, -1
+    -1,  8, -1,
+    -1, -1, -1
+};
+
+bimage*
+bimageOutline(bimage** dst, bimage* im)
+{
+    return bimageFilter(dst, im, outline, 3, 1, 0);
+}
+
+
+static float sharpen[9] = {
+     0, -1,  0,
+    -1,  5, -1,
+     0, -1,  0
+};
+
+bimage*
+bimageSharpen(bimage** dst, bimage* im)
+{
+    return bimageFilter(dst, im, sharpen, 3, 1, 0);
+}
+
+static float blur[9] = {
+    1, 1, 1,
+    1, 1, 1,
+    1, 1, 1
+};
+
+bimage*
+bimageBlur(bimage** dst, bimage* im)
+{
+    return bimageFilter(dst, im, blur, 3, 9, 0);
+}
+
+static float gaussian_blur[25] = {
+    1,  4,  7,  4,  1,
+    4, 16, 26, 16,  4,
+    7, 26, 41, 26,  7,
+    4, 16, 26, 16,  4,
+    1,  4,  7,  4,  1
+};
+
+bimage*
+bimageGaussianBlur(bimage** dst, bimage* im)
+{
+    return bimageFilter(dst, im, gaussian_blur, 5, 273, 0);
 }
