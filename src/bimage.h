@@ -68,14 +68,20 @@ typedef struct bpixel {
 
 /* BIMAGE */
 
+BIMAGE_STATUS
+bpixelInit(bpixel *px, float r, float g, float b, float a, BIMAGE_DEPTH depth);
+
 bpixel
 bpixelCreate (float r, float g, float b, float a, BIMAGE_DEPTH depth);
 
-bpixel
-bpixelZero(BIMAGE_DEPTH depth);
+BIMAGE_STATUS
+bpixelZero(bpixel *px, BIMAGE_DEPTH depth);
 
 BIMAGE_STATUS
-bpixelConvertDepth (bpixel a, BIMAGE_DEPTH depth, bpixel *dst);
+bpixelConvertDepth (bpixel *dst, bpixel *src, BIMAGE_DEPTH depth);
+
+void
+bpixelClamp(bpixel *p);
 
 BIMAGE_STATUS
 bimageMakeType(BIMAGE_CHANNEL channels, BIMAGE_DEPTH depth, BIMAGE_TYPE *dst);
@@ -114,13 +120,13 @@ BIMAGE_STATUS
 bimageGetPixelUnsafe(bimage* im, uint32_t x, uint32_t y, bpixel *p);
 
 BIMAGE_STATUS
-bimageSetPixelUnsafe(bimage* im, uint32_t x, uint32_t y, bpixel p);
+bimageSetPixelUnsafe(bimage* im, uint32_t x, uint32_t y, bpixel *p);
 
 BIMAGE_STATUS
 bimageGetPixel(bimage* im, uint32_t x, uint32_t y, bpixel *p);
 
 BIMAGE_STATUS
-bimageSetPixel(bimage* im, uint32_t x, uint32_t y, bpixel p);
+bimageSetPixel(bimage* im, uint32_t x, uint32_t y, bpixel *p);
 
 bimage*
 bimageCrop(bimage** dst, bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h);

@@ -12,7 +12,7 @@ uint64_t bimageHash(bimage *im)
     bpixel apx;          // Average pixel
     int i, j, n = 0;
 
-    apx = bpixelZero(bimageTypeDepth(im->type));
+    bpixelZero(&apx, bimageTypeDepth(im->type));
 
     bimage *sm = bimageResize(NULL, im, HASH_SIZE, HASH_SIZE);
     if (!sm){

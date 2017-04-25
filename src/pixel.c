@@ -4,47 +4,57 @@
 
 /* PIXEL */
 
+BIMAGE_STATUS
+bpixelInit(bpixel *px, float r, float g, float b, float a, BIMAGE_DEPTH depth){
+    if (!px){
+        return BIMAGE_ERR;
+    }
+
+    px->depth = depth;
+    px->data[0] = r;
+    px->data[1] = g;
+    px->data[2] = b;
+    px->data[3] = a;
+
+    return BIMAGE_OK;
+}
+
 bpixel
 bpixelCreate (float r, float g, float b, float a, BIMAGE_DEPTH depth)
 {
     bpixel px;
-    bzero(&px, sizeof(bpixel));
-    px.depth = depth;
-    px.data[0] = r;
-    px.data[1] = g;
-    px.data[2] = b;
-    px.data[3] = a;
+    bpixelInit(&px, r, g, b, a, depth);
     return px;
 }
 
-bpixel
-bpixelZero(BIMAGE_DEPTH depth)
+BIMAGE_STATUS
+bpixelZero(bpixel *px, BIMAGE_DEPTH depth)
 {
-    return bpixelCreate(0, 0, 0, 0, depth);
+    return bpixelInit(px, 0, 0, 0, 0, depth);
 }
 
 BIMAGE_STATUS
-bpixelConvertDepth (bpixel a, BIMAGE_DEPTH depth, bpixel *dst)
+bpixelConvertDepth (bpixel *dst, bpixel *src, BIMAGE_DEPTH depth)
 {
     if (!dst){
         return BIMAGE_ERR;
     }
 
     int i;
-    switch (a.depth) {
+    switch (src->depth) {
     case BIMAGE_U8:
         switch (depth) {
         case BIMAGE_U8:
-            *dst = a;
+            *dst = *src;
             break;
         case BIMAGE_U16:
             for (i = 0; i < 4; i++){
-                (*dst).data[i] = (uint32_t)a.data[i] << 8;
+                (*dst).data[i] = (uint32_t)src->data[i] << 8;
             }
             break;
         case BIMAGE_U32:
             for (i = 0; i < 4; i++){
-                (*dst).data[i] = (uint32_t)a.data[i] << 24;
+                (*dst).data[i] = (uint32_t)src->data[i] << 24;
             }
             break;
         default:
@@ -55,15 +65,15 @@ bpixelConvertDepth (bpixel a, BIMAGE_DEPTH depth, bpixel *dst)
        switch (depth) {
         case BIMAGE_U8:
             for (i = 0; i < 4; i++){
-                (*dst).data[i] = (uint32_t)a.data[i] >> 8;
+                (*dst).data[i] = (uint32_t)src->data[i] >> 8;
             }
             break;
         case BIMAGE_U16:
-            *dst = a;
+            *dst = *src;
             break;
         case BIMAGE_U32:
             for (i = 0; i < 4; i++){
-                (*dst).data[i] = (uint32_t)a.data[i] << 16;
+                (*dst).data[i] = (uint32_t)src->data[i] << 16;
             }
             break;
         default:
@@ -74,16 +84,16 @@ bpixelConvertDepth (bpixel a, BIMAGE_DEPTH depth, bpixel *dst)
        switch (depth) {
         case BIMAGE_U8:
             for (i = 0; i < 4; i++){
-                (*dst).data[i] = (uint32_t)a.data[i] >> 24;
+                (*dst).data[i] = (uint32_t)src->data[i] >> 24;
             }
             break;
         case BIMAGE_U16:
             for (i = 0; i < 4; i++){
-                (*dst).data[i] = (uint32_t)a.data[i] >> 16;
+                (*dst).data[i] = (uint32_t)src->data[i] >> 16;
             }
             break;
         case BIMAGE_U32:
-            *dst = a;
+            *dst = *src;
             break;
         default:
             return BIMAGE_ERR;
@@ -97,3 +107,16 @@ bpixelConvertDepth (bpixel a, BIMAGE_DEPTH depth, bpixel *dst)
     return BIMAGE_OK;
 }
 
+void bpixelClamp(bpixel *px){
+    int i;
+    BIMAGE_TYPE t;
+
+    if (!px || bimageMakeType(1, px->depth, &t) == BIMAGE_ERR){
+        return;
+    }
+
+    float mx = (float)bimageTypeMax(t);
+    for(i = 0; i < 4; i++){
+        px->data[i] = px->data[i] < 0 ? 0 : (px->data[i] > mx ? mx : px->data[i]);
+    }
+}
