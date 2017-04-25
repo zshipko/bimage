@@ -100,7 +100,7 @@ START_TEST (test_bpixelConvert)
         for (j = 0; j > 3; j++){
             bpixel px2;
             bimageMakeType(4, depth[j], &t);
-            ck_assert_int_eq(bpixelConvertDepth(px, depth[j], &px2), BIMAGE_OK);
+            ck_assert_int_eq(bpixelConvertDepth(&px, &px2, depth[j]), BIMAGE_OK);
             ck_assert(px2.data[0] == bimageTypeMax(t) && px2.data[1] == 0);
         }
     }
@@ -111,7 +111,7 @@ START_TEST (test_bimageConsume)
     bpixel p = bpixelCreate(65535.0, 0, 0, 65535.0, -1);
     bimage* a = bimageCreate(100, 100, BIMAGE_RGBA32);
     bimage* b = bimageCreate(50, 50, BIMAGE_RGBA64);
-    bimageSetPixel(b, 10, 10, bpixelCreate(65535.0, 0, 0, 65535.0, -1));
+    bimageSetPixel(b, 10, 10, &p);
     bimageConsume(&a, b);
     ck_assert_int_eq(a->width, 50);
     ck_assert_int_eq(a->height, 50);
