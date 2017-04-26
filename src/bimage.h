@@ -201,7 +201,7 @@ bimage*
 bimageColor(bimage** dst, bimage* im, BIMAGE_CHANNEL c);
 
 bimage*
-bimageGrayscale(bimage** dst, bimage* im);
+bimageGrayscale(bimage** dst, bimage* im, BIMAGE_CHANNEL c);
 
 bimage*
 bimageFilter(bimage** dst, bimage* im, float *K, int Ks, float divisor, float offset);

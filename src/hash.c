@@ -19,7 +19,7 @@ uint64_t bimageHash(bimage *im)
         return 0UL;
     }
 
-    bimageConsume(&sm, bimageGrayscale(NULL, sm));
+    bimageConsume(&sm, bimageGrayscale(NULL, sm, BIMAGE_GRAY));
     if (!sm){
         return 0UL;
     }

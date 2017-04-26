@@ -53,13 +53,13 @@ bimageColor(bimage** dst, bimage* im, BIMAGE_CHANNEL c)
 }
 
 bimage*
-bimageGrayscale(bimage** dst, bimage* im)
+bimageGrayscale(bimage** dst, bimage* im, BIMAGE_CHANNEL chan)
 {
     BIMAGE_TYPE t;
     bpixel p, px;
     BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
 
-    if (bimageMakeType(BIMAGE_GRAY, depth, &t) == BIMAGE_ERR){
+    if (bimageMakeType(chan, depth, &t) == BIMAGE_ERR){
         return NULL;
     }
 
@@ -69,6 +69,7 @@ bimageGrayscale(bimage** dst, bimage* im)
     }
 
     p.depth = depth;
+    p.data[3] = bimageTypeMax(im->type);
     bimageIterAll(im, x, y){
         bimageGetPixelUnsafe(im, x, y, &px);
 
