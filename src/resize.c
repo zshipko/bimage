@@ -11,9 +11,9 @@ bimageResize(bimage** dst, bimage* im, int32_t w, int32_t h)
     if (w <= 0 && h <= 0){
         return NULL;
     } else if (w <= 0){
-        w = im->width * (h / im->height);
+        w = (float)im->width * ((float)h / (float)im->height);
     } else if (h <= 0){
-        h = im->height * (w / im->width);
+        h = (float)im->height * ((float)w / (float)im->width);
     }
 
     int dt;
