@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 
+extern bimage* bimageDefaultImage;
 bimage* bimageGetDefaultImage();
 void bimageSetDefaultImage(bimage*, bool);
 
