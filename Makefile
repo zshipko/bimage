@@ -1,5 +1,5 @@
 SRC=src/pixel.c src/image.c src/tiff.c src/io.c src/resize.c \
-	src/filter.c src/hash.c
+	src/filter.c src/hash.c src/histogram.c
 OBJ=$(SRC:.c=.o)
 
 CFLAGS+=-I/usr/local/include

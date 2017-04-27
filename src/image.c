@@ -12,7 +12,7 @@
 /* BIMAGE TYPE */
 
 BIMAGE_STATUS
-bimageMakeType(BIMAGE_CHANNEL channels, BIMAGE_DEPTH depth, BIMAGE_TYPE *dst)
+bimageMakeType(BIMAGE_TYPE *dst, BIMAGE_CHANNEL channels, BIMAGE_DEPTH depth)
 {
     switch (channels) {
     case BIMAGE_GRAY:
@@ -286,22 +286,22 @@ bimageGetPixel(bimage *im, uint32_t x, uint32_t y, bpixel *p)
 }
 
 BIMAGE_STATUS
-bimageSetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bpixel *p)
+bimageSetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bpixel p)
 {
 
     BIMAGE_CHANNEL channels = bimageTypeChannels(im->type), i;
     int64_t offs = bimageIndex(im, x, y);
 
     for (i = 0; i < channels; i++){
-        switch (p->depth){
+        switch (p.depth){
         case BIMAGE_U8:
-            bimageAt(im, offs+i, uint8_t) = (uint8_t)p->data[i];
+            bimageAt(im, offs+i, uint8_t) = (uint8_t)p.data[i];
             break;
         case BIMAGE_U16:
-            bimageAt(im, offs+i, uint16_t) = (uint16_t)p->data[i];
+            bimageAt(im, offs+i, uint16_t) = (uint16_t)p.data[i];
             break;
         case BIMAGE_U32:
-            bimageAt(im, offs+i, uint32_t) = (uint32_t)p->data[i];
+            bimageAt(im, offs+i, uint32_t) = (uint32_t)p.data[i];
             break;
         default:
             return BIMAGE_ERR;
@@ -313,7 +313,7 @@ bimageSetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bpixel *p)
 
 
 BIMAGE_STATUS
-bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bpixel *p)
+bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bpixel p)
 {
 
     bpixel q;
@@ -324,13 +324,13 @@ bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bpixel *p)
 
     // Set bpixel depth based on image
     BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
-    if (p->depth < 0){
-        p->depth = depth;
-    } else if (p->depth != depth) {
+    if (p.depth < 0){
+        p.depth = depth;
+    } else if (p.depth != depth) {
         if (bpixelConvertDepth(&q, p, bimageTypeDepth(im->type)) != BIMAGE_OK){
             return BIMAGE_ERR;
         }
-        return bimageSetPixelUnsafe(im, x, y, &q);
+        return bimageSetPixelUnsafe(im, x, y, q);
     }
 
     return bimageSetPixelUnsafe(im, x, y, p);
@@ -342,7 +342,7 @@ bimageConvertDepth(bimage **dst, bimage *im, BIMAGE_DEPTH depth)
 {
     bpixel px, pdst;
     BIMAGE_TYPE t;
-    if (bimageMakeType(bimageTypeChannels(im->type), depth, &t) == BIMAGE_ERR){
+    if (bimageMakeType(&t, bimageTypeChannels(im->type), depth) == BIMAGE_ERR){
         return NULL;
     }
 
@@ -353,8 +353,8 @@ bimageConvertDepth(bimage **dst, bimage *im, BIMAGE_DEPTH depth)
 
     bimageIterAll(im, x, y){
         if (bimageGetPixelUnsafe(im, x, y, &px) == BIMAGE_ERR
-                || bpixelConvertDepth(&pdst, &px, depth) != BIMAGE_ERR){
-            bimageSetPixel(im2, x, y, &pdst);
+                || bpixelConvertDepth(&pdst, px, depth) != BIMAGE_ERR){
+            bimageSetPixel(im2, x, y, pdst);
         } else {
             break;
         }
@@ -370,7 +370,7 @@ bimageConvertChannels(bimage** dst, bimage* im, BIMAGE_CHANNEL nchannels)
 {
     BIMAGE_TYPE t;
 
-    if (bimageMakeType(nchannels, bimageTypeDepth(im->type), &t) == BIMAGE_ERR){
+    if (bimageMakeType(&t, nchannels, bimageTypeDepth(im->type)) == BIMAGE_ERR){
         return NULL;
     }
 
@@ -382,7 +382,7 @@ bimageConvertChannels(bimage** dst, bimage* im, BIMAGE_CHANNEL nchannels)
     bpixel px;
     bimageIterAll(im, x, y){
         if (bimageGetPixelUnsafe(im, x, y, &px) != BIMAGE_ERR){
-            bimageSetPixel(im2, x, y, &px);
+            bimageSetPixel(im2, x, y, px);
         } else {
             break;
         }
@@ -403,7 +403,7 @@ bimageCrop (bimage** dst, bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32
     bpixel px;
     bimageIter(im, i, j, x, y, w, h){
         if (bimageGetPixel(im, i, j, &px) != BIMAGE_ERR){
-            bimageSetPixel(im2, i-x, j-y, &px);
+            bimageSetPixel(im2, i-x, j-y, px);
         } else {
             break;
         }
@@ -422,7 +422,7 @@ bimageCopyTo (bimage* dst, bimage* src, uint32_t offs_x, uint32_t offs_y)
     bpixel px;
     bimageIterAll(src, x, y){
         bimageGetPixelUnsafe(src, x, y, &px);
-        bimageSetPixel(dst, x+offs_x, y+offs_y, &px);
+        bimageSetPixel(dst, x+offs_x, y+offs_y, px);
     }
 }
 
@@ -440,6 +440,6 @@ bimageAdjustGamma (bimage* im, float g)
         for(i = 0; i < c; i++){
             px.data[i] = mx * pow((px.data[i]/mx), (1.0/g));
         }
-        bimageSetPixel(im, x, y, &px);
+        bimageSetPixel(im, x, y, px);
     }
 }

@@ -80,27 +80,28 @@ BIMAGE_STATUS
 bpixelZero(bpixel *px, BIMAGE_DEPTH depth);
 
 BIMAGE_STATUS
-bpixelConvertDepth (bpixel *dst, bpixel *src, BIMAGE_DEPTH depth);
+bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth);
 
 BIMAGE_STATUS
 bpixelClamp(bpixel *p);
 
 BIMAGE_STATUS
-bpixelAdd(bpixel *p, bpixel *q);
+bpixelAdd(bpixel *p, bpixel q);
 
 BIMAGE_STATUS
-bpixelSub(bpixel *p, bpixel *q);
+bpixelSub(bpixel *p, bpixel q);
 
 BIMAGE_STATUS
-bpixelMul(bpixel *p, bpixel *q);
+bpixelMul(bpixel *p, bpixel q);
 
 BIMAGE_STATUS
-bpixelDiv(bpixel *p, bpixel *q);
+bpixelDiv(bpixel *p, bpixel q);
 
-
+bool
+bimageIsValud(bimage *im);
 
 BIMAGE_STATUS
-bimageMakeType(BIMAGE_CHANNEL channels, BIMAGE_DEPTH depth, BIMAGE_TYPE *dst);
+bimageMakeType(BIMAGE_TYPE *dst, BIMAGE_CHANNEL channels, BIMAGE_DEPTH depth);
 
 BIMAGE_CHANNEL
 bimageTypeChannels(BIMAGE_TYPE t);
@@ -136,13 +137,13 @@ BIMAGE_STATUS
 bimageGetPixelUnsafe(bimage* im, uint32_t x, uint32_t y, bpixel *p);
 
 BIMAGE_STATUS
-bimageSetPixelUnsafe(bimage* im, uint32_t x, uint32_t y, bpixel *p);
+bimageSetPixelUnsafe(bimage* im, uint32_t x, uint32_t y, bpixel p);
 
 BIMAGE_STATUS
 bimageGetPixel(bimage* im, uint32_t x, uint32_t y, bpixel *p);
 
 BIMAGE_STATUS
-bimageSetPixel(bimage* im, uint32_t x, uint32_t y, bpixel *p);
+bimageSetPixel(bimage* im, uint32_t x, uint32_t y, bpixel p);
 
 bimage*
 bimageCrop(bimage** dst, bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h);
@@ -249,6 +250,24 @@ bimageHashString(char dst[9], uint64_t hash);
 
 int
 bimageHashDiff(uint64_t a, uint64_t b);
+
+/* HISTOGRAM */
+
+typedef struct bhistogram {
+    int64_t total;
+    float bucket[256];
+} bhistogram;
+
+BIMAGE_STATUS
+bimageHistogram(bimage* im, bhistogram h[], BIMAGE_CHANNEL ch);
+
+int
+bhistogramMax(bhistogram h);
+int
+bhistogramMin(bhistogram h);
+
+bimage*
+bhistogramImage(bhistogram h);
 
 #define BIMAGE_CREATE_DEST(dst, w, h, t) \
     (dst ==  NULL || *dst == NULL \

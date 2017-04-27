@@ -10,10 +10,10 @@ bimage##name(bimage* a, bimage* b) \
     bimageIterAll(a, x, y){ \
         if (bimageGetPixelUnsafe(a, x, y, &p) == BIMAGE_ERR  || \
             bimageGetPixel(b, x, y, &q) == BIMAGE_ERR || \
-            bpixel##name(&p, &q) == BIMAGE_ERR){ \
+            bpixel##name(&p, q) == BIMAGE_ERR){ \
             break; \
         } \
-        bimageSetPixelUnsafe(a, x, y, &p); \
+        bimageSetPixelUnsafe(a, x, y, p); \
     } \
     return BIMAGE_OK; \
 }
@@ -35,7 +35,7 @@ bimageColor(bimage** dst, bimage* im, BIMAGE_CHANNEL c)
     BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
     bpixel px;
 
-    if (bimageMakeType(c, depth, &t) == BIMAGE_ERR){
+    if (bimageMakeType(&t, c, depth) == BIMAGE_ERR){
         return NULL;
     }
 
@@ -46,7 +46,7 @@ bimageColor(bimage** dst, bimage* im, BIMAGE_CHANNEL c)
 
     bimageIterAll(im2, x, y){
         bimageGetPixelUnsafe(im, x, y, &px);
-        bimageSetPixel(im2, x, y, &px);
+        bimageSetPixel(im2, x, y, px);
     }
 
     BIMAGE_RETURN_DEST(dst, im2);
@@ -59,7 +59,7 @@ bimageGrayscale(bimage** dst, bimage* im, BIMAGE_CHANNEL chan)
     bpixel p, px;
     BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
 
-    if (bimageMakeType(chan, depth, &t) == BIMAGE_ERR){
+    if (bimageMakeType(&t, chan, depth) == BIMAGE_ERR){
         return NULL;
     }
 
@@ -75,7 +75,7 @@ bimageGrayscale(bimage** dst, bimage* im, BIMAGE_CHANNEL chan)
 
         p.data[0] = p.data[1] = p.data[2] = (px.data[0] * 0.2126) + (px.data[1] * 0.7152) + (px.data[2] * 0.0722) * (px.data[3] / (float)bimageTypeMax(im->type));
 
-        bimageSetPixel(im2, x, y, &p);
+        bimageSetPixel(im2, x, y, p);
     }
 
     BIMAGE_RETURN_DEST(dst, im2);
@@ -125,7 +125,7 @@ bimageFilter(bimage** dst, bimage* im, float* K, int Ks, float divisor, float of
                 px.data[l] = px.data[l] > (float)bimageTypeMax(im->type) ? bimageTypeMax(im->type) : px.data[l] < 0 ? 0 : px.data[l];
             }
 
-            bimageSetPixel(oi, ix, iy, &px);
+            bimageSetPixel(oi, ix, iy, px);
         }
     }
 
@@ -150,7 +150,7 @@ bimageInvert(bimage** dst, bimage* src)
         for(i = 0; i < ch; i++){
             px.data[i] = mx - px.data[i];
         }
-        bimageSetPixelUnsafe(im2, x, y, &px);
+        bimageSetPixelUnsafe(im2, x, y, px);
     }
 
     BIMAGE_RETURN_DEST(dst, im2);

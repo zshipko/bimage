@@ -21,7 +21,7 @@ bimage* bimageOpen(const char *filename)
         return bimageOpenTIFF(filename);
     }
 
-    if (bimageMakeType(c, BIMAGE_U8, &t) == BIMAGE_OK){
+    if (bimageMakeType(&t, c, BIMAGE_U8) == BIMAGE_OK){
         return bimageCreateWithData(w, h, t, data, true, false);
     }
 
@@ -45,7 +45,7 @@ bimage *bimageOpen16(const char *filename)
         return im;
     }
 
-    if (bimageMakeType(c, BIMAGE_U16, &t) == BIMAGE_OK){
+    if (bimageMakeType(&t, c, BIMAGE_U16) == BIMAGE_OK){
         return bimageCreateWithData(w, h, t, data, true, false);
     }
 
