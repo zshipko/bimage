@@ -375,7 +375,7 @@ bimageConvertChannels(bimage** dst, bimage* im, BIMAGE_CHANNEL nchannels)
     }
 
     bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, t);
-    if (!dst){
+    if (!im2){
         return NULL;
     }
 
@@ -396,13 +396,13 @@ bimage*
 bimageCrop (bimage** dst, bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
     bimage* im2 = BIMAGE_CREATE_DEST(dst, w, h, im->type);
-    if (!dst){
+    if (!im2){
         return NULL;
     }
 
     bpixel px;
     bimageIter(im, i, j, x, y, w, h){
-        if (bimageGetPixel(im, i, j, &px) != BIMAGE_ERR){
+        if (bimageGetPixel(im, i, j, &px) == BIMAGE_OK){
             bimageSetPixel(im2, i-x, j-y, px);
         } else {
             break;

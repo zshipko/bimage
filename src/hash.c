@@ -14,14 +14,19 @@ uint64_t bimageHash(bimage *im)
 
     bpixelZero(&apx, bimageTypeDepth(im->type));
 
-    bimage *sm = bimageResize(NULL, im, HASH_SIZE, HASH_SIZE);
-    if (!sm){
-        return 0UL;
+    bimage* sm = im;
+    if (im->width != HASH_SIZE || im->height != HASH_SIZE){
+        sm = bimageResize(NULL, im, HASH_SIZE, HASH_SIZE);
+        if (!sm){
+            return 0UL;
+        }
     }
 
-    bimageConsume(&sm, bimageGrayscale(NULL, sm, BIMAGE_GRAY));
-    if (!sm){
-        return 0UL;
+    if (bimageTypeDepth(sm->type) != BIMAGE_GRAY){
+        bimageConsume(&sm, bimageGrayscale(NULL, sm, BIMAGE_GRAY));
+        if (!sm){
+            return 0UL;
+        }
     }
 
     for(j = 0; j < HASH_SIZE; j++){
@@ -43,7 +48,10 @@ uint64_t bimageHash(bimage *im)
         }
     }
 
-    bimageDestroy(&sm);
+    if (sm != im){
+        bimageDestroy(&sm);
+    }
+
     return hash;
 }
 
