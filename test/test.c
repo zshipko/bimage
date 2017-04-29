@@ -5,15 +5,18 @@
 #define HEIGHT 800
 
 static BIMAGE_TYPE types[] = {
-    BIMAGE_GRAY8,
-    BIMAGE_GRAY16,
-    BIMAGE_GRAY32,
-    BIMAGE_RGB24,
-    BIMAGE_RGB48,
-    BIMAGE_RGB96,
-    BIMAGE_RGBA32,
-    BIMAGE_RGBA64,
-    BIMAGE_RGBA128
+    BIMAGE_GRAY | BIMAGE_U8,
+    BIMAGE_GRAY | BIMAGE_U16,
+    BIMAGE_GRAY | BIMAGE_U32,
+    BIMAGE_GRAY | BIMAGE_F32,
+    BIMAGE_RGB | BIMAGE_U8,
+    BIMAGE_RGB | BIMAGE_U16,
+    BIMAGE_RGB | BIMAGE_U32,
+    BIMAGE_RGB | BIMAGE_F32,
+    BIMAGE_RGBA | BIMAGE_U8,
+    BIMAGE_RGBA | BIMAGE_U16,
+    BIMAGE_RGBA | BIMAGE_U32,
+    BIMAGE_RGBA | BIMAGE_F32,
 };
 
 static int num_types = 8;
@@ -35,20 +38,14 @@ START_TEST (test_bimageChannels)
     int i;
     for (i = 0; i < num_types; i++){
         bimage* im = bimageCreate(WIDTH, HEIGHT, types[i]);
-        switch (types[i]){
-        case BIMAGE_GRAY8:
-        case BIMAGE_GRAY16:
-        case BIMAGE_GRAY32:
+        switch (bimageTypeChannels(types[i])){
+        case BIMAGE_GRAY:
             ck_assert_int_eq(bimageTypeChannels(im->type), 1);
             break;
-        case BIMAGE_RGB24:
-        case BIMAGE_RGB48:
-        case BIMAGE_RGB96:
+        case BIMAGE_RGB:
             ck_assert_int_eq(bimageTypeChannels(im->type), 3);
             break;
-        case BIMAGE_RGBA32:
-        case BIMAGE_RGBA64:
-        case BIMAGE_RGBA128:
+        case BIMAGE_RGBA:
             ck_assert_int_eq(bimageTypeChannels(im->type), 4);
             break;
         default:
@@ -63,21 +60,18 @@ START_TEST (test_bimageSize)
     int i;
     for (i = 0; i < num_types; i++){
         bimage* im = bimageCreate(WIDTH, HEIGHT, types[i]);
-        switch (types[i]){
-        case BIMAGE_GRAY8:
-        case BIMAGE_RGB24:
-        case BIMAGE_RGBA32:
+        switch (bimageTypeDepth(types[i])){
+        case BIMAGE_U8:
             ck_assert_int_eq(bimageTypeDepth(im->type), BIMAGE_U8);
             break;
-        case BIMAGE_GRAY16:
-        case BIMAGE_RGB48:
-        case BIMAGE_RGBA64:
+        case BIMAGE_U16:
             ck_assert_int_eq(bimageTypeDepth(im->type), BIMAGE_U16);
             break;
-        case BIMAGE_GRAY32:
-        case BIMAGE_RGB96:
-        case BIMAGE_RGBA128:
+        case BIMAGE_U32:
             ck_assert_int_eq(bimageTypeDepth(im->type), BIMAGE_U32);
+            break;
+        case BIMAGE_F32:
+            ck_assert_int_eq(bimageTypeDepth(im->type), BIMAGE_F32);
             break;
         defailt:
             ck_assert(false);
@@ -89,17 +83,16 @@ START_TEST (test_bimageSize)
 
 START_TEST (test_bpixelConvert)
 {
-    BIMAGE_DEPTH depth[] = {BIMAGE_U8, BIMAGE_U16, BIMAGE_U32}, i, j;
+    BIMAGE_DEPTH depth[] = {BIMAGE_U8, BIMAGE_U16, BIMAGE_U32, BIMAGE_F32}, i, j;
 
-    for(i = 0; i < 3; i++){
-        BIMAGE_TYPE t;
-        bimageMakeType(&t, 4, depth[i]);
+    for(i = 0; i < 4; i++){
+        BIMAGE_TYPE t = depth[i] | 4;
         int64_t m = bimageTypeMax(t);
         bpixel px = bpixelCreate(m, 0, 0, m, depth[i]);
 
         for (j = 0; j > 3; j++){
             bpixel px2;
-            bimageMakeType(&t, 4, depth[j]);
+            t = depth[j] | 4;
             ck_assert_int_eq(bpixelConvertDepth(&px, px2, depth[j]), BIMAGE_OK);
             ck_assert(px2.data[0] == bimageTypeMax(t) && px2.data[1] == 0);
         }
@@ -108,14 +101,14 @@ START_TEST (test_bpixelConvert)
 
 START_TEST (test_bimageConsume)
 {
-    bpixel p = bpixelCreate(65535.0, 0, 0, 65535.0, -1);
-    bimage* a = bimageCreate(100, 100, BIMAGE_RGBA32);
-    bimage* b = bimageCreate(50, 50, BIMAGE_RGBA64);
+    bpixel p = bpixelCreate(65535.0, 0, 0, 65535.0, BIMAGE_U16);
+    bimage* a = bimageCreate(100, 100, BIMAGE_U8 | 4);
+    bimage* b = bimageCreate(50, 50, BIMAGE_U16 | 4);
     bimageSetPixel(b, 10, 10, p);
     bimageConsume(&a, b);
     ck_assert_int_eq(a->width, 50);
     ck_assert_int_eq(a->height, 50);
-    ck_assert_int_eq(a->type, BIMAGE_RGBA64);
+    ck_assert_int_eq(a->type, b->type);
 
     bpixel px;
     bimageGetPixel(a, 10, 10, &px);
@@ -125,8 +118,8 @@ START_TEST (test_bimageConsume)
 
 START_TEST (test_bimageAdd)
 {
-    bimage* im = bimageCreate(100, 100, BIMAGE_RGB24);
-    bimage* im2 = bimageCreate(100, 100, BIMAGE_RGB24);
+    bimage* im = bimageCreate(100, 100, BIMAGE_U8 | 3);
+    bimage* im2 = bimageCreate(100, 100, BIMAGE_U8 | 3);
 
     bpixel c = bpixelCreate(255, 0, 0, 255, BIMAGE_U8), d;
     bimageSetPixelUnsafe(im2, 50, 50, c);

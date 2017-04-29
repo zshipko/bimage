@@ -11,102 +11,20 @@
 
 /* BIMAGE TYPE */
 
-BIMAGE_STATUS
-bimageMakeType(BIMAGE_TYPE *dst, BIMAGE_CHANNEL channels, BIMAGE_DEPTH depth)
-{
-    switch (channels) {
-    case BIMAGE_GRAY:
-        switch (depth) {
-        case BIMAGE_U8: *dst = BIMAGE_GRAY8; break;
-        case BIMAGE_U16: *dst = BIMAGE_GRAY16; break;
-        case BIMAGE_U32: *dst = BIMAGE_GRAY32; break;
-        default: return BIMAGE_ERR;
-        }
-        break;
-    case BIMAGE_RGB:
-        switch (depth) {
-        case BIMAGE_U8: *dst = BIMAGE_RGB24; break;
-        case BIMAGE_U16: *dst = BIMAGE_RGB48; break;
-        case BIMAGE_U32: *dst = BIMAGE_RGB96; break;
-        default: return BIMAGE_ERR;
-        }
-        break;
-    case BIMAGE_RGBA:
-        switch (depth) {
-        case BIMAGE_U8: *dst = BIMAGE_RGBA32; break;
-        case BIMAGE_U16: *dst = BIMAGE_RGBA64; break;
-        case BIMAGE_U32: *dst = BIMAGE_RGBA128; break;
-        default: return BIMAGE_ERR;
-        }
-        break;
-    default:
-        return BIMAGE_ERR;
-    }
-
-    return BIMAGE_OK;
-}
-
-BIMAGE_CHANNEL
-bimageTypeChannels(BIMAGE_TYPE t)
-{
-    switch(t){
-    case BIMAGE_GRAY8:
-    case BIMAGE_GRAY16:
-    case BIMAGE_GRAY32:
-        return BIMAGE_GRAY;
-    case BIMAGE_RGB24:
-    case BIMAGE_RGB48:
-    case BIMAGE_RGB96:
-        return BIMAGE_RGB;
-    case BIMAGE_RGBA32:
-    case BIMAGE_RGBA64:
-    case BIMAGE_RGBA128:
-        return BIMAGE_RGBA;
-    default:
-        return 0;
-    }
-}
-
-int64_t
+size_t
 bimageTypeMax(BIMAGE_TYPE t)
 {
-    switch(t){
-    case BIMAGE_GRAY8:
-    case BIMAGE_RGB24:
-    case BIMAGE_RGBA32:
+    switch(bimageTypeDepth(t)){
+    case BIMAGE_U8:
         return 0xFF;
-    case BIMAGE_GRAY16:
-    case BIMAGE_RGB48:
-    case BIMAGE_RGBA64:
+    case BIMAGE_U16:
         return 0xFFFF;
-    case BIMAGE_GRAY32:
-    case BIMAGE_RGB96:
-    case BIMAGE_RGBA128:
+    case BIMAGE_U32:
         return 0xFFFFFFFF;
+    case BIMAGE_F32:
+        return 1;
     default:
         return 0;
-    }
-}
-
-
-BIMAGE_DEPTH
-bimageTypeDepth(BIMAGE_TYPE t)
-{
-    switch(t){
-    case BIMAGE_GRAY8:
-    case BIMAGE_RGB24:
-    case BIMAGE_RGBA32:
-        return BIMAGE_U8;
-    case BIMAGE_GRAY16:
-    case BIMAGE_RGB48:
-    case BIMAGE_RGBA64:
-        return BIMAGE_U16;
-    case BIMAGE_GRAY32:
-    case BIMAGE_RGB96:
-    case BIMAGE_RGBA128:
-        return BIMAGE_U32;
-    default:
-        return BIMAGE_UNKNOWN;
     }
 }
 
@@ -115,7 +33,6 @@ bimageTypeDepth(BIMAGE_TYPE t)
 bimage*
 bimageCreateWithData (uint32_t width, uint32_t height, BIMAGE_TYPE t, void *data, bool owner, bool ondisk)
 {
-
     if (!data){
         return NULL;
     }
@@ -143,6 +60,18 @@ bimageCreateWithData (uint32_t width, uint32_t height, BIMAGE_TYPE t, void *data
     im->ondisk = ondisk;
 
     return im;
+}
+
+size_t
+bimageDepthSize(BIMAGE_DEPTH d)
+{
+    switch (d){
+    case BIMAGE_U8: return 8;
+    case BIMAGE_U16: return 16;
+    case BIMAGE_U32: return 32;
+    case BIMAGE_F32: return 32;
+    default: return 0;
+    }
 }
 
 bimage*
@@ -251,14 +180,17 @@ bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bpixel *p)
 
     for (i = 0; i < channels; i++){
         switch (p->depth){
-        case 8:
+        case BIMAGE_U8:
             p->data[i] = (float)bimageAt(im, offs+i, uint8_t);
             break;
-        case 16:
+        case BIMAGE_U16:
             p->data[i] = (float)bimageAt(im, offs+i, uint16_t);
             break;
-        case 32:
+        case BIMAGE_U32:
             p->data[i] = (float)bimageAt(im, offs+i, uint32_t);
+            break;
+        case BIMAGE_F32:
+            p->data[i] = bimageAt(im, offs+i, float);
             break;
         default:
             return BIMAGE_ERR;
@@ -296,9 +228,8 @@ bimageSetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bpixel p)
 
     BIMAGE_CHANNEL channels = bimageTypeChannels(im->type), i;
     int64_t offs = bimageIndex(im, x, y);
-
     for (i = 0; i < channels; i++){
-        switch (p.depth){
+        switch (bimageTypeDepth(im->type)){
         case BIMAGE_U8:
             bimageAt(im, offs+i, uint8_t) = (uint8_t)p.data[i];
             break;
@@ -307,6 +238,9 @@ bimageSetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bpixel p)
             break;
         case BIMAGE_U32:
             bimageAt(im, offs+i, uint32_t) = (uint32_t)p.data[i];
+            break;
+        case BIMAGE_F32:
+            bimageAt(im, offs+i, float) = p.data[i];
             break;
         default:
             return BIMAGE_ERR;
@@ -320,8 +254,8 @@ bimageSetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bpixel p)
 BIMAGE_STATUS
 bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bpixel p)
 {
-
     bpixel q;
+
     // Bounds check
     if (!im || im->width <= x || im->height <= y){
         return BIMAGE_ERR;
@@ -329,16 +263,12 @@ bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bpixel p)
 
     // Set bpixel depth based on image
     BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
-    if (p.depth < 0){
-        p.depth = depth;
-    } else if (p.depth != depth) {
-        if (bpixelConvertDepth(&q, p, bimageTypeDepth(im->type)) != BIMAGE_OK){
-            return BIMAGE_ERR;
-        }
-        return bimageSetPixelUnsafe(im, x, y, q);
+    if (bpixelConvertDepth(&q, p, depth) != BIMAGE_OK){
+        puts("BAD");
+        return BIMAGE_ERR;
     }
 
-    return bimageSetPixelUnsafe(im, x, y, p);
+    return bimageSetPixelUnsafe(im, x, y, q);
 }
 
 /* bimageConvertDepth converts between 8, 16 and 32 bit images */
@@ -346,12 +276,7 @@ bimage*
 bimageConvertDepth(bimage **dst, bimage *im, BIMAGE_DEPTH depth)
 {
     bpixel px, pdst;
-    BIMAGE_TYPE t;
-    if (bimageMakeType(&t, bimageTypeChannels(im->type), depth) == BIMAGE_ERR){
-        return NULL;
-    }
-
-    bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, t);
+    bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, depth | bimageTypeChannels(im->type));
     if (!im2){
         return NULL;
     }
@@ -374,12 +299,7 @@ bimage*
 bimageConvertChannels(bimage** dst, bimage* im, BIMAGE_CHANNEL nchannels)
 {
     BIMAGE_TYPE t;
-
-    if (bimageMakeType(&t, nchannels, bimageTypeDepth(im->type)) == BIMAGE_ERR){
-        return NULL;
-    }
-
-    bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, t);
+    bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, bimageTypeDepth(im->type) | nchannels);
     if (!im2){
         return NULL;
     }
@@ -437,10 +357,9 @@ bimageAdjustGamma (bimage* im, float g)
     int i, c = bimageTypeChannels(im->type);
     c = c > 3 ? 3 : c;
     float mx = (float)bimageTypeMax(im->type);
-
+    bpixel px;
+    bpixelZero(&px, -1);
     bimageIterAll(im, x, y){
-        bpixel px;
-
         bimageGetPixelUnsafe(im, x, y, &px);
         for(i = 0; i < c; i++){
             px.data[i] = mx * pow((px.data[i]/mx), (1.0/g));

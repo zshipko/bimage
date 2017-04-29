@@ -7,35 +7,31 @@ extern "C" {
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 typedef enum BIMAGE_STATUS {
     BIMAGE_ERR,
     BIMAGE_OK
 } BIMAGE_STATUS;
 
-typedef enum BIMAGE_TYPE {
-    BIMAGE_GRAY8,
-    BIMAGE_GRAY16,
-    BIMAGE_GRAY32,
-    BIMAGE_RGB24,
-    BIMAGE_RGB48,
-    BIMAGE_RGB96,
-    BIMAGE_RGBA32,
-    BIMAGE_RGBA64,
-    BIMAGE_RGBA128
-} BIMAGE_TYPE;
+typedef uint16_t BIMAGE_TYPE;
+
+#define bimageType(d, c) (d) | (c)
+#define bimageTypeChannels(t) ((t) & 0x00FF)
+#define bimageTypeDepth(t) ((t) & 0xFF00)
 
 typedef enum BIMAGE_CHANNEL {
-    BIMAGE_GRAY = 1,
-    BIMAGE_RGB = 3,
-    BIMAGE_RGBA = 4
+    BIMAGE_GRAY = 0x0001,
+    BIMAGE_RGB = 0x0003,
+    BIMAGE_RGBA = 0x0004
 } BIMAGE_CHANNEL;
 
 typedef enum BIMAGE_DEPTH {
-    BIMAGE_UNKNOWN = -1,
-    BIMAGE_U8 = 8,
-    BIMAGE_U16 = 16,
-    BIMAGE_U32 = 32
+    BIMAGE_UNKNOWN = 0x0000,
+    BIMAGE_U8 = 0x0100,
+    BIMAGE_U16 = 0x0200,
+    BIMAGE_U32 = 0x0300,
+    BIMAGE_F32 = 0x0400,
 } BIMAGE_DEPTH;
 
 typedef struct bimage {
@@ -53,7 +49,7 @@ typedef struct bpixel {
 
 #define bAlloc(n) calloc(n, 1)
 #define bFree(x) if(x) free(x)
-#define bimageTotalSize(w, h, t) (int64_t)w * (int64_t)h * (int64_t)bimageTypeDepth(t) * (int64_t)bimageTypeChannels(t)
+#define bimageTotalSize(w, h, t) (int64_t)w * (int64_t)h * (int64_t)bimageDepthSize(bimageTypeDepth(t)) * (int64_t)bimageTypeChannels(t)
 #define bimageIndex(im, x, y) y * bimageTypeChannels(im->type) * im->width + x * bimageTypeChannels(im->type)
 #define bimageAt(im, index, t) (((t*)im->data)[index])
 #define bimageIter(im, x, y, _x, _y, _w, _h) \
@@ -67,6 +63,9 @@ typedef struct bpixel {
 
 typedef float (*bpixelOp)(float, float);
 typedef void (*bimageOp)(bimage **dst, bimage*, bimage*, bpixelOp);
+
+size_t
+bimageDepthSize(BIMAGE_DEPTH d);
 
 /* BIMAGE */
 
@@ -98,19 +97,10 @@ BIMAGE_STATUS
 bpixelDiv(bpixel *p, bpixel q);
 
 bool
-bimageIsValud(bimage *im);
+bimageIsValid(bimage *im);
 
-BIMAGE_STATUS
-bimageMakeType(BIMAGE_TYPE *dst, BIMAGE_CHANNEL channels, BIMAGE_DEPTH depth);
-
-BIMAGE_CHANNEL
-bimageTypeChannels(BIMAGE_TYPE t);
-
-int64_t
+size_t
 bimageTypeMax(BIMAGE_TYPE t);
-
-BIMAGE_DEPTH
-bimageTypeDepth(BIMAGE_TYPE t);
 
 bimage*
 bimageCreateWithData (uint32_t width, uint32_t height, BIMAGE_TYPE t, void *data, bool owner, bool ondisk);
@@ -166,6 +156,9 @@ bimageOpen(const char* filename);
 
 bimage*
 bimageOpen16(const char* filename);
+
+bimage*
+bimageOpenFloat(const char* filename);
 
 BIMAGE_STATUS
 bimageSave(bimage* im, const char* filename);

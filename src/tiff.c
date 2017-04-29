@@ -24,6 +24,10 @@ tiffInit()
 BIMAGE_STATUS
 bimageSaveTIFF(bimage *im, const char *filename)
 {
+    if (bimageTypeDepth(im->type) == BIMAGE_F32){
+        return BIMAGE_ERR;
+    }
+
     if (!tiffInitialized){
         tiffInit();
     }
@@ -43,7 +47,7 @@ bimageSaveTIFF(bimage *im, const char *filename)
 
     uint32_t j;
     for (j = 0; j < im->height; j++){
-        if (TIFFWriteScanline(tif, im->data + ((bimageTypeDepth(im->type)/8) * bimageTypeChannels(im->type) * im->width * j), j, 0) < 0){
+        if (TIFFWriteScanline(tif, im->data + ((bimageDepthSize(bimageTypeDepth(im->type))/8) * bimageTypeChannels(im->type) * im->width * j), j, 0) < 0){
             TIFFClose(tif);
             remove(filename);
             return BIMAGE_ERR;
@@ -61,37 +65,44 @@ bimageOpenTIFF(const char *filename)
         tiffInit();
     }
 
-    TIFF *tif = TIFFOpen(filename, "r");
     bimage *im = NULL;
-
+    TIFF *tif = TIFFOpen(filename, "r");
     if (!tif){
         return NULL;
     }
 
     uint32_t w, h;
-    uint16_t depth, channels;
+    uint16_t depth, channels, fmt;
 
     TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
     TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
     TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &depth);
     TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &channels);
+    TIFFGetField(tif, TIFFTAG_SAMPLEFORMAT, &fmt);
 
-    BIMAGE_TYPE t;
-    if (bimageMakeType(&t, channels, depth) == BIMAGE_OK){
-        im = bimageCreate(w, h,t);
-    } else {
+    depth = depth == 8 ? BIMAGE_U8 :
+            depth == 16 ? BIMAGE_U16 :
+            depth == 32 ? BIMAGE_U32 : BIMAGE_UNKNOWN;
+
+    if (!depth || fmt == SAMPLEFORMAT_IEEEFP){
+        TIFFClose(tif);
+        return NULL;
+    }
+
+    im = bimageCreate(w, h, depth | channels);
+    if (!im){
         goto done;
     }
 
     tstrip_t strip;
-    uint8_t *buf = bAlloc(TIFFStripSize(tif));
+    tdata_t *buf = bAlloc(TIFFStripSize(tif));
     if (!buf){
         goto error0;
     }
 
     for(strip = 0; strip < TIFFNumberOfStrips(tif); strip++){
         tsize_t n = TIFFReadEncodedStrip(tif, strip, buf, -1);
-        if (n < 0){
+        if (n <= 0){
             goto error1;
         }
 
@@ -106,8 +117,9 @@ done:
 error1:
     bFree(buf);
 error0:
-    if (im) bimageDestroy(&im);
-    goto done;
+    if (im) bimageRelease(im);
+    TIFFClose(tif);
+    return NULL;
 }
 
 

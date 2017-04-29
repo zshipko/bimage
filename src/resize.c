@@ -28,6 +28,9 @@ bimageResize(bimage** dst, bimage* im, int32_t w, int32_t h)
     case BIMAGE_U32:
         dt = 2;
         break;
+    case BIMAGE_F32:
+        dt = 3;
+        break;
     default:
         return NULL;
     }
@@ -40,7 +43,7 @@ bimageResize(bimage** dst, bimage* im, int32_t w, int32_t h)
     int channels =  bimageTypeChannels(im->type);
     if (stbir_resize(
             im->data, im->width, im->height, 0,
-            im2->data, im2->width, im2->height, 0,
+            im->data, im2->width, im2->height, 0,
             dt, channels, channels > 3 ? 3 : -1, 0, 1, 1,
             STBIR_FILTER_DEFAULT, STBIR_FILTER_DEFAULT,
             STBIR_COLORSPACE_LINEAR, NULL) == 0){

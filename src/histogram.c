@@ -46,7 +46,7 @@ bimageHistogram(bimage *im, bhistogram h[], BIMAGE_CHANNEL ch)
 int
 bhistogramMax(bhistogram h)
 {
-    float m = 0;
+    double m = 0;
     int i, c = 0;
 
     for(i = 0; i < 256; i++){
@@ -62,7 +62,7 @@ bhistogramMax(bhistogram h)
 int
 bhistogramMin(bhistogram h)
 {
-    float m = (float)h.bucket[bhistogramMax(h)];
+    double m = (double)h.bucket[bhistogramMax(h)];
     int i, c = 0;
 
     for(i = 0; i < 256; i++){
@@ -78,18 +78,18 @@ bhistogramMin(bhistogram h)
 bimage*
 bhistogramImage(bhistogram h)
 {
-    bimage *im = bimageCreate(256, 256, BIMAGE_GRAY8);
+    bimage *im = bimageCreate(256, 256, BIMAGE_U8 | BIMAGE_GRAY);
     if (!im){
         return NULL;
     }
 
-    float mx = h.bucket[bhistogramMax(h)];
-    float mn = h.bucket[bhistogramMin(h)];
+    double mx = h.bucket[bhistogramMax(h)];
+    double mn = h.bucket[bhistogramMin(h)];
 
     int i, n;
     bpixel px = bpixelCreate(255, 255, 255, 255, BIMAGE_U8);
     for(i = 0; i < 256; i++){
-        float x = (h.bucket[i] - mn) * 255 / (mx - mn);
+        double x = (h.bucket[i] - mn) * 255.0 / (mx - mn);
         for(n = 1; n < x; n++){
             bimageSetPixel(im, i, im->height-n, px);
         }

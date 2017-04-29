@@ -21,12 +21,7 @@ bimage* bimageOpen(const char *filename)
         return bimageOpenTIFF(filename);
     }
 
-    if (bimageMakeType(&t, c, BIMAGE_U8) == BIMAGE_OK){
-        return bimageCreateWithData(w, h, t, data, true, false);
-    }
-
-    bFree(data);
-    return NULL;
+    return bimageCreateWithData(w, h, BIMAGE_U8 | c, data, true, false);
 }
 
 bimage *bimageOpen16(const char *filename)
@@ -36,7 +31,7 @@ bimage *bimageOpen16(const char *filename)
 
     uint16_t* data = stbi_load_16(filename, &w, &h, &c, 0);
     if (!data){
-        // Make sure TIFF
+        // Make sure TIFF is the correct depth
         bimage *im = bimageOpenTIFF(filename);
         if (bimageTypeDepth(im->type) != BIMAGE_U16){
             bimageRelease(im);
@@ -45,12 +40,30 @@ bimage *bimageOpen16(const char *filename)
         return im;
     }
 
-    if (bimageMakeType(&t, c, BIMAGE_U16) == BIMAGE_OK){
-        return bimageCreateWithData(w, h, t, data, true, false);
-    }
+    return bimageCreateWithData(w, h, BIMAGE_U16 | c, data, true, false);
 
     bFree(data);
     return NULL;
+}
+
+bimage*
+bimageOpenFloat(const char *filename)
+{
+    int w, h, c;
+    BIMAGE_TYPE t;
+
+    float* data = stbi_loadf(filename, &w, &h, &c, 0);
+    if (!data){
+        // Make sure TIFF is the correct depth
+        bimage *im = bimageOpenTIFF(filename);
+        if (bimageTypeDepth(im->type) != BIMAGE_F32){
+            bimageRelease(im);
+            return NULL;
+        }
+        return im;
+    }
+
+    return bimageCreateWithData(w, h, BIMAGE_F32 | c, data, true, false);
 }
 
 
@@ -71,11 +84,18 @@ bimageSave(bimage *im, const char *filename)
                 im->height,
                 bimageTypeChannels(im->type),
                 im->data, im->width * bimageTypeChannels(im->type)) == 0 ? BIMAGE_ERR : BIMAGE_OK;
+    } else if (strncasecmp(x, "hdr", 3) == 0 && bimageTypeDepth(im->type) == BIMAGE_F32){
+        return stbi_write_hdr(filename,
+                im->width,
+                im->height,
+                bimageTypeChannels(im->type),
+                im->data) == 0 ? BIMAGE_ERR : BIMAGE_OK;
     } else if (strncasecmp(x, "tif", 3) == 0 || strncasecmp(x, "tiff", 4) == 0){
 		return bimageSaveTIFF(im, filename);
 	}
 
 	return BIMAGE_ERR;
 }
+
 
 

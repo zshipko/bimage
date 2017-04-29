@@ -31,15 +31,10 @@ bimageColor(bimage** dst, bimage* im, BIMAGE_CHANNEL c)
         return NULL;
     }
 
-    BIMAGE_TYPE t;
     BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
     bpixel px;
 
-    if (bimageMakeType(&t, c, depth) == BIMAGE_ERR){
-        return NULL;
-    }
-
-    bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, t);
+    bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, depth | c);
     if (im2 == NULL){
         return NULL;
     }
@@ -55,26 +50,21 @@ bimageColor(bimage** dst, bimage* im, BIMAGE_CHANNEL c)
 bimage*
 bimageGrayscale(bimage** dst, bimage* im, BIMAGE_CHANNEL chan)
 {
-    BIMAGE_TYPE t;
     bpixel p, px;
     BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
 
-    if (bimageMakeType(&t, chan, depth) == BIMAGE_ERR){
-        return NULL;
-    }
-
-    bimage *im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, t);
+    bimage *im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, depth | chan);
     if (im2 == NULL){
         return NULL;
     }
+
+    float mx = (float)bimageTypeMax(im->type);
 
     p.depth = depth;
     p.data[3] = bimageTypeMax(im->type);
     bimageIterAll(im, x, y){
         bimageGetPixelUnsafe(im, x, y, &px);
-
-        p.data[0] = p.data[1] = p.data[2] = (px.data[0] * 0.2126) + (px.data[1] * 0.7152) + (px.data[2] * 0.0722) * (px.data[3] / (float)bimageTypeMax(im->type));
-
+        p.data[0] = p.data[1] = p.data[2] = (px.data[0] * 0.2126) + (px.data[1] * 0.7152) + (px.data[2] * 0.0722) * (px.data[3] / mx);
         bimageSetPixel(im2, x, y, p);
     }
 
@@ -109,6 +99,8 @@ bimageFilter(bimage** dst, bimage* im, float* K, int Ks, float divisor, float of
         divisor = 1.0;
     }
 
+    float mx = (float)bimageTypeMax(im->type);
+
     for(ix = 0; ix < im->width; ix++){
         for(iy = 0; iy < im->height; iy++){
             px.data[0] = px.data[1] = px.data[2] = 0.0;
@@ -122,7 +114,7 @@ bimageFilter(bimage** dst, bimage* im, float* K, int Ks, float divisor, float of
             }
 
             for(l = 0; l < channels; l++){
-                px.data[l] = px.data[l] > (float)bimageTypeMax(im->type) ? bimageTypeMax(im->type) : px.data[l] < 0 ? 0 : px.data[l];
+                px.data[l] = px.data[l] >  mx ? mx : px.data[l] < 0 ? 0 : px.data[l];
             }
 
             bimageSetPixel(oi, ix, iy, px);
@@ -143,7 +135,7 @@ bimageInvert(bimage** dst, bimage* src)
     }
 
     BIMAGE_CHANNEL ch = bimageTypeChannels(src->type);
-    float mx = bimageTypeMax(src->type);
+    float mx = (float)bimageTypeMax(src->type);
 
     bimageIterAll(im2, x, y){
         bimageGetPixelUnsafe(im2, x, y, &px);
