@@ -116,7 +116,7 @@ bimage*
 bimageCreateWithData (uint32_t width, uint32_t height, BIMAGE_TYPE t, void *data, bool owner, bool ondisk)
 {
 
-    if (data == NULL){
+    if (!data){
         return NULL;
     }
 
@@ -196,7 +196,7 @@ bimageIsValid(bimage *im)
     return im && im->data && im->width > 0 && im->height > 0;
 }
 
-static inline void
+static void
 bimageReleaseData(bimage* im)
 {
     if (im->data){
@@ -205,6 +205,7 @@ bimageReleaseData(bimage* im)
         } else {
             bFree(im->data);
         }
+
         im->data = NULL;
     }
 }
@@ -224,7 +225,7 @@ bimageRelease(bimage *im)
 void
 bimageDestroy(bimage **im)
 {
-    if (im){
+    if (im && *im){
         bimageRelease(*im);
         *im = NULL;
     }

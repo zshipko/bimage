@@ -17,7 +17,7 @@ endif
 lib: shared static
 
 debug:
-	$(MAKE) CFLAGS="$(CFLAGS) -Wall"
+	$(MAKE) CFLAGS="$(CFLAGS) -g -Wall"
 
 shared: $(OBJ)
 	$(CC) -shared -fPIC -I/usr/local/include $(OBJ) -o libbimage.$(EXT) $(LDFLAGS)

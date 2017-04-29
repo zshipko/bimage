@@ -14,7 +14,8 @@ uint64_t bimageHash(bimage *im)
 
     bpixelZero(&apx, bimageTypeDepth(im->type));
 
-    bimage* sm = im;
+    bimage* sm = NULL;
+
     if (im->width != HASH_SIZE || im->height != HASH_SIZE){
         sm = bimageResize(NULL, im, HASH_SIZE, HASH_SIZE);
         if (!sm){
@@ -22,17 +23,19 @@ uint64_t bimageHash(bimage *im)
         }
     }
 
-    if (bimageTypeDepth(sm->type) != BIMAGE_GRAY){
-        bimageConsume(&sm, bimageGrayscale(NULL, sm, BIMAGE_GRAY));
+    if (bimageTypeChannels(sm ? sm->type : im->type) != BIMAGE_GRAY){
+        bimageConsume(&sm, bimageGrayscale(NULL, sm ? sm : im, BIMAGE_GRAY));
         if (!sm){
             return 0UL;
         }
     }
 
+    bimage *x = sm ? sm : im;
+
     for(j = 0; j < HASH_SIZE; j++){
         for(i = 0; i < HASH_SIZE; i++){
             // Set current pixel
-            if (bimageGetPixelUnsafe(sm, i, j, &px) == BIMAGE_ERR){
+            if (bimageGetPixelUnsafe(x, i, j, &px) == BIMAGE_ERR){
                 continue;
             }
 
@@ -48,9 +51,7 @@ uint64_t bimageHash(bimage *im)
         }
     }
 
-    if (sm != im){
-        bimageDestroy(&sm);
-    }
+    bimageRelease(sm);
 
     return hash;
 }
@@ -66,6 +67,5 @@ int bimageHashDiff (uint64_t a, uint64_t b)
 
 void bimageHashString(char dst[9], uint64_t hash)
 {
-    snprintf(dst, 8, "%08Lx\n", hash);
-    dst[9] = '\0';
+    snprintf(dst, 9, "%08Lx\n", hash);
 }
