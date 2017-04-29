@@ -278,8 +278,12 @@ bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bpixel *p)
 BIMAGE_STATUS
 bimageGetPixel(bimage *im, uint32_t x, uint32_t y, bpixel *p)
 {
+    if (!p){
+        return BIMAGE_ERR;
+    }
+
     if (im->width <= x || im->height <= y){
-        bpixelZero(p, p->depth);
+        bpixelZero(p, -1);
         return BIMAGE_ERR;
     }
 
