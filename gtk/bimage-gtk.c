@@ -21,7 +21,7 @@ static void release (uint8_t* unused, void* data)
 GdkPixbuf*
 bimagePixbuf(bimage* im, bool owner)
 {
-    if (bimageTypeChannels(im->type) == BIMAGE_GRAY || bimageTypeDepth(im->type) != 8){
+    if (bimageTypeChannels(im->type) == BIMAGE_GRAY || bimageTypeDepth(im->type) != BIMAGE_U8){
         return NULL;
     }
 
@@ -29,7 +29,7 @@ bimagePixbuf(bimage* im, bool owner)
             im->data,
             GDK_COLORSPACE_RGB,
             bimageTypeChannels(im->type) > 3,
-            bimageTypeDepth(im->type),
+            bimageDepthSize(bimageTypeDepth(im->type)),
             im->width, im->height,
             im->width * bimageTypeChannels(im->type),
             owner ? release : NULL, im);
