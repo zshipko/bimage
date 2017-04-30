@@ -97,9 +97,6 @@ bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float off
 #ifdef BIMAGE_SSE
     __m128 divi = _mm_load_ps1(&divisor),
            offs = _mm_load_ps1(&offset);
-#elif defined(BIMAGE_NEON)
-    float32x4_t divi = vdupq_n_f32(divisor),
-                offs = vdupq_n_f32(offset);
 #else
     int channels = bimageTypeChannels(im->type);
 
@@ -117,8 +114,6 @@ bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float off
                     bimageGetPixel(im, ix+kx, iy+ky, &p);
 #ifdef BIMAGE_SSE
                     px.m += (_mm_load_ps1(&K[(kx+Ks) + (ky+Ks)*(2*Ks+1)])/divi) * p.m + offs;
-#elif defined(BIMAGE_NEON)
-                    px.m += (vdupq_n_f32(K[(kx+Ks) + (ky+Ks)*(2*Ks+1)])/divi) * p.m + offs;
 #else
                     for (l = 0; l < channels; l++){
                         px.data[l] += (K[(kx+Ks) + (ky+Ks)*(2*Ks+1)]/divisor) * p.data[l] + offset;

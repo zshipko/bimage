@@ -21,9 +21,6 @@ lib: shared static
 debug:
 	$(MAKE) CFLAGS="$(CFLAGS) -g -Wall"
 
-neon:
-	$(MAKE) CFLAGS="$(CFLAGS) -mfloat-abi=hard -mfpu=neon"
-
 shared: $(OBJ)
 	$(CC) -shared -fPIC -I/usr/local/include $(OBJ) -o libbimage.$(EXT) $(LDFLAGS)
 

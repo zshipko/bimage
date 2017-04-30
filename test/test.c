@@ -21,6 +21,10 @@ static BIMAGE_TYPE types[] = {
 
 static int num_types = 8;
 
+#ifndef __OpenBSD__
+#define arc4random_uniform(x) (rand() % x)
+#endif
+
 #define randomPix(t) bimageTypeDepth(t) == BIMAGE_F32 ? (float)arc4random_uniform(255) / 255.0 : arc4random_uniform(bimageTypeMax(t))
 
 bimage* randomImage(uint32_t w, uint32_t h, BIMAGE_TYPE t)

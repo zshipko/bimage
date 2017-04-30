@@ -9,13 +9,10 @@ extern "C" {
 #include <stdbool.h>
 #include <stdlib.h>
 
-#if defined(__has_include)
+#if defined(__has_include) && !defined(BIMAGE_NO_INTRIN)
 #if (__has_include(<emmintrin.h>))
 #include <emmintrin.h>
 #define BIMAGE_SSE
-#elif (__has_include(<arm_neon.h>)) && !defined(BIMAGE_NO_NEON)
-#include <arm_neon.h>
-#define BIMAGE_NEON
 #else
 #define BIMAGE_NO_INTRIN
 #endif
@@ -60,8 +57,6 @@ typedef struct bpixel {
     union {
 #ifdef BIMAGE_SSE
         __m128 m;
-#elif defined(BIMAGE_NEON)
-        float32x4_t m;
 #endif
         float data[4];
     };
