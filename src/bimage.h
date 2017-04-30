@@ -10,8 +10,8 @@ extern "C" {
 #include <stdlib.h>
 
 #if defined(__has_include)
-#if (__has_include(<tmmintrin.h>))
-#include <tmmintrin.h>
+#if (__has_include(<emmintrin.h>))
+#include <emmintrin.h>
 #define BIMAGE_INTRIN
 #else
 #define BIMAGE_NO_INTRIN
