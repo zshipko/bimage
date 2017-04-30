@@ -25,7 +25,7 @@ IMAGE_OP(Mul);
 IMAGE_OP(Div);
 
 bimage*
-bimageColor(bimage** dst, bimage* im, BIMAGE_CHANNEL c)
+bimageColor(bimage* dst, bimage* im, BIMAGE_CHANNEL c)
 {
 
     if (c < 3){
@@ -45,11 +45,11 @@ bimageColor(bimage** dst, bimage* im, BIMAGE_CHANNEL c)
         bimageSetPixel(im2, x, y, px);
     }
 
-    BIMAGE_RETURN_DEST(dst, im2);
+    return im2;
 }
 
 bimage*
-bimageGrayscale(bimage** dst, bimage* im, BIMAGE_CHANNEL chan)
+bimageGrayscale(bimage* dst, bimage* im, BIMAGE_CHANNEL chan)
 {
     bpixel p, px;
     BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
@@ -69,12 +69,12 @@ bimageGrayscale(bimage** dst, bimage* im, BIMAGE_CHANNEL chan)
         bimageSetPixel(im2, x, y, p);
     }
 
-    BIMAGE_RETURN_DEST(dst, im2);
+    return im2;
 }
 
 // Convolution filter
 bimage*
-bimageFilter(bimage** dst, bimage* im, float* K, int Ks, float divisor, float offset)
+bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float offset)
 {
     bimage *oi = BIMAGE_CREATE_DEST(dst, im->width, im->height, im->type);
     if (oi == NULL){
@@ -122,11 +122,11 @@ bimageFilter(bimage** dst, bimage* im, float* K, int Ks, float divisor, float of
         }
     }
 
-    BIMAGE_RETURN_DEST(dst, oi);
+    return oi;
 }
 
 bimage*
-bimageInvert(bimage** dst, bimage* src)
+bimageInvert(bimage* dst, bimage* src)
 {
     bpixel px;
     int i;
@@ -146,7 +146,7 @@ bimageInvert(bimage** dst, bimage* src)
         bimageSetPixelUnsafe(im2, x, y, px);
     }
 
-    BIMAGE_RETURN_DEST(dst, im2);
+    return im2;
 }
 
 static float sobel_x[9] = {
@@ -156,7 +156,7 @@ static float sobel_x[9] = {
 };
 
 bimage*
-bimageSobelX(bimage** dst, bimage* src)
+bimageSobelX(bimage* dst, bimage* src)
 {
     return bimageFilter(dst, src, sobel_x, 3, 1, 0);
 }
@@ -168,13 +168,13 @@ static float sobel_y[9] = {
 };
 
 bimage*
-bimageSobelY(bimage** dst, bimage* src)
+bimageSobelY(bimage* dst, bimage* src)
 {
     return bimageFilter(dst, src, sobel_y, 3, 1, 0);
 }
 
 bimage*
-bimageSobel(bimage**dst, bimage* src){
+bimageSobel(bimage* dst, bimage* src){
     bimage* src2 = bimageSobelX(dst, src);
     if (!src2){
         return NULL;
@@ -182,7 +182,7 @@ bimageSobel(bimage**dst, bimage* src){
 
     bimage* tmp = bimageSobelY(NULL, src2);
     if (!tmp){
-        if (!dst || !*dst){
+        if (!dst){
             bimageRelease(src2);
         }
         return NULL;
@@ -199,7 +199,7 @@ static float prewitt_x[9] = {
 };
 
 bimage*
-bimagePrewittX(bimage** dst, bimage* src)
+bimagePrewittX(bimage* dst, bimage* src)
 {
     return bimageFilter(dst, src, prewitt_x, 3, 1, 0);
 }
@@ -211,13 +211,13 @@ static float prewitt_y[9] = {
 };
 
 bimage*
-bimagePrewittY(bimage** dst, bimage* src)
+bimagePrewittY(bimage* dst, bimage* src)
 {
     return bimageFilter(dst, src, prewitt_y, 3, 1, 0);
 }
 
 bimage*
-bimagePrewitt(bimage**dst, bimage* src){
+bimagePrewitt(bimage* dst, bimage* src){
     bimage* src2 = bimagePrewittX(dst, src);
     if (!src2){
         return NULL;
@@ -225,7 +225,7 @@ bimagePrewitt(bimage**dst, bimage* src){
 
     bimage* tmp = bimagePrewittY(NULL, src2);
     if (!tmp){
-        if (!dst || !*dst){
+        if (!dst){
             bimageRelease(src2);
         }
         return NULL;
@@ -243,7 +243,7 @@ static float outline[9] = {
 };
 
 bimage*
-bimageOutline(bimage** dst, bimage* im)
+bimageOutline(bimage* dst, bimage* im)
 {
     return bimageFilter(dst, im, outline, 3, 1, 0);
 }
@@ -256,7 +256,7 @@ static float sharpen[9] = {
 };
 
 bimage*
-bimageSharpen(bimage** dst, bimage* im)
+bimageSharpen(bimage* dst, bimage* im)
 {
     return bimageFilter(dst, im, sharpen, 3, 1, 0);
 }
@@ -268,7 +268,7 @@ static float blur[9] = {
 };
 
 bimage*
-bimageBlur(bimage** dst, bimage* im)
+bimageBlur(bimage* dst, bimage* im)
 {
     return bimageFilter(dst, im, blur, 3, 9, 0);
 }
@@ -282,35 +282,35 @@ static float gaussian_blur[25] = {
 };
 
 bimage*
-bimageGaussianBlur(bimage** dst, bimage* im)
+bimageGaussianBlur(bimage* dst, bimage* im)
 {
     return bimageFilter(dst, im, gaussian_blur, 5, 273, 0);
 }
 
 bimage*
-bimageRotate(bimage** dst, bimage* im, uint32_t width, uint32_t height, float angle)
+bimageRotate(bimage* dst, bimage* im, float deg)
 {
-    bimage* im2 = BIMAGE_CREATE_DEST(dst, width, height, im->type);
+    bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, im->type);
     if (!im2){
         return NULL;
     }
 
     float midX, midY;
     float dx, dy;
-    int32_t rotX, rotY;
+    uint32_t rotX, rotY;
 
     midX = im->width / 2.0f;
     midY = im->height / 2.0f;
 
-    angle = 2 * M_PI * angle / 360.0f;
+    float angle = 2 * M_PI * deg / 360.0f;
 
     bpixel px;
     bimageIterAll(im2, i, j){
         dx = i - midX;
         dy = j - midY;
 
-        rotX = (int32_t)(midX + dx * cos(angle) + dy * sin(angle));
-        rotY = (int32_t)(midY + dy * cos(angle) - dx * sin(angle));
+        rotX = (uint32_t)(midX + dx * cos(angle) - dy * sin(angle));
+        rotY = (uint32_t)(midY + dx * sin(angle) + dy * cos(angle));
         if (rotX >= 0 && rotY >= 0){
             if (bimageGetPixel(im, rotX, rotY, &px) == BIMAGE_OK){
                 bimageSetPixel(im2, i, j, px);
@@ -318,5 +318,5 @@ bimageRotate(bimage** dst, bimage* im, uint32_t width, uint32_t height, float an
         }
     }
 
-    BIMAGE_RETURN_DEST(dst, im2);
+    return im2;
 }

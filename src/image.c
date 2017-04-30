@@ -94,6 +94,7 @@ bimageCreateOnDiskFd (int fd, uint32_t width, uint32_t height, BIMAGE_TYPE t)
 {
     // Allocate enough memory on disk
     lseek(fd, bimageTotalSize(width, height, t), SEEK_SET);
+    write(fd, "\0", 1);
 
     void *data = mmap(NULL, bimageTotalSize(width, height, t), PROT_READ|PROT_WRITE, MAP_SHARED, fd, false);
 
@@ -272,7 +273,7 @@ bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bpixel p)
 
 /* bimageConvertDepth converts between 8, 16 and 32 bit images */
 bimage*
-bimageConvertDepth(bimage **dst, bimage *im, BIMAGE_DEPTH depth)
+bimageConvertDepth(bimage *dst, bimage *im, BIMAGE_DEPTH depth)
 {
     bpixel px, pdst;
     bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, depth | bimageTypeChannels(im->type));
@@ -289,13 +290,13 @@ bimageConvertDepth(bimage **dst, bimage *im, BIMAGE_DEPTH depth)
         }
     }
 
-    BIMAGE_RETURN_DEST(dst, im2);
+    return im2;
 }
 
 /* bimageConvertChannels converts between 1, 3, and 4 channel images
  * */
 bimage*
-bimageConvertChannels(bimage** dst, bimage* im, BIMAGE_CHANNEL nchannels)
+bimageConvertChannels(bimage* dst, bimage* im, BIMAGE_CHANNEL nchannels)
 {
     bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, bimageTypeDepth(im->type) | nchannels);
     if (!im2){
@@ -311,12 +312,12 @@ bimageConvertChannels(bimage** dst, bimage* im, BIMAGE_CHANNEL nchannels)
         }
     }
 
-    BIMAGE_RETURN_DEST(dst, im2);
+    return im2;
 }
 
 
 bimage*
-bimageCrop (bimage** dst, bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
+bimageCrop (bimage* dst, bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
     bimage* im2 = BIMAGE_CREATE_DEST(dst, w, h, im->type);
     if (!im2){
@@ -332,7 +333,7 @@ bimageCrop (bimage** dst, bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32
         }
     }
 
-    BIMAGE_RETURN_DEST(dst, im2);
+    return im2;
 }
 
 void

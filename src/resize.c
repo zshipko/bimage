@@ -4,7 +4,7 @@
 #include "stb_image_resize.h"
 
 bimage*
-bimageResize(bimage** dst, bimage* im, int32_t w, int32_t h)
+bimageResize(bimage* dst, bimage* im, int32_t w, int32_t h)
 {
     // Scale if one dimension is <= 0,
     // but fail if both `w` and `h`are <= 0
@@ -53,7 +53,7 @@ bimageResize(bimage** dst, bimage* im, int32_t w, int32_t h)
         return NULL;
     }
 
-    BIMAGE_RETURN_DEST(dst, im2);
+    return im2;
 }
 
 

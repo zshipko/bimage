@@ -136,7 +136,7 @@ BIMAGE_STATUS
 bimageSetPixel(bimage* im, uint32_t x, uint32_t y, bpixel p);
 
 bimage*
-bimageCrop(bimage** dst, bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+bimageCrop(bimage* dst, bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
 void
 bimageCopyTo(bimage *dst, bimage *src, uint32_t x, uint32_t y);
@@ -164,10 +164,10 @@ BIMAGE_STATUS
 bimageSave(bimage* im, const char* filename);
 
 bimage*
-bimageConvertDepth(bimage** dst, bimage* im, BIMAGE_DEPTH depth);
+bimageConvertDepth(bimage* dst, bimage* im, BIMAGE_DEPTH depth);
 
 bimage*
-bimageConvertChannels(bimage** dst, bimage* im, BIMAGE_CHANNEL channels);
+bimageConvertChannels(bimage* dst, bimage* im, BIMAGE_CHANNEL channels);
 
 void
 bimageAdjustGamma(bimage* im, float gamma);
@@ -175,7 +175,7 @@ bimageAdjustGamma(bimage* im, float gamma);
 /* RESIZE */
 
 bimage*
-bimageResize(bimage** dst, bimage* im, int32_t width, int32_t height);
+bimageResize(bimage* dst, bimage* im, int32_t width, int32_t height);
 
 /* FILTER */
 
@@ -192,49 +192,49 @@ BIMAGE_STATUS
 bimageDiv(bimage* dst, bimage* b);
 
 bimage*
-bimageColor(bimage** dst, bimage* im, BIMAGE_CHANNEL c);
+bimageColor(bimage* dst, bimage* im, BIMAGE_CHANNEL c);
 
 bimage*
-bimageGrayscale(bimage** dst, bimage* im, BIMAGE_CHANNEL c);
+bimageGrayscale(bimage* dst, bimage* im, BIMAGE_CHANNEL c);
 
 bimage*
-bimageFilter(bimage** dst, bimage* im, float *K, int Ks, float divisor, float offset);
+bimageFilter(bimage* dst, bimage* im, float *K, int Ks, float divisor, float offset);
 
 bimage*
-bimageSobelX(bimage** dst, bimage* src);
+bimageSobelX(bimage* dst, bimage* src);
 
 bimage*
-bimageSobelY(bimage** dst, bimage* src);
+bimageSobelY(bimage* dst, bimage* src);
 
 bimage*
-bimageSobel(bimage** dst, bimage* src);
+bimageSobel(bimage* dst, bimage* src);
 
 bimage*
-bimagePrewittX(bimage** dst, bimage* src);
+bimagePrewittX(bimage* dst, bimage* src);
 
 bimage*
-bimagePrewittY(bimage** dst, bimage* src);
+bimagePrewittY(bimage* dst, bimage* src);
 
 bimage*
-bimagePrewitt(bimage** dst, bimage* src);
+bimagePrewitt(bimage* dst, bimage* src);
 
 bimage*
-bimageOutline(bimage** dst, bimage* src);
+bimageOutline(bimage* dst, bimage* src);
 
 bimage*
-bimageSharpen(bimage** dst, bimage* src);
+bimageSharpen(bimage* dst, bimage* src);
 
 bimage*
-bimageBlur(bimage** dst, bimage* src);
+bimageBlur(bimage* dst, bimage* src);
 
 bimage*
-bimageGaussianBlur(bimage** dst, bimage* src);
+bimageGaussianBlur(bimage* dst, bimage* src);
 
 bimage*
-bimageInvert(bimage** dst, bimage* im);
+bimageInvert(bimage* dst, bimage* im);
 
 bimage*
-bimageRotate(bimage** dst, bimage* im, uint32_t width, uint32_t height, float deg);
+bimageRotate(bimage* dst, bimage* im, float deg);
 
 /* HASH */
 
@@ -266,13 +266,8 @@ bimage*
 bhistogramImage(bhistogram h);
 
 #define BIMAGE_CREATE_DEST(dst, w, h, t) \
-    (dst ==  NULL || *dst == NULL \
-        ? bimageCreate(w, h, t) \
-        : ((*(dst))->width >= w && (*(dst))->height >= h && (*dst)->type == (t) ? *(dst) : NULL))
-
-#define BIMAGE_RETURN_DEST(dst, im) \
-    if (dst) { if (*dst != im) *dst = im; return *dst; } else { return im; }
-
+    ((dst) == NULL ? bimageCreate((w), (h), (t)) \
+        : ((dst)->width >= (w) && (dst)->height >= (h) && (dst)->type == (t) ? dst : NULL))
 
 #ifdef __cplusplus
 }

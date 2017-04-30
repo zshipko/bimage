@@ -21,6 +21,22 @@ static BIMAGE_TYPE types[] = {
 
 static int num_types = 8;
 
+#define randomPix(t) bimageTypeDepth(t) == BIMAGE_F32 ? (float)arc4random_uniform(255) / 255.0 : arc4random_uniform(bimageTypeMax(t))
+
+bimage* randomImage(uint32_t w, uint32_t h, BIMAGE_TYPE t)
+{
+    bimage* im = bimageCreate(w, h, t);
+    if (!im){
+        return NULL;
+    }
+
+    bimageIterAll(im, x, y){
+        bimageSetPixel(im, x, y, bpixelCreate(randomPix(t), randomPix(t), randomPix(t), randomPix(t), -1));
+    }
+
+    return im;
+}
+
 START_TEST (test_bimageCreate)
 {
     int i;
@@ -37,7 +53,7 @@ START_TEST (test_bimageChannels)
 {
     int i;
     for (i = 0; i < num_types; i++){
-        bimage* im = bimageCreate(WIDTH, HEIGHT, types[i]);
+        bimage* im = randomImage(WIDTH, HEIGHT, types[i]);
         switch (bimageTypeChannels(types[i])){
         case BIMAGE_GRAY:
             ck_assert_int_eq(bimageTypeChannels(im->type), 1);
@@ -59,7 +75,7 @@ START_TEST (test_bimageSize)
 {
     int i;
     for (i = 0; i < num_types; i++){
-        bimage* im = bimageCreate(WIDTH, HEIGHT, types[i]);
+        bimage* im = randomImage(WIDTH, HEIGHT, types[i]);
         switch (bimageTypeDepth(types[i])){
         case BIMAGE_U8:
             ck_assert_int_eq(bimageTypeDepth(im->type), BIMAGE_U8);
@@ -102,13 +118,13 @@ START_TEST (test_bpixelConvert)
 START_TEST (test_bimageConsume)
 {
     bpixel p = bpixelCreate(65535.0, 0, 0, 65535.0, BIMAGE_U16);
-    bimage* a = bimageCreate(100, 100, BIMAGE_U8 | 4);
-    bimage* b = bimageCreate(50, 50, BIMAGE_U16 | 4);
+    bimage* a = randomImage(100, 100, BIMAGE_U8 | 4);
+    bimage* b = randomImage(50, 50, BIMAGE_U16 | 4);
     bimageSetPixel(b, 10, 10, p);
     bimageConsume(&a, b);
     ck_assert_int_eq(a->width, 50);
     ck_assert_int_eq(a->height, 50);
-    ck_assert_int_eq(a->type, b->type);
+    ck_assert_int_eq(bimageHash(a), bimageHash(b));
 
     bpixel px;
     bimageGetPixel(a, 10, 10, &px);
@@ -118,8 +134,8 @@ START_TEST (test_bimageConsume)
 
 START_TEST (test_bimageAdd)
 {
-    bimage* im = bimageCreate(100, 100, BIMAGE_U8 | 3);
-    bimage* im2 = bimageCreate(100, 100, BIMAGE_U8 | 3);
+    bimage* im = randomImage(100, 100, BIMAGE_U8 | 3);
+    bimage* im2 = randomImage(100, 100, BIMAGE_U8 | 3);
 
     bpixel c = bpixelCreate(255, 0, 0, 255, BIMAGE_U8), d;
     bimageSetPixelUnsafe(im2, 50, 50, c);
@@ -129,6 +145,43 @@ START_TEST (test_bimageAdd)
     ck_assert(d.data[0] == c.data[0] && d.data[1] == c.data[1] && d.data[2] == c.data[2]);
     bimageRelease(im);
     bimageRelease(im2);
+} END_TEST;
+
+START_TEST (test_bimageResizeHash)
+{
+    int i;
+    for (i = 0; i < num_types; i++){
+        bimage* im = randomImage(WIDTH, HEIGHT, types[i]);
+        bimage* im2 = randomImage(111, 222, types[i]);
+        bimageResize(im2, im, 111, 222);
+        ck_assert_int_eq(im2->width, 111);
+        ck_assert_int_eq(im2->height, 222);
+        ck_assert_int_eq(bimageHash(im), bimageHash(im2));
+        bimageRelease(im);
+        bimageRelease(im2);
+    }
+
+} END_TEST;
+
+START_TEST (test_bimageCopyTo)
+{
+    int i;
+    for (i = 0; i < num_types; i++){
+        bimage* im = randomImage(WIDTH, HEIGHT, types[i]);
+        bimage* im2 = randomImage(WIDTH/2, HEIGHT/2, types[i]);
+        bimageCopyTo(im, im2, 10, 10);
+
+        bpixel a, b;
+        bimageGetPixel(im, 10, 10, &a);
+        bimageGetPixel(im2, 0, 0, &b);
+
+        ck_assert(a.data[0] == b.data[0] && a.data[1] == b.data[1] && a.data[2] == b.data[2] && a.data[3] == b.data[3]);
+        bimageGetPixel(im, im2->width+9, im2->height+9, &a);
+        bimageGetPixel(im2, im2->width-1, im2->height-1, &b);
+        ck_assert(a.data[0] == b.data[0] && a.data[1] == b.data[1] && a.data[2] == b.data[2] && a.data[3] == b.data[3]);
+        bimageRelease(im);
+        bimageRelease(im2);
+    }
 } END_TEST;
 
 Suite *bimage_suite(void)
@@ -145,6 +198,8 @@ Suite *bimage_suite(void)
     tcase_add_test(tc, test_bimageConsume);
     tcase_add_test(tc, test_bpixelConvert);
     tcase_add_test(tc, test_bimageAdd);
+    tcase_add_test(tc, test_bimageResizeHash);
+    tcase_add_test(tc, test_bimageCopyTo);
     suite_add_tcase(s, tc);
     return s;
 }
