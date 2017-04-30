@@ -354,10 +354,6 @@ bimageAdjustGamma (bimage* im, float g)
     c = c > 3 ? 3 : c; // Ignore alpha channel
     float mx = (float)bimageTypeMax(im->type);
 
-#ifdef BIMAGE_INTRIN
-    __m128 mxs = _mm_load_ps1(&mx);
-#endif
-
     bpixel px;
     bimageIterAll(im, x, y){
         bimageGetPixelUnsafe(im, x, y, &px);
