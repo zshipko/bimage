@@ -11,7 +11,7 @@ bpixelInit(bpixel *px, float r, float g, float b, float a, BIMAGE_DEPTH depth){
     }
 
     px->depth = depth;
-#ifdef BIMAGE_INTRIN
+#ifdef BIMAGE_SSE
     px->m = _mm_set_ps(a, b, g, r);
 #else
     px->data[0] = r;
@@ -52,8 +52,10 @@ bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth)
     if (depth == BIMAGE_F32){
         float mx = bimageTypeMax(src.depth);
         (*dst).depth = BIMAGE_F32;
-#ifdef BIMAGE_INTRIN
+#ifdef BIMAGE_SSE
         (*dst).m = src.m/_mm_load_ps1(&mx);
+#elif defined(BIMAGE_NEON)
+        (*dst).m = (src.m/vdupq_n_f32(mx));
 #else
         for(i = 0; i < 4; i++){
             (*dst).data[i] = src.data[i]/mx;
@@ -62,15 +64,19 @@ bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth)
         goto ok;
     }
 
-#ifdef BIMAGE_INTRIN
+#ifdef BIMAGE_SSE
     __m128i x = _mm_castps_si128(src.m);
+#elif defined(BIMAGE_NEON)
+    uint32x4_t x = vreinterpretq_u32_f32(src.m);
 #endif
     switch (src.depth) {
     case BIMAGE_U8:
         switch (depth) {
         case BIMAGE_U16: // Convert to U16 from U8
-#ifdef BIMAGE_INTRIN
+#ifdef BIMAGE_SSE
             (*dst).m = _mm_castsi128_ps (_mm_slli_si128(x, 8));
+#elif defined(BIMAGE_NEON)
+            (*dst).m = vreinterpretq_f32_u32(x << 8);
 #else
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)src.data[i] << 8;
@@ -78,8 +84,10 @@ bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth)
 #endif
             break;
         case BIMAGE_U32: // Convert to U32 from U8
-#ifdef BIMAGE_INTRIN
+#ifdef BIMAGE_SSE
             (*dst).m = _mm_castsi128_ps(_mm_slli_si128(x, 24));
+#elif defined(BIMAGE_NEON)
+            (*dst).m = vreinterpretq_f32_u32(x << 24);
 #else
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)src.data[i] << 24;
@@ -92,8 +100,10 @@ bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth)
         break;
     case BIMAGE_U16:
        switch (depth) {
-#ifdef BIMAGE_INTRIN
+#ifdef BIMAGE_SSE
         (*dst).m = _mm_castsi128_ps(_mm_srli_si128(x, 8));
+#elif defined(BIMAGE_NEON)
+        (*dst).m = vreinterpretq_f32_u32(x >> 8);
 #else
         case BIMAGE_U8:  // Convert to U8 from U16
             for (i = 0; i < 4; i++){
@@ -102,8 +112,10 @@ bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth)
 #endif
             break;
         case BIMAGE_U32: // Convert to U32 from U16
-#ifdef BIMAGE_INTRIN
+#ifdef BIMAGE_SSE
             (*dst).m = _mm_castsi128_ps(_mm_slli_si128(x,  16));
+#elif defined(BIMAGE_NEON)
+            (*dst).m = vreinterpretq_f32_u32(x << 16);
 #else
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)src.data[i] << 16;
@@ -117,8 +129,10 @@ bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth)
     case BIMAGE_U32:
        switch (depth) {
         case BIMAGE_U8:  // Convert to U8 from U32
-#ifdef BIMAGE_INTRIN
+#ifdef BIMAGE_SSE
             (*dst).m = _mm_castsi128_ps(_mm_srli_si128(x, 24));
+#elif defined(BIMAGE_NEON)
+            (*dst).m = vreinterpretq_f32_u32(x >> 24);
 #else
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)src.data[i] >> 24;
@@ -126,8 +140,10 @@ bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth)
 #endif
             break;
         case BIMAGE_U16: // Convert to U16 from U32
-#ifdef BIMAGE_INTRIN
+#ifdef BIMAGE_SSE
             (*dst).m = _mm_castsi128_ps(_mm_srli_si128(x, 16));
+#elif defined(BIMAGE_NEON)
+            (*dst).m = vreinterpretq_f32_u32(x >> 16);
 #else
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)src.data[i] >> 16;
@@ -160,7 +176,7 @@ bpixelClamp(bpixel *px)
     return BIMAGE_OK;
 }
 
-#ifdef BIMAGE_INTRIN
+#if !defined(BIMAGE_SSE) && !defined(BIMAGE_NEON)
 #define PIXEL_OP(name, op) \
 BIMAGE_STATUS \
 bpixel##name(bpixel *a, bpixel b) \
@@ -171,7 +187,9 @@ bpixel##name(bpixel *a, bpixel b) \
     int i; \
     bpixel c; \
     bpixelConvertDepth(&c, b, a->depth); \
-    a->m = a->m op c.m;\
+    for (i = 0; i < 3; i++){ \
+        a->data[i] = a->data[i] op c.data[i]; \
+    } \
     bpixelClamp(a); \
     return BIMAGE_OK; \
 }
@@ -186,9 +204,7 @@ bpixel##name(bpixel *a, bpixel b) \
     int i; \
     bpixel c; \
     bpixelConvertDepth(&c, b, a->depth); \
-    for (i = 0; i < 3; i++){ \
-        a->data[i] = a->data[i] op c.data[i]; \
-    } \
+    a->m = a->m op c.m;\
     bpixelClamp(a); \
     return BIMAGE_OK; \
 }

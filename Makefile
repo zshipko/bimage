@@ -2,10 +2,12 @@ SRC=src/pixel.c src/image.c src/tiff.c src/io.c src/resize.c \
 	src/filter.c src/hash.c src/histogram.c
 OBJ=$(SRC:.c=.o)
 
-CFLAGS+=-I/usr/local/include
-LDFLAGS+=-L/usr/local/lib -ltiff
 UNAME := $(shell uname)
 PREFIX=/usr/local
+
+CFLAGS+=-I/usr/local/include $(CFLAGS_$(UNAME_M))
+LDFLAGS+=-L/usr/local/lib -ltiff
+
 
 # Set correct library extension
 ifeq ($(UNAME),Darwin)
@@ -18,6 +20,9 @@ lib: shared static
 
 debug:
 	$(MAKE) CFLAGS="$(CFLAGS) -g -Wall"
+
+neon:
+	$(MAKE) CFLAGS="$(CFLAGS) -mfloat-abi=hard -mfpu=neon"
 
 shared: $(OBJ)
 	$(CC) -shared -fPIC -I/usr/local/include $(OBJ) -o libbimage.$(EXT) $(LDFLAGS)

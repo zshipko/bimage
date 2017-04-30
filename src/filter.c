@@ -94,7 +94,7 @@ bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float off
         divisor = 1.0;
     }
 
-#ifdef BIMAGE_INTRIN
+#ifdef BIMAGE_SSE
     __m128 divi = _mm_load_ps1(&divisor),
            offs = _mm_load_ps1(&offset);
 #else
@@ -112,7 +112,7 @@ bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float off
             for(kx = -Ks; kx <= Ks; kx++){
                 for(ky = -Ks; ky <= Ks; ky++){
                     bimageGetPixel(im, ix+kx, iy+ky, &p);
-#ifdef BIMAGE_INTRIN
+#ifdef BIMAGE_SSE
                     px.m += (_mm_load_ps1(&K[(kx+Ks) + (ky+Ks)*(2*Ks+1)])/divi) * p.m + offs;
 #else
                     for (l = 0; l < channels; l++){
