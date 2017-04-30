@@ -172,14 +172,14 @@ bimageConsume(bimage **dst, bimage *src)
 BIMAGE_STATUS
 bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bpixel *p)
 {
-    int channels = bimageTypeChannels(im->type), i;
+    int i;
     int64_t offs = bimageIndex(im, x, y);
 
     // Set bpixel depth
     p->depth = bimageTypeDepth(im->type);
     p->data[3] = bimageTypeMax(im->type);
 
-    for (i = 0; i < channels; i++){
+    for (i = 0; i < bimageTypeChannels(im->type) % 5; i++){
         switch (p->depth){
         case BIMAGE_U8:
             p->data[i] = (float)bimageAt(im, offs+i, uint8_t);
@@ -199,7 +199,7 @@ bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bpixel *p)
     }
 
     // Grayscale bpixels should have the same value for RGB channels
-    if (channels == 1){
+    if (bimageTypeChannels(im->type) == 1){
         p->data[1] = p->data[2] = p->data[0];
     }
 
@@ -215,7 +215,7 @@ bimageGetPixel(bimage *im, uint32_t x, uint32_t y, bpixel *p)
         return BIMAGE_ERR;
     }
 
-    if (im->width <= x || im->height <= y){
+    if (!bimageBoundsCheck(im, x, y)){
         bpixelZero(p, -1);
         return BIMAGE_ERR;
     }
@@ -226,10 +226,9 @@ bimageGetPixel(bimage *im, uint32_t x, uint32_t y, bpixel *p)
 BIMAGE_STATUS
 bimageSetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bpixel p)
 {
-
-    BIMAGE_CHANNEL channels = bimageTypeChannels(im->type), i;
+    int i;
     int64_t offs = bimageIndex(im, x, y);
-    for (i = 0; i < channels; i++){
+    for (i = 0; i < bimageTypeChannels(im->type) % 5; i++){
         switch (bimageTypeDepth(im->type)){
         case BIMAGE_U8:
             bimageAt(im, offs+i, uint8_t) = (uint8_t)p.data[i];
@@ -257,14 +256,12 @@ bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bpixel p)
 {
     bpixel q;
 
-    // Bounds check
-    if (!im || im->width <= x || im->height <= y){
+    if (!bimageBoundsCheck(im, x, y)){
         return BIMAGE_ERR;
     }
 
     // Set bpixel depth based on image
-    BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
-    if (bpixelConvertDepth(&q, p, depth) != BIMAGE_OK){
+    if (bpixelConvertDepth(&q, p, bimageTypeDepth(im->type)) != BIMAGE_OK){
         return BIMAGE_ERR;
     }
 
@@ -354,10 +351,14 @@ void
 bimageAdjustGamma (bimage* im, float g)
 {
     int i, c = bimageTypeChannels(im->type);
-    c = c > 3 ? 3 : c;
+    c = c > 3 ? 3 : c; // Ignore alpha channel
     float mx = (float)bimageTypeMax(im->type);
+
+#ifdef BIMAGE_INTRIN
+    __m128 mxs = _mm_load_ps1(&mx);
+#endif
+
     bpixel px;
-    bpixelZero(&px, -1);
     bimageIterAll(im, x, y){
         bimageGetPixelUnsafe(im, x, y, &px);
         for(i = 0; i < c; i++){

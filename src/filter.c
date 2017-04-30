@@ -66,7 +66,7 @@ bimageGrayscale(bimage* dst, bimage* im, BIMAGE_CHANNEL chan)
     bimageIterAll(im, x, y){
         bimageGetPixelUnsafe(im, x, y, &px);
         p.data[0] = p.data[1] = p.data[2] = (px.data[0] * 0.2126) + (px.data[1] * 0.7152) + (px.data[2] * 0.0722) * (px.data[3] / mx);
-        bimageSetPixel(im2, x, y, p);
+        bimageSetPixelUnsafe(im2, x, y, p);
     }
 
     return im2;
@@ -100,7 +100,10 @@ bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float off
         divisor = 1.0;
     }
 
-    float mx = (float)bimageTypeMax(im->type);
+#ifdef BIMAGE_INTRIN
+    __m128 divi = _mm_load_ps1(&divisor),
+           offs = _mm_load_ps1(&offset);
+#endif
 
     for(ix = 0; ix < im->width; ix++){
         for(iy = 0; iy < im->height; iy++){
@@ -108,16 +111,17 @@ bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float off
             for(kx = -Ks; kx <= Ks; kx++){
                 for(ky = -Ks; ky <= Ks; ky++){
                     bimageGetPixel(im, ix+kx, iy+ky, &p);
+#ifdef BIMAGE_INTRIN
+                    px.m += (_mm_load_ps1(&K[(kx+Ks) + (ky+Ks)*(2*Ks+1)])/divi) * p.m + offs;
+#else
                     for (l = 0; l < channels; l++){
                         px.data[l] += (K[(kx+Ks) + (ky+Ks)*(2*Ks+1)]/divisor) * p.data[l] + offset;
                     }
+#endif
                 }
             }
 
-            for(l = 0; l < channels; l++){
-                px.data[l] = px.data[l] >  mx ? mx : px.data[l] < 0 ? 0 : px.data[l];
-            }
-
+            bpixelClamp(&px);
             bimageSetPixel(oi, ix, iy, px);
         }
     }
@@ -140,7 +144,7 @@ bimageInvert(bimage* dst, bimage* src)
 
     bimageIterAll(im2, x, y){
         bimageGetPixelUnsafe(im2, x, y, &px);
-        for(i = 0; i < ch; i++){
+        for(i = 0; i < ch % 5; i++){
             px.data[i] = mx - px.data[i];
         }
         bimageSetPixelUnsafe(im2, x, y, px);
@@ -297,7 +301,7 @@ bimageRotate(bimage* dst, bimage* im, float deg)
 
     float midX, midY;
     float dx, dy;
-    uint32_t rotX, rotY;
+    int32_t rotX, rotY;
 
     midX = im->width / 2.0f;
     midY = im->height / 2.0f;

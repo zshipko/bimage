@@ -9,6 +9,17 @@ extern "C" {
 #include <stdbool.h>
 #include <stdlib.h>
 
+#if defined(__has_include)
+#if (__has_include(<tmmintrin.h>))
+#include <tmmintrin.h>
+#define BIMAGE_INTRIN
+#else
+#define BIMAGE_NO_INTRIN
+#endif
+#else
+#define BIMAGE_NO_INTRIN
+#endif
+
 typedef enum BIMAGE_STATUS {
     BIMAGE_ERR,
     BIMAGE_OK
@@ -43,7 +54,12 @@ typedef struct bimage {
 } bimage;
 
 typedef struct bpixel {
-    float data[4];
+    union {
+#ifdef BIMAGE_INTRIN
+        __m128 m;
+#endif
+        float data[4];
+    };
     BIMAGE_DEPTH depth;
 } bpixel;
 
@@ -60,6 +76,8 @@ typedef struct bpixel {
     int32_t x, y; \
     for(y = 0; y < im->height; y++) \
         for(x = 0; x < im->width; x++)
+
+#define bimageBoundsCheck(im, x, y) (bimageIsValid(im) && (im)->width > (x) && (im)->height > (y))
 
 typedef float (*bpixelOp)(float, float);
 typedef void (*bimageOp)(bimage **dst, bimage*, bimage*, bpixelOp);
