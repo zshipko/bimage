@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <math.h>
 
 #include "bimage.h"
 
@@ -200,7 +201,7 @@ static float prewitt_x[9] = {
 bimage*
 bimagePrewittX(bimage** dst, bimage* src)
 {
-    return bimageFilter(dst, src, sobel_x, 3, 1, 0);
+    return bimageFilter(dst, src, prewitt_x, 3, 1, 0);
 }
 
 static float prewitt_y[9] = {
@@ -212,7 +213,7 @@ static float prewitt_y[9] = {
 bimage*
 bimagePrewittY(bimage** dst, bimage* src)
 {
-    return bimageFilter(dst, src, sobel_y, 3, 1, 0);
+    return bimageFilter(dst, src, prewitt_y, 3, 1, 0);
 }
 
 bimage*
@@ -284,4 +285,38 @@ bimage*
 bimageGaussianBlur(bimage** dst, bimage* im)
 {
     return bimageFilter(dst, im, gaussian_blur, 5, 273, 0);
+}
+
+bimage*
+bimageRotate(bimage** dst, bimage* im, float angle)
+{
+    bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, im->type);
+    if (!im2){
+        return NULL;
+    }
+
+    float midX, midY;
+    float dx, dy;
+    int32_t rotX, rotY;
+
+    midX = im->width / 2.0f;
+    midY = im->height / 2.0f;
+
+    angle = 2 * M_PI * angle / 360.0f;
+
+    bpixel px;
+    bimageIterAll(im2, i, j){
+        dx = i - midX;
+        dy = j - midY;
+
+        rotX = (int32_t)(midX + dx * cos(angle) + dy * sin(angle));
+        rotY = (int32_t)(midY + dy * cos(angle) - dx * sin(angle));
+        if (rotX >= 0 && rotY >= 0){
+            if (bimageGetPixel(im, rotX, rotY, &px) == BIMAGE_OK){
+                bimageSetPixel(im2, i, j, px);
+            }
+        }
+    }
+
+    BIMAGE_RETURN_DEST(dst, im2);
 }

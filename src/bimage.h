@@ -233,6 +233,9 @@ bimageGaussianBlur(bimage** dst, bimage* src);
 bimage*
 bimageInvert(bimage** dst, bimage* im);
 
+bimage*
+bimageRotate(bimage** dst, bimage* im, float deg);
+
 /* HASH */
 
 uint64_t
@@ -265,7 +268,7 @@ bhistogramImage(bhistogram h);
 #define BIMAGE_CREATE_DEST(dst, w, h, t) \
     (dst ==  NULL || *dst == NULL \
         ? bimageCreate(w, h, t) \
-        : ((*dst)->width >= w && (*dst)->height >= h && (*dst)->type == t ? *dst : NULL))
+        : ((*(dst))->width >= w && (*(dst))->height >= h && (*dst)->type == (t) ? *(dst) : NULL))
 
 #define BIMAGE_RETURN_DEST(dst, im) \
     if (dst) { if (*dst != im) *dst = im; return *dst; } else { return im; }

@@ -264,7 +264,6 @@ bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bpixel p)
     // Set bpixel depth based on image
     BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
     if (bpixelConvertDepth(&q, p, depth) != BIMAGE_OK){
-        puts("BAD");
         return BIMAGE_ERR;
     }
 
@@ -298,7 +297,6 @@ bimageConvertDepth(bimage **dst, bimage *im, BIMAGE_DEPTH depth)
 bimage*
 bimageConvertChannels(bimage** dst, bimage* im, BIMAGE_CHANNEL nchannels)
 {
-    BIMAGE_TYPE t;
     bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, bimageTypeDepth(im->type) | nchannels);
     if (!im2){
         return NULL;

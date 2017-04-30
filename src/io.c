@@ -14,7 +14,6 @@
 bimage* bimageOpen(const char *filename)
 {
     int w, h, c;
-    BIMAGE_TYPE t;
     uint8_t* data = stbi_load(filename, &w, &h, &c, 0);
 
     if (!data){
@@ -27,8 +26,6 @@ bimage* bimageOpen(const char *filename)
 bimage *bimageOpen16(const char *filename)
 {
     int w, h, c;
-    BIMAGE_TYPE t;
-
     uint16_t* data = stbi_load_16(filename, &w, &h, &c, 0);
     if (!data){
         // Make sure TIFF is the correct depth
@@ -50,8 +47,6 @@ bimage*
 bimageOpenFloat(const char *filename)
 {
     int w, h, c;
-    BIMAGE_TYPE t;
-
     float* data = stbi_loadf(filename, &w, &h, &c, 0);
     if (!data){
         // Make sure TIFF is the correct depth
