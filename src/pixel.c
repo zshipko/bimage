@@ -170,11 +170,8 @@ bpixel##name(bpixel *a, bpixel b) \
     } \
     int i; \
     bpixel c; \
-    if (a->depth != b.depth){ \
-        bpixelConvertDepth(&c, b, a->depth); \
-        b = c; \
-    } \
-    a->m = a->m op b.m;\
+    bpixelConvertDepth(&c, b, a->depth); \
+    a->m = a->m op c.m;\
     bpixelClamp(a); \
     return BIMAGE_OK; \
 }
@@ -188,12 +185,9 @@ bpixel##name(bpixel *a, bpixel b) \
     } \
     int i; \
     bpixel c; \
-    if (a->depth != b.depth){ \
-        bpixelConvertDepth(&c, b, a->depth); \
-        b = c; \
-    } \
+    bpixelConvertDepth(&c, b, a->depth); \
     for (i = 0; i < 3; i++){ \
-        a->data[i] = a->data[i] op b.data[i]; \
+        a->data[i] = a->data[i] op c.data[i]; \
     } \
     bpixelClamp(a); \
     return BIMAGE_OK; \
