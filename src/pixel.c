@@ -70,7 +70,7 @@ bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth)
         switch (depth) {
         case BIMAGE_U16: // Convert to U16 from U8
 #ifdef BIMAGE_INTRIN
-            (*dst).m = _mm_castsi128_ps (x << 8);
+            (*dst).m = _mm_castsi128_ps (_mm_slli_si128(x, 8));
 #else
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)src.data[i] << 8;
@@ -79,7 +79,7 @@ bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth)
             break;
         case BIMAGE_U32: // Convert to U32 from U8
 #ifdef BIMAGE_INTRIN
-            (*dst).m = _mm_castsi128_ps(x << 24);
+            (*dst).m = _mm_castsi128_ps(_mm_slli_si128(x, 24));
 #else
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)src.data[i] << 24;
@@ -93,7 +93,7 @@ bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth)
     case BIMAGE_U16:
        switch (depth) {
 #ifdef BIMAGE_INTRIN
-        (*dst).m = _mm_castsi128_ps(x >> 8);
+        (*dst).m = _mm_castsi128_ps(_mm_srli_si128(x, 8));
 #else
         case BIMAGE_U8:  // Convert to U8 from U16
             for (i = 0; i < 4; i++){
@@ -103,7 +103,7 @@ bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth)
             break;
         case BIMAGE_U32: // Convert to U32 from U16
 #ifdef BIMAGE_INTRIN
-            (*dst).m = _mm_castsi128_ps(x << 16);
+            (*dst).m = _mm_castsi128_ps(_mm_slli_si128(x,  16));
 #else
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)src.data[i] << 16;
@@ -118,7 +118,7 @@ bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth)
        switch (depth) {
         case BIMAGE_U8:  // Convert to U8 from U32
 #ifdef BIMAGE_INTRIN
-            (*dst).m = _mm_castsi128_ps(x >> 24);
+            (*dst).m = _mm_castsi128_ps(_mm_srli_si128(x, 24));
 #else
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)src.data[i] >> 24;
@@ -127,7 +127,7 @@ bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth)
             break;
         case BIMAGE_U16: // Convert to U16 from U32
 #ifdef BIMAGE_INTRIN
-            (*dst).m = _mm_castsi128_ps(x >> 16);
+            (*dst).m = _mm_castsi128_ps(_mm_srli_si128(x, 16));
 #else
             for (i = 0; i < 4; i++){
                 (*dst).data[i] = (uint32_t)src.data[i] >> 16;
