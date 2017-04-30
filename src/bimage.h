@@ -234,7 +234,7 @@ bimage*
 bimageInvert(bimage** dst, bimage* im);
 
 bimage*
-bimageRotate(bimage** dst, bimage* im, float deg);
+bimageRotate(bimage** dst, bimage* im, uint32_t width, uint32_t height, float deg);
 
 /* HASH */
 

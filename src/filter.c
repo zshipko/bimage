@@ -288,9 +288,9 @@ bimageGaussianBlur(bimage** dst, bimage* im)
 }
 
 bimage*
-bimageRotate(bimage** dst, bimage* im, float angle)
+bimageRotate(bimage** dst, bimage* im, uint32_t width, uint32_t height, float angle)
 {
-    bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, im->type);
+    bimage* im2 = BIMAGE_CREATE_DEST(dst, width, height, im->type);
     if (!im2){
         return NULL;
     }
