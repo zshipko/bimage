@@ -27,7 +27,7 @@ typedef enum BIMAGE_STATUS {
 
 typedef uint16_t BIMAGE_TYPE;
 
-#define bimageType(d, c) (d) | (c)
+#define bimageType(d, c) (d) | (c & 0xFF)
 #define bimageTypeChannels(t) ((t) & 0x00FF)
 #define bimageTypeDepth(t) ((t) & 0xFF00)
 
