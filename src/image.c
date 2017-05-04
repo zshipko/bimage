@@ -211,21 +211,21 @@ bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel *p)
 
     // Set bimagePixel depth
     p->depth = bimageTypeDepth(im->type);
-    p->data[3] = bimageTypeMax(im->type);
+    p->data.f[3] = bimageTypeMax(im->type);
 
     for (i = 0; i < bimageTypeChannels(im->type) % 5; i++){
         switch (p->depth){
         case BIMAGE_U8:
-            p->data[i] = (float)bimageAt(im, offs+i, uint8_t);
+            p->data.f[i] = (float)bimageAt(im, offs+i, uint8_t);
             break;
         case BIMAGE_U16:
-            p->data[i] = (float)bimageAt(im, offs+i, uint16_t);
+            p->data.f[i] = (float)bimageAt(im, offs+i, uint16_t);
             break;
         case BIMAGE_U32:
-            p->data[i] = (float)bimageAt(im, offs+i, uint32_t);
+            p->data.f[i] = (float)bimageAt(im, offs+i, uint32_t);
             break;
         case BIMAGE_F32:
-            p->data[i] = bimageAt(im, offs+i, float);
+            p->data.f[i] = bimageAt(im, offs+i, float);
             break;
         default:
             return BIMAGE_ERR;
@@ -234,7 +234,7 @@ bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel *p)
 
     // Grayscale bimagePixels should have the same value for RGB channels
     if (bimageTypeChannels(im->type) == 1){
-        p->data[1] = p->data[2] = p->data[0];
+        p->data.f[1] = p->data.f[2] = p->data.f[0];
     }
 
     return BIMAGE_OK;
@@ -265,16 +265,16 @@ bimageSetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel p)
     for (i = 0; i < bimageTypeChannels(im->type) % 5; i++){
         switch (bimageTypeDepth(im->type)){
         case BIMAGE_U8:
-            bimageAt(im, offs+i, uint8_t) = (uint8_t)p.data[i];
+            bimageAt(im, offs+i, uint8_t) = (uint8_t)p.data.f[i];
             break;
         case BIMAGE_U16:
-            bimageAt(im, offs+i, uint16_t) = (uint16_t)p.data[i];
+            bimageAt(im, offs+i, uint16_t) = (uint16_t)p.data.f[i];
             break;
         case BIMAGE_U32:
-            bimageAt(im, offs+i, uint32_t) = (uint32_t)p.data[i];
+            bimageAt(im, offs+i, uint32_t) = (uint32_t)p.data.f[i];
             break;
         case BIMAGE_F32:
-            bimageAt(im, offs+i, float) = p.data[i];
+            bimageAt(im, offs+i, float) = p.data.f[i];
             break;
         default:
             return BIMAGE_ERR;
@@ -392,7 +392,7 @@ bimageAdjustGamma (bimage* im, float g)
     bimageIterAll(im, x, y){
         bimageGetPixelUnsafe(im, x, y, &px);
         for(i = 0; i < c; i++){
-            px.data[i] = mx * pow((px.data[i]/mx), (1.0/g));
+            px.data.f[i] = mx * pow((px.data.f[i]/mx), (1.0/g));
         }
         bimageSetPixel(im, x, y, px);
     }

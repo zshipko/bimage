@@ -35,7 +35,7 @@ bimageGetHistogram(bimage *im, bimageHistogram h[], BIMAGE_CHANNEL ch)
         bimagePixelConvertDepth(&pc, px, BIMAGE_U8);
 
         for (i = 0; i < ch; i++){
-            h[i].bucket[(int)pc.data[i]] += 1;
+            h[i].bucket[(int)pc.data.f[i]] += 1;
             h[i].total += 1L;
         }
     }

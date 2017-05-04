@@ -54,12 +54,12 @@ typedef struct bimage {
 } bimage;
 
 typedef struct bimagePixel {
-    union {
+    union data {
 #ifdef BIMAGE_SSE
         __m128 m;
 #endif
-        float data[4];
-    };
+        float f[4];
+    } data;
     BIMAGE_DEPTH depth;
 } bimagePixel;
 

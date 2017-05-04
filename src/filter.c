@@ -62,10 +62,10 @@ bimageGrayscale(bimage* dst, bimage* im, BIMAGE_CHANNEL chan)
     float mx = (float)bimageTypeMax(im->type);
 
     p.depth = depth;
-    p.data[3] = bimageTypeMax(im->type);
+    p.data.f[3] = bimageTypeMax(im->type);
     bimageIterAll(im, x, y){
         bimageGetPixelUnsafe(im, x, y, &px);
-        p.data[0] = p.data[1] = p.data[2] = (px.data[0] * 0.2126) + (px.data[1] * 0.7152) + (px.data[2] * 0.0722) * (px.data[3] / mx);
+        p.data.f[0] = p.data.f[1] = p.data.f[2] = (px.data.f[0] * 0.2126) + (px.data.f[1] * 0.7152) + (px.data.f[2] * 0.0722) * (px.data.f[3] / mx);
         bimageSetPixelUnsafe(im2, x, y, p);
     }
 
@@ -87,7 +87,7 @@ bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float off
     int kx, ky, l;
     bimagePixel p, px;
     px.depth = bimageTypeDepth(im->type);
-    px.data[3] = bimageTypeMax(im->type);
+    px.data.f[3] = bimageTypeMax(im->type);
 
     // Divisor can never be zero
     if (divisor == 0.0){
@@ -108,15 +108,15 @@ bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float off
 
     for(ix = 0; ix < im->width; ix++){
         for(iy = 0; iy < im->height; iy++){
-            px.data[0] = px.data[1] = px.data[2] = 0.0;
+            px.data.f[0] = px.data.f[1] = px.data.f[2] = 0.0;
             for(kx = -Ks; kx <= Ks; kx++){
                 for(ky = -Ks; ky <= Ks; ky++){
                     bimageGetPixel(im, ix+kx, iy+ky, &p);
 #ifdef BIMAGE_SSE
-                    px.m += (_mm_load_ps1(&K[(kx+Ks) + (ky+Ks)*(2*Ks+1)])/divi) * p.m + offs;
+                    px.data.m += (_mm_load_ps1(&K[(kx+Ks) + (ky+Ks)*(2*Ks+1)])/divi) * p.data.m + offs;
 #else
                     for (l = 0; l < channels; l++){
-                        px.data[l] += (K[(kx+Ks) + (ky+Ks)*(2*Ks+1)]/divisor) * p.data[l] + offset;
+                        px.data.f[l] += (K[(kx+Ks) + (ky+Ks)*(2*Ks+1)]/divisor) * p.data.f[l] + offset;
                     }
 #endif
                 }
@@ -146,7 +146,7 @@ bimageInvert(bimage* dst, bimage* src)
     bimageIterAll(im2, x, y){
         bimageGetPixelUnsafe(im2, x, y, &px);
         for(i = 0; i < ch % 5; i++){
-            px.data[i] = mx - px.data[i];
+            px.data.f[i] = mx - px.data.f[i];
         }
         bimageSetPixelUnsafe(im2, x, y, px);
     }
