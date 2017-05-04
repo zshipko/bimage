@@ -6,7 +6,7 @@
 
 
 BIMAGE_STATUS
-bhistogramInit(bhistogram* hist)
+bimageHistogramInit(bimageHistogram* hist)
 {
     if (!hist){
         return BIMAGE_ERR;
@@ -19,20 +19,20 @@ bhistogramInit(bhistogram* hist)
 }
 
 BIMAGE_STATUS
-bimageHistogram(bimage *im, bhistogram h[], BIMAGE_CHANNEL ch)
+bimageGetHistogram(bimage *im, bimageHistogram h[], BIMAGE_CHANNEL ch)
 {
     int i;
 
     for(i = 0; i < ch; i++){
-        if (bhistogramInit(&h[i]) == BIMAGE_ERR){
+        if (bimageHistogramInit(&h[i]) == BIMAGE_ERR){
             return BIMAGE_ERR;
         }
     }
 
-    bpixel px, pc;
+    bimagePixel px, pc;
     bimageIterAll(im, x, y){
         bimageGetPixelUnsafe(im, x, y, &px);
-        bpixelConvertDepth(&pc, px, BIMAGE_U8);
+        bimagePixelConvertDepth(&pc, px, BIMAGE_U8);
 
         for (i = 0; i < ch; i++){
             h[i].bucket[(int)pc.data[i]] += 1;
@@ -44,7 +44,7 @@ bimageHistogram(bimage *im, bhistogram h[], BIMAGE_CHANNEL ch)
 }
 
 int
-bhistogramMax(bhistogram h)
+bimageHistogramMax(bimageHistogram h)
 {
     double m = 0;
     int i, c = 0;
@@ -60,9 +60,9 @@ bhistogramMax(bhistogram h)
 }
 
 int
-bhistogramMin(bhistogram h)
+bimageHistogramMin(bimageHistogram h)
 {
-    double m = (double)h.bucket[bhistogramMax(h)];
+    double m = (double)h.bucket[bimageHistogramMax(h)];
     int i, c = 0;
 
     for(i = 0; i < 256; i++){
@@ -76,18 +76,18 @@ bhistogramMin(bhistogram h)
 }
 
 bimage*
-bhistogramImage(bhistogram h)
+bimageHistogramImage(bimageHistogram h)
 {
     bimage *im = bimageCreate(256, 256, BIMAGE_U8 | BIMAGE_GRAY);
     if (!im){
         return NULL;
     }
 
-    double mx = h.bucket[bhistogramMax(h)];
-    double mn = h.bucket[bhistogramMin(h)];
+    double mx = h.bucket[bimageHistogramMax(h)];
+    double mn = h.bucket[bimageHistogramMin(h)];
 
     int i, n;
-    bpixel px = bpixelCreate(255, 255, 255, 255, BIMAGE_U8);
+    bimagePixel px = bimagePixelCreate(255, 255, 255, 255, BIMAGE_U8);
     for(i = 0; i < 256; i++){
         double x = (h.bucket[i] - mn) * 255.0 / (mx - mn);
         for(n = 1; n < x; n++){

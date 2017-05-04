@@ -5,7 +5,7 @@
 /* PIXEL */
 
 BIMAGE_STATUS
-bpixelInit(bpixel *px, float r, float g, float b, float a, BIMAGE_DEPTH depth){
+bimagePixelInit(bimagePixel *px, float r, float g, float b, float a, BIMAGE_DEPTH depth){
     if (!px){
         return BIMAGE_ERR;
     }
@@ -23,22 +23,22 @@ bpixelInit(bpixel *px, float r, float g, float b, float a, BIMAGE_DEPTH depth){
     return BIMAGE_OK;
 }
 
-bpixel
-bpixelCreate (float r, float g, float b, float a, BIMAGE_DEPTH depth)
+bimagePixel
+bimagePixelCreate (float r, float g, float b, float a, BIMAGE_DEPTH depth)
 {
-    bpixel px;
-    bpixelInit(&px, r, g, b, a, depth);
+    bimagePixel px;
+    bimagePixelInit(&px, r, g, b, a, depth);
     return px;
 }
 
 BIMAGE_STATUS
-bpixelZero(bpixel *px, BIMAGE_DEPTH depth)
+bimagePixelZero(bimagePixel *px, BIMAGE_DEPTH depth)
 {
-    return bpixelInit(px, 0, 0, 0, 0, depth);
+    return bimagePixelInit(px, 0, 0, 0, 0, depth);
 }
 
 BIMAGE_STATUS
-bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth)
+bimagePixelConvertDepth (bimagePixel *dst, bimagePixel src, BIMAGE_DEPTH depth)
 {
     int i;
 
@@ -148,7 +148,7 @@ ok:
 }
 
 BIMAGE_STATUS
-bpixelClamp(bpixel *px)
+bimagePixelClamp(bimagePixel *px)
 {
     int i;
     BIMAGE_TYPE t = px->depth | 1;
@@ -163,33 +163,33 @@ bpixelClamp(bpixel *px)
 #if !defined(BIMAGE_SSE) // && !defined(BIMAGE_NEON)
 #define PIXEL_OP(name, op) \
 BIMAGE_STATUS \
-bpixel##name(bpixel *a, bpixel b) \
+bimagePixel##name(bimagePixel *a, bimagePixel b) \
 { \
     if (!a){ \
         return BIMAGE_ERR; \
     } \
     int i; \
-    bpixel c; \
-    bpixelConvertDepth(&c, b, a->depth); \
+    bimagePixel c; \
+    bimagePixelConvertDepth(&c, b, a->depth); \
     for (i = 0; i < 3; i++){ \
         a->data[i] = a->data[i] op c.data[i]; \
     } \
-    bpixelClamp(a); \
+    bimagePixelClamp(a); \
     return BIMAGE_OK; \
 }
 #else
 #define PIXEL_OP(name, op) \
 BIMAGE_STATUS \
-bpixel##name(bpixel *a, bpixel b) \
+bimagePixel##name(bimagePixel *a, bimagePixel b) \
 { \
     if (!a){ \
         return BIMAGE_ERR; \
     } \
     int i; \
-    bpixel c; \
-    bpixelConvertDepth(&c, b, a->depth); \
+    bimagePixel c; \
+    bimagePixelConvertDepth(&c, b, a->depth); \
     a->m = a->m op c.m;\
-    bpixelClamp(a); \
+    bimagePixelClamp(a); \
     return BIMAGE_OK; \
 }
 #endif

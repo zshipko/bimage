@@ -7,11 +7,11 @@
 BIMAGE_STATUS \
 bimage##name(bimage* a, bimage* b) \
 { \
-    bpixel p, q; \
+    bimagePixel p, q; \
     bimageIterAll(a, x, y){ \
         if (bimageGetPixelUnsafe(a, x, y, &p) == BIMAGE_ERR  || \
             bimageGetPixel(b, x, y, &q) == BIMAGE_ERR || \
-            bpixel##name(&p, q) == BIMAGE_ERR){ \
+            bimagePixel##name(&p, q) == BIMAGE_ERR){ \
             break; \
         } \
         bimageSetPixelUnsafe(a, x, y, p); \
@@ -33,7 +33,7 @@ bimageColor(bimage* dst, bimage* im, BIMAGE_CHANNEL c)
     }
 
     BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
-    bpixel px;
+    bimagePixel px;
 
     bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, depth | c);
     if (im2 == NULL){
@@ -51,7 +51,7 @@ bimageColor(bimage* dst, bimage* im, BIMAGE_CHANNEL c)
 bimage*
 bimageGrayscale(bimage* dst, bimage* im, BIMAGE_CHANNEL chan)
 {
-    bpixel p, px;
+    bimagePixel p, px;
     BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
 
     bimage *im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, depth | chan);
@@ -85,7 +85,7 @@ bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float off
 
     int32_t ix, iy;
     int kx, ky, l;
-    bpixel p, px;
+    bimagePixel p, px;
     px.depth = bimageTypeDepth(im->type);
     px.data[3] = bimageTypeMax(im->type);
 
@@ -122,7 +122,7 @@ bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float off
                 }
             }
 
-            bpixelClamp(&px);
+            bimagePixelClamp(&px);
             bimageSetPixel(oi, ix, iy, px);
         }
     }
@@ -133,7 +133,7 @@ bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float off
 bimage*
 bimageInvert(bimage* dst, bimage* src)
 {
-    bpixel px;
+    bimagePixel px;
     int i;
     bimage *im2 = BIMAGE_CREATE_DEST(dst, src->width, src->height, src->type);
     if (im2 == NULL){
@@ -309,7 +309,7 @@ bimageRotate(bimage* dst, bimage* im, float deg)
 
     float angle = 2 * M_PI * deg / 360.0f;
 
-    bpixel px;
+    bimagePixel px;
     bimageIterAll(im2, i, j){
         dx = i - midX;
         dy = j - midY;

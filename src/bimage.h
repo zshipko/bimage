@@ -53,7 +53,7 @@ typedef struct bimage {
     bool ondisk;
 } bimage;
 
-typedef struct bpixel {
+typedef struct bimagePixel {
     union {
 #ifdef BIMAGE_SSE
         __m128 m;
@@ -61,17 +61,17 @@ typedef struct bpixel {
         float data[4];
     };
     BIMAGE_DEPTH depth;
-} bpixel;
+} bimagePixel;
 
 #define bAlloc(n) calloc(n, 1)
 #define bFree(x) if(x) free(x)
 #define bimageTotalSize(w, h, t) (int64_t)w * (int64_t)h * (int64_t)bimageDepthSize(bimageTypeDepth(t)) * (int64_t)bimageTypeChannels(t)
 #define bimageIndex(im, x, y) y * bimageTypeChannels(im->type) * im->width + x * bimageTypeChannels(im->type)
 #define bimageAt(im, index, t) (((t*)im->data)[index])
-#define bimageIter(im, x, y, _x, _y, _w, _h) \
+#define bimageIter(im, x, y, _x, _y, _w, _h, sx, sy) \
     int32_t x, y; \
-    for(y = _y; y < im->height && y < _y + _h; y++) \
-        for(x = _x; x < im->width && x < _x + _w; x++)
+    for(y = _y; y < im->height && y < _y + _h; y+=sy) \
+        for(x = _x; x < im->width && x < _x + _w; x+=sx)
 #define bimageIterAll(im, x, y) \
     int32_t x, y; \
     for(y = 0; y < im->height; y++) \
@@ -79,8 +79,8 @@ typedef struct bpixel {
 
 #define bimageBoundsCheck(im, x, y) (bimageIsValid(im) && (im)->width > (x) && (im)->height > (y) && (x) > 0 && (y) > 0)
 
-typedef float (*bpixelOp)(float, float);
-typedef void (*bimageOp)(bimage **dst, bimage*, bimage*, bpixelOp);
+typedef float (*bimagePixelOp)(float, float);
+typedef void (*bimageOp)(bimage **dst, bimage*, bimage*, bimagePixelOp);
 
 size_t
 bimageDepthSize(BIMAGE_DEPTH d);
@@ -88,31 +88,31 @@ bimageDepthSize(BIMAGE_DEPTH d);
 /* BIMAGE */
 
 BIMAGE_STATUS
-bpixelInit(bpixel *px, float r, float g, float b, float a, BIMAGE_DEPTH depth);
+bimagePixelInit(bimagePixel *px, float r, float g, float b, float a, BIMAGE_DEPTH depth);
 
-bpixel
-bpixelCreate (float r, float g, float b, float a, BIMAGE_DEPTH depth);
-
-BIMAGE_STATUS
-bpixelZero(bpixel *px, BIMAGE_DEPTH depth);
+bimagePixel
+bimagePixelCreate (float r, float g, float b, float a, BIMAGE_DEPTH depth);
 
 BIMAGE_STATUS
-bpixelConvertDepth (bpixel *dst, bpixel src, BIMAGE_DEPTH depth);
+bimagePixelZero(bimagePixel *px, BIMAGE_DEPTH depth);
 
 BIMAGE_STATUS
-bpixelClamp(bpixel *p);
+bimagePixelConvertDepth (bimagePixel *dst, bimagePixel src, BIMAGE_DEPTH depth);
 
 BIMAGE_STATUS
-bpixelAdd(bpixel *p, bpixel q);
+bimagePixelClamp(bimagePixel *p);
 
 BIMAGE_STATUS
-bpixelSub(bpixel *p, bpixel q);
+bimagePixelAdd(bimagePixel *p, bimagePixel q);
 
 BIMAGE_STATUS
-bpixelMul(bpixel *p, bpixel q);
+bimagePixelSub(bimagePixel *p, bimagePixel q);
 
 BIMAGE_STATUS
-bpixelDiv(bpixel *p, bpixel q);
+bimagePixelMul(bimagePixel *p, bimagePixel q);
+
+BIMAGE_STATUS
+bimagePixelDiv(bimagePixel *p, bimagePixel q);
 
 bool
 bimageIsValid(bimage *im);
@@ -142,16 +142,16 @@ bimage*
 bimageConsume(bimage **dst, bimage *src);
 
 BIMAGE_STATUS
-bimageGetPixelUnsafe(bimage* im, uint32_t x, uint32_t y, bpixel *p);
+bimageGetPixelUnsafe(bimage* im, uint32_t x, uint32_t y, bimagePixel *p);
 
 BIMAGE_STATUS
-bimageSetPixelUnsafe(bimage* im, uint32_t x, uint32_t y, bpixel p);
+bimageSetPixelUnsafe(bimage* im, uint32_t x, uint32_t y, bimagePixel p);
 
 BIMAGE_STATUS
-bimageGetPixel(bimage* im, uint32_t x, uint32_t y, bpixel *p);
+bimageGetPixel(bimage* im, uint32_t x, uint32_t y, bimagePixel *p);
 
 BIMAGE_STATUS
-bimageSetPixel(bimage* im, uint32_t x, uint32_t y, bpixel p);
+bimageSetPixel(bimage* im, uint32_t x, uint32_t y, bimagePixel p);
 
 bimage*
 bimageCrop(bimage* dst, bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h);
@@ -267,21 +267,21 @@ bimageHashDiff(uint64_t a, uint64_t b);
 
 /* HISTOGRAM */
 
-typedef struct bhistogram {
+typedef struct bimageHistogram {
     int64_t total;
     float bucket[256];
-} bhistogram;
+} bimageHistogram;
 
 BIMAGE_STATUS
-bimageHistogram(bimage* im, bhistogram h[], BIMAGE_CHANNEL ch);
+bimageGetHistogram(bimage* im, bimageHistogram h[], BIMAGE_CHANNEL ch);
 
 int
-bhistogramMax(bhistogram h);
+bimageHistogramMax(bimageHistogram h);
 int
-bhistogramMin(bhistogram h);
+bimageHistogramMin(bimageHistogram h);
 
 bimage*
-bhistogramImage(bhistogram h);
+bimageHistogramImage(bimageHistogram h);
 
 #define BIMAGE_CREATE_DEST(dst, w, h, t) \
     ((dst) == NULL ? bimageCreate((w), (h), (t)) \

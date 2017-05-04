@@ -8,11 +8,11 @@
 uint64_t bimageHash(bimage *im)
 {
     uint64_t hash = 0UL; // Output
-    bpixel px;           // Current pixel
-    bpixel apx;          // Average pixel
+    bimagePixel px;           // Current pixel
+    bimagePixel apx;          // Average pixel
     int i, j, n = 0;
 
-    bpixelZero(&apx, bimageTypeDepth(im->type));
+    bimagePixelZero(&apx, bimageTypeDepth(im->type));
 
     bimage* sm = NULL;
 
