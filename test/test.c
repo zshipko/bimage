@@ -35,7 +35,7 @@ bimage* randomImage(uint32_t w, uint32_t h, BIMAGE_TYPE t)
     }
 
     bimageIterAll(im, x, y){
-        bimageSetPixel(im, x, y, bpixelCreate(randomPix(t), randomPix(t), randomPix(t), randomPix(t), -1));
+        bimageSetPixel(im, x, y, bimagePixelCreate(randomPix(t), randomPix(t), randomPix(t), randomPix(t), -1));
     }
 
     return im;
@@ -101,19 +101,19 @@ START_TEST (test_bimageSize)
 
 } END_TEST
 
-START_TEST (test_bpixelConvert)
+START_TEST (test_bimagePixelConvert)
 {
     BIMAGE_DEPTH depth[] = {BIMAGE_U8, BIMAGE_U16, BIMAGE_U32, BIMAGE_F32}, i, j;
 
     for(i = 0; i < 4; i++){
         BIMAGE_TYPE t = depth[i] | 4;
         int64_t m = bimageTypeMax(t);
-        bpixel px = bpixelCreate(m, 0, 0, m, depth[i]);
+        bimagePixel px = bimagePixelCreate(m, 0, 0, m, depth[i]);
 
         for (j = 0; j > 3; j++){
-            bpixel px2;
+            bimagePixel px2;
             t = depth[j] | 4;
-            ck_assert_int_eq(bpixelConvertDepth(&px, px2, depth[j]), BIMAGE_OK);
+            ck_assert_int_eq(bimagePixelConvertDepth(&px, px2, depth[j]), BIMAGE_OK);
             ck_assert(px2.data[0] == bimageTypeMax(t) && px2.data[1] == 0);
         }
     }
@@ -121,7 +121,7 @@ START_TEST (test_bpixelConvert)
 
 START_TEST (test_bimageConsume)
 {
-    bpixel p = bpixelCreate(65535.0, 0, 0, 65535.0, BIMAGE_U16);
+    bimagePixel p = bimagePixelCreate(65535.0, 0, 0, 65535.0, BIMAGE_U16);
     bimage* a = randomImage(100, 100, BIMAGE_U8 | 4);
     bimage* b = randomImage(50, 50, BIMAGE_U16 | 4);
     bimageSetPixel(b, 10, 10, p);
@@ -130,7 +130,7 @@ START_TEST (test_bimageConsume)
     ck_assert_int_eq(a->height, 50);
     ck_assert_int_eq(bimageHash(a), bimageHash(b));
 
-    bpixel px;
+    bimagePixel px;
     bimageGetPixel(a, 10, 10, &px);
     ck_assert(px.data[0] == p.data[0] && px.data[1] == p.data[1] && px.data[2] == p.data[2] && px.data[3] == p.data[3]);
     bimageRelease(a);
@@ -141,7 +141,7 @@ START_TEST (test_bimageAdd)
     bimage* im = randomImage(100, 100, BIMAGE_U8 | 3);
     bimage* im2 = randomImage(100, 100, BIMAGE_U8 | 3);
 
-    bpixel c = bpixelCreate(255, 0, 0, 255, BIMAGE_U8), d;
+    bimagePixel c = bimagePixelCreate(255, 0, 0, 255, BIMAGE_U8), d;
     bimageSetPixelUnsafe(im2, 50, 50, c);
     bimageAdd(im, im2);
 
@@ -175,14 +175,14 @@ START_TEST (test_bimageCopyTo)
         bimage* im2 = randomImage(WIDTH/2, HEIGHT/2, types[i]);
         bimageCopyTo(im, im2, 10, 10);
 
-        bpixel a, b;
+        bimagePixel a, b;
         bimageGetPixel(im, 10, 10, &a);
         bimageGetPixel(im2, 0, 0, &b);
 
-        ck_assert(a.data[0] == b.data[0] && a.data[1] == b.data[1] && a.data[2] == b.data[2] && a.data[3] == b.data[3]);
+        ck_assert(a.data[0] == b.data[0] && a.data[1] == b.data[1] && a.data[2] == b.data[2]);
         bimageGetPixel(im, im2->width+9, im2->height+9, &a);
         bimageGetPixel(im2, im2->width-1, im2->height-1, &b);
-        ck_assert(a.data[0] == b.data[0] && a.data[1] == b.data[1] && a.data[2] == b.data[2] && a.data[3] == b.data[3]);
+        ck_assert(a.data[0] == b.data[0] && a.data[1] == b.data[1] && a.data[2] == b.data[2]);
         bimageRelease(im);
         bimageRelease(im2);
     }
@@ -200,7 +200,7 @@ Suite *bimage_suite(void)
     tcase_add_test(tc, test_bimageChannels);
     tcase_add_test(tc, test_bimageSize);
     tcase_add_test(tc, test_bimageConsume);
-    tcase_add_test(tc, test_bpixelConvert);
+    tcase_add_test(tc, test_bimagePixelConvert);
     tcase_add_test(tc, test_bimageAdd);
     tcase_add_test(tc, test_bimageResizeHash);
     tcase_add_test(tc, test_bimageCopyTo);
