@@ -130,7 +130,7 @@ bimage*
 bimageCreateOnDiskFd (int fd, uint32_t width, uint32_t height, BIMAGE_TYPE t);
 
 bimage*
-bimageCreateOnDisk (char* filename, uint32_t width, uint32_t height, BIMAGE_TYPE t);
+bimageCreateOnDisk (const char* filename, uint32_t width, uint32_t height, BIMAGE_TYPE t);
 
 void
 bimageRelease(bimage* im);

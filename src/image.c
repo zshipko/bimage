@@ -89,27 +89,61 @@ bimageCreate (uint32_t width, uint32_t height, BIMAGE_TYPE t)
     return bimageCreateWithData(width, height, t, data, true, false);
 }
 
+#define MMAP_HEADER_SIZE sizeof(uint32_t) * 2 + sizeof(BIMAGE_TYPE) + 4
+
 bimage*
 bimageCreateOnDiskFd (int fd, uint32_t width, uint32_t height, BIMAGE_TYPE t)
 {
-    // Allocate enough memory on disk
-    lseek(fd, bimageTotalSize(width, height, t), SEEK_SET);
-    write(fd, "\0", 1);
+    bool loadFile = width == 0 || height == 0 || bimageTypeDepth(t) == BIMAGE_UNKNOWN;
+    if (loadFile){
+        char hdr[4];
+        read(fd, &hdr, 4);
+        if (strncmp(hdr, "BIMG", 4) != 0){
+            return NULL;
+        }
 
-    void *data = mmap(NULL, bimageTotalSize(width, height, t), PROT_READ|PROT_WRITE, MAP_SHARED, fd, false);
+        read(fd, &t, sizeof(BIMAGE_TYPE));
+        read(fd, &width, sizeof(uint32_t));
+        read(fd, &height, sizeof(uint32_t));
+
+        if (width == 0 || height == 0 || bimageTypeDepth(t) == BIMAGE_UNKNOWN || bimageTypeChannels(t) == 0){
+            return NULL;
+        }
+
+        if (lseek(fd, 0, SEEK_END) < width * height * bimageDepthSize(bimageTypeDepth(t)) * bimageTypeChannels(t)){
+            return NULL;
+        }
+
+        lseek(fd, 0, SEEK_SET);
+    }
+
+    // Write header for new images
+    if (!loadFile){
+        write(fd, "BIMG", 4);
+        write(fd, &t, sizeof(BIMAGE_TYPE));
+        write(fd, &width, sizeof(uint32_t));
+        write(fd, &height, sizeof(uint32_t));
+
+        // Allocate enough memory on disk
+        lseek(fd, bimageTotalSize(width, height, t), SEEK_SET);
+        write(fd, "\0", 1);
+    }
+
+    void *data = mmap(NULL, bimageTotalSize(width, height, t) + MMAP_HEADER_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, false);
 
     // Check data
     if (!data){
         return NULL;
     }
 
-    return bimageCreateWithData(width, height, t, data, true, true);
+    return bimageCreateWithData(width, height, t, data + MMAP_HEADER_SIZE, true, true);
 }
 
 bimage*
-bimageCreateOnDisk (char *filename, uint32_t width, uint32_t height, BIMAGE_TYPE t)
+bimageCreateOnDisk (const char *filename, uint32_t width, uint32_t height, BIMAGE_TYPE t)
 {
-    int fd = open(filename, O_RDWR|O_CREAT, 0655);
+    bool loadExisting = width == 0 || height == 0 || t == BIMAGE_UNKNOWN;
+    int fd = open(filename,  loadExisting ? O_RDWR : O_RDWR|O_CREAT, 0655);
     if (fd < 0){
         return NULL;
     }
@@ -131,7 +165,7 @@ bimageReleaseData(bimage* im)
 {
     if (im->data){
         if (im->ondisk){
-            munmap(im->data, bimageTotalSize(im->width, im->height, im->type));
+            munmap(im->data-MMAP_HEADER_SIZE, bimageTotalSize(im->width, im->height, im->type));
         } else {
             bFree(im->data);
         }
