@@ -42,12 +42,14 @@ bimageSaveTIFF(bimage *im, const char *filename)
     TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
     TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, im->width);
     TIFFSetField(tif, TIFFTAG_IMAGELENGTH, im->height);
-    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, bimageTypeDepth(im->type));
+    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, bimageDepthSize(bimageTypeDepth(im->type)));
     TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, bimageTypeChannels(im->type));
+
+    uint64_t offs = (bimageDepthSize(bimageTypeDepth(im->type))/8) * (uint64_t)bimageTypeChannels(im->type) * im->width;
 
     uint32_t j;
     for (j = 0; j < im->height; j++){
-        if (TIFFWriteScanline(tif, im->data + ((bimageDepthSize(bimageTypeDepth(im->type))/8) * bimageTypeChannels(im->type) * im->width * j), j, 0) < 0){
+        if (TIFFWriteScanline(tif, im->data + offs * j, j, 0) < 0){
             TIFFClose(tif);
             remove(filename);
             return BIMAGE_ERR;
