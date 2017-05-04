@@ -77,7 +77,7 @@ typedef struct bimagePixel {
     for(y = 0; y < im->height; y++) \
         for(x = 0; x < im->width; x++)
 
-#define bimageBoundsCheck(im, x, y) (bimageIsValid(im) && (im)->width > (x) && (im)->height > (y) && (x) > 0 && (y) > 0)
+#define bimageBoundsCheck(im, x, y) (bimageIsValid(im) && (im)->width > (x) && (im)->height > (y) && (x) >= 0 && (y) >= 0)
 
 typedef float (*bimagePixelOp)(float, float);
 typedef void (*bimageOp)(bimage **dst, bimage*, bimage*, bimagePixelOp);
