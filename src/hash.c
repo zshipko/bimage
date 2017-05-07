@@ -40,13 +40,13 @@ uint64_t bimageHash(bimage *im)
             }
 
             // Compare current pixel against the average
-            if (px.data[0] > apx.data[0]){
+            if (px.data.f[0] > apx.data.f[0]){
                 hash |= 1<<n;
             } else {
                 hash &= ~(1<<n);
             }
 
-            apx.data[0] = px.data[0];
+            apx.data.f[0] = px.data.f[0];
             n = n + 1;
         }
     }

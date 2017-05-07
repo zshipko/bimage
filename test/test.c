@@ -114,7 +114,7 @@ START_TEST (test_bimagePixelConvert)
             bimagePixel px2;
             t = depth[j] | 4;
             ck_assert_int_eq(bimagePixelConvertDepth(&px, px2, depth[j]), BIMAGE_OK);
-            ck_assert(px2.data[0] == bimageTypeMax(t) && px2.data[1] == 0);
+            ck_assert(px2.data.f[0] == bimageTypeMax(t) && px2.data.f[1] == 0);
         }
     }
 } END_TEST
@@ -132,7 +132,7 @@ START_TEST (test_bimageConsume)
 
     bimagePixel px;
     bimageGetPixel(a, 10, 10, &px);
-    ck_assert(px.data[0] == p.data[0] && px.data[1] == p.data[1] && px.data[2] == p.data[2] && px.data[3] == p.data[3]);
+    ck_assert(px.data.f[0] == p.data.f[0] && px.data.f[1] == p.data.f[1] && px.data.f[2] == p.data.f[2] && px.data.f[3] == p.data.f[3]);
     bimageRelease(a);
 } END_TEST
 
@@ -146,7 +146,7 @@ START_TEST (test_bimageAdd)
     bimageAdd(im, im2);
 
     bimageGetPixelUnsafe(im2, 50, 50, &d);
-    ck_assert(d.data[0] == c.data[0] && d.data[1] == c.data[1] && d.data[2] == c.data[2]);
+    ck_assert(d.data.f[0] == c.data.f[0] && d.data.f[1] == c.data.f[1] && d.data.f[2] == c.data.f[2]);
     bimageRelease(im);
     bimageRelease(im2);
 } END_TEST;
@@ -179,10 +179,10 @@ START_TEST (test_bimageCopyTo)
         bimageGetPixel(im, 10, 10, &a);
         bimageGetPixel(im2, 0, 0, &b);
 
-        ck_assert(a.data[0] == b.data[0] && a.data[1] == b.data[1] && a.data[2] == b.data[2]);
+        ck_assert(a.data.f[0] == b.data.f[0] && a.data.f[1] == b.data.f[1] && a.data.f[2] == b.data.f[2]);
         bimageGetPixel(im, im2->width+9, im2->height+9, &a);
         bimageGetPixel(im2, im2->width-1, im2->height-1, &b);
-        ck_assert(a.data[0] == b.data[0] && a.data[1] == b.data[1] && a.data[2] == b.data[2]);
+        ck_assert(a.data.f[0] == b.data.f[0] && a.data.f[1] == b.data.f[1] && a.data.f[2] == b.data.f[2]);
         bimageRelease(im);
         bimageRelease(im2);
     }
