@@ -195,6 +195,21 @@ bimageDestroy(bimage **im)
     }
 }
 
+BIMAGE_STATUS
+bimageMmap(const char *filename, bimage** im)
+{
+    bimage *tmp = bimageCreateOnDisk(filename, (*im)->width, (*im)->height, (*im)->type);
+    if (!tmp){
+        return BIMAGE_ERR;
+    }
+
+    memcpy(tmp->data, (*im)->data, bimageTotalSize(tmp->width, tmp->height, tmp->type));
+    bimageReleaseData((*im));
+    (*im)->data = tmp->data;
+
+    return BIMAGE_OK;
+}
+
 bimage*
 bimageConsume(bimage **dst, bimage *src)
 {
