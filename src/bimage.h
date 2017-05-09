@@ -139,7 +139,7 @@ void
 bimageDestroy(bimage** im);
 
 BIMAGE_STATUS
-bimageMmap(const char *filename, bimage **im);
+bimageMapToDisk(const char *filename, bimage **im);
 
 bimage*
 bimageConsume(bimage **dst, bimage *src);

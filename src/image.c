@@ -196,16 +196,25 @@ bimageDestroy(bimage **im)
 }
 
 BIMAGE_STATUS
-bimageMmap(const char *filename, bimage** im)
+bimageMapToDisk(const char *filename, bimage** im)
 {
     bimage *tmp = bimageCreateOnDisk(filename, (*im)->width, (*im)->height, (*im)->type);
     if (!tmp){
         return BIMAGE_ERR;
     }
 
+    // Copy pixel data to temporary image
     memcpy(tmp->data, (*im)->data, bimageTotalSize(tmp->width, tmp->height, tmp->type));
+
+    // Copy data to destination image
     bimageReleaseData((*im));
+    (*im)->owner = true;
+    (*im)->ondisk = true;
     (*im)->data = tmp->data;
+
+    // Free temporary image
+    tmp->owner = false;
+    bimageRelease(tmp);
 
     return BIMAGE_OK;
 }
