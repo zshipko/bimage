@@ -174,7 +174,6 @@ bimagePixel##name(bimagePixel *a, bimagePixel b) \
     for (i = 0; i < 3; i++){ \
         a->data.f[i] = a->data.f[i] op c.data.f[i]; \
     } \
-    bimagePixelClamp(a); \
     return BIMAGE_OK; \
 }
 #else
@@ -189,7 +188,6 @@ bimagePixel##name(bimagePixel *a, bimagePixel b) \
     bimagePixel c; \
     bimagePixelConvertDepth(&c, b, a->depth); \
     a->data.m = a->data.m op c.data.m;\
-    bimagePixelClamp(a); \
     return BIMAGE_OK; \
 }
 #endif

@@ -14,6 +14,7 @@ bimage##name(bimage* a, bimage* b) \
             bimagePixel##name(&p, q) == BIMAGE_ERR){ \
             break; \
         } \
+        bimagePixelClamp(&p); \
         bimageSetPixelUnsafe(a, x, y, p); \
     } \
     return BIMAGE_OK; \
