@@ -117,7 +117,7 @@ bimagePixelDiv(bimagePixel *p, bimagePixel q);
 bool
 bimageIsValid(bimage *im);
 
-size_t
+uint32_t
 bimageTypeMax(BIMAGE_TYPE t);
 
 bimage*

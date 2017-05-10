@@ -11,7 +11,7 @@
 
 /* BIMAGE TYPE */
 
-size_t
+uint32_t
 bimageTypeMax(BIMAGE_TYPE t)
 {
     switch(bimageTypeDepth(t)){

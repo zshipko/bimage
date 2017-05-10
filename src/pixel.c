@@ -43,7 +43,7 @@ bimagePixelConvertDepth (bimagePixel *dst, bimagePixel src, BIMAGE_DEPTH depth)
     int i;
 
     // Same depth
-    if (src.depth == depth){
+    if (src.depth == depth || src.depth == BIMAGE_UNKNOWN){
         *dst = src;
         goto ok;
     }
