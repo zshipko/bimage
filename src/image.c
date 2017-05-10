@@ -423,7 +423,7 @@ bimageAdjustGamma (bimage* im, float g)
 }
 
 bimagePixel
-bimageAverageRect(bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
+bimageAverageInRect(bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
     int64_t n = -1;
     bimagePixel px, dst = bimagePixelCreate(0, 0, 0, 0, bimageTypeDepth(im->type));
@@ -436,5 +436,4 @@ bimageAverageRect(bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 
     bimagePixelDiv(&dst, bimagePixelCreate(n, n, n, n, bimageTypeDepth(im->type)));
     return dst;
-
 }

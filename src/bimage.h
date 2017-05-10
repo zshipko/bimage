@@ -193,6 +193,9 @@ bimageConvertChannels(bimage* dst, bimage* im, BIMAGE_CHANNEL channels);
 void
 bimageAdjustGamma(bimage* im, float gamma);
 
+bimagePixel
+bimageAverageInRect(bimage* im, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+
 /* RESIZE */
 
 bimage*
