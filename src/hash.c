@@ -7,12 +7,10 @@
 
 uint64_t bimageHash(bimage *im)
 {
-    uint64_t hash = 0UL; // Output
+    uint64_t hash = 0UL;      // Output
     bimagePixel px;           // Current pixel
-    bimagePixel apx;          // Average pixel
+    float apx = 0.0f;         // Average pixel
     int i, j, n = 0;
-
-    bimagePixelZero(&apx, bimageTypeDepth(im->type));
 
     bimage* sm = NULL;
 
@@ -40,13 +38,13 @@ uint64_t bimageHash(bimage *im)
             }
 
             // Compare current pixel against the average
-            if (px.data.f[0] > apx.data.f[0]){
+            if (px.data.f[0] > apx){
                 hash |= 1<<n;
             } else {
                 hash &= ~(1<<n);
             }
 
-            apx.data.f[0] = px.data.f[0];
+            apx = px.data.f[0];
             n = n + 1;
         }
     }

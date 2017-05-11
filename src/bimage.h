@@ -20,7 +20,11 @@ extern "C" {
 #define BIMAGE_NO_INTRIN
 #endif
 
+#ifdef __linux__
+#define BIMAGE_RAND_RANGE(x) (random() % x)
+#else
 #define BIMAGE_RAND_RANGE(x) arc4random_uniform(x)
+#endif
 
 typedef enum BIMAGE_STATUS {
     BIMAGE_ERR,

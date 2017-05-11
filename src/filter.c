@@ -85,7 +85,7 @@ bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float off
     Ks = Ks/2;
 
     int32_t ix, iy;
-    int kx, ky, l;
+    int kx, ky;
     bimagePixel p, px;
     px.depth = bimageTypeDepth(im->type);
     px.data.f[3] = bimageTypeMax(im->type);
@@ -99,7 +99,7 @@ bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float off
     __m128 divi = _mm_load_ps1(&divisor),
            offs = _mm_load_ps1(&offset);
 #else
-    int channels = bimageTypeChannels(im->type);
+    int channels = bimageTypeChannels(im->type), l;
 
     // Ignore alpha channel
     if (channels > BIMAGE_RGB){

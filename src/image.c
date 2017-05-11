@@ -230,6 +230,10 @@ bimageConsume(bimage **dst, bimage *src)
 BIMAGE_STATUS
 bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel *p)
 {
+    if (bimageTypeChannels(im->type) > 4){
+        return BIMAGE_ERR;
+    }
+
     int i;
     int64_t offs = bimageIndex(im, x, y);
 
@@ -237,7 +241,7 @@ bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel *p)
     p->depth = bimageTypeDepth(im->type);
     p->data.f[3] = bimageTypeMax(im->type);
 
-    for (i = 0; i < bimageTypeChannels(im->type) % 5; i++){
+    for (i = 0; i < bimageTypeChannels(im->type); i++){
         switch (p->depth){
         case BIMAGE_U8:
             p->data.f[i] = (float)bimageAt(im, offs+i, uint8_t);

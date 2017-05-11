@@ -40,13 +40,13 @@ bimagePixelZero(bimagePixel *px, BIMAGE_DEPTH depth)
 BIMAGE_STATUS
 bimagePixelConvertDepth (bimagePixel *dst, bimagePixel src, BIMAGE_DEPTH depth)
 {
-    int i;
-
     // Same depth
     if (src.depth == depth || src.depth == BIMAGE_UNKNOWN){
         *dst = src;
         goto ok;
     }
+
+    int i;
 
     // Conversion to F32 is the same for every type
     if (depth == BIMAGE_F32){
@@ -184,7 +184,6 @@ bimagePixel##name(bimagePixel *a, bimagePixel b) \
     if (!a){ \
         return BIMAGE_ERR; \
     } \
-    int i; \
     bimagePixel c; \
     bimagePixelConvertDepth(&c, b, a->depth); \
     a->data.m = a->data.m op c.data.m;\
