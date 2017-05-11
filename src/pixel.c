@@ -196,3 +196,21 @@ PIXEL_OP(Add, +);
 PIXEL_OP(Sub, -);
 PIXEL_OP(Mul, *);
 PIXEL_OP(Div, /);
+
+bimagePixel
+bimagePixelRandom(BIMAGE_DEPTH t)
+{
+    if (t == BIMAGE_F32){
+        return bimagePixelCreate(
+            (float)BIMAGE_RAND_RANGE(255) / 255.0,
+            (float)BIMAGE_RAND_RANGE(255) / 255.0,
+            (float)BIMAGE_RAND_RANGE(255) / 255.0,
+            (float)BIMAGE_RAND_RANGE(255) / 255.0, t);
+    }
+
+    return bimagePixelCreate(
+        BIMAGE_RAND_RANGE(bimageDepthMax(t)),
+        BIMAGE_RAND_RANGE(bimageDepthMax(t)),
+        BIMAGE_RAND_RANGE(bimageDepthMax(t)),
+        BIMAGE_RAND_RANGE(bimageDepthMax(t)), t);
+}

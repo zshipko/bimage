@@ -20,6 +20,8 @@ extern "C" {
 #define BIMAGE_NO_INTRIN
 #endif
 
+#define BIMAGE_RAND_RANGE(x) arc4random_uniform(x)
+
 typedef enum BIMAGE_STATUS {
     BIMAGE_ERR,
     BIMAGE_OK
@@ -30,6 +32,7 @@ typedef uint16_t BIMAGE_TYPE;
 #define bimageType(d, c) (d) | (c & 0xFF)
 #define bimageTypeChannels(t) ((t) & 0x00FF)
 #define bimageTypeDepth(t) ((t) & 0xFF00)
+#define bimageDepthMax(d) (bimageTypeMax(d | 1))
 
 typedef enum BIMAGE_CHANNEL {
     BIMAGE_GRAY = 0x0001,
@@ -114,6 +117,9 @@ bimagePixelMul(bimagePixel *p, bimagePixel q);
 BIMAGE_STATUS
 bimagePixelDiv(bimagePixel *p, bimagePixel q);
 
+bimagePixel
+bimagePixelRandom(BIMAGE_DEPTH depth);
+
 bool
 bimageIsValid(bimage *im);
 
@@ -162,6 +168,21 @@ bimageCrop(bimage* dst, bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t
 void
 bimageCopyTo(bimage *dst, bimage *src, uint32_t x, uint32_t y);
 
+bimage*
+bimageConvertDepth(bimage* dst, bimage* im, BIMAGE_DEPTH depth);
+
+bimage*
+bimageConvertChannels(bimage* dst, bimage* im, BIMAGE_CHANNEL channels);
+
+void
+bimageAdjustGamma(bimage* im, float gamma);
+
+bimagePixel
+bimageAverageInRect(bimage* im, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+
+bimage*
+bimageRandom(bimage* dst, uint32_t width, uint32_t height, BIMAGE_TYPE t);
+
 /* TIFF */
 
 bimage*
@@ -183,18 +204,6 @@ bimageOpenFloat(const char* filename);
 
 BIMAGE_STATUS
 bimageSave(bimage* im, const char* filename);
-
-bimage*
-bimageConvertDepth(bimage* dst, bimage* im, BIMAGE_DEPTH depth);
-
-bimage*
-bimageConvertChannels(bimage* dst, bimage* im, BIMAGE_CHANNEL channels);
-
-void
-bimageAdjustGamma(bimage* im, float gamma);
-
-bimagePixel
-bimageAverageInRect(bimage* im, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
 /* RESIZE */
 

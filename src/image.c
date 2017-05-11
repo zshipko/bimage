@@ -437,3 +437,18 @@ bimageAverageInRect(bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
     bimagePixelDiv(&dst, bimagePixelCreate(n, n, n, n, bimageTypeDepth(im->type)));
     return dst;
 }
+
+bimage* bimageRandom(bimage* dst, uint32_t w, uint32_t h, BIMAGE_TYPE t)
+{
+    bimage* im = BIMAGE_CREATE_DEST(dst, w, h, t);
+    if (!im){
+        return NULL;
+    }
+
+    bimageIterAll(im, x, y){
+        bimageSetPixel(im, x, y, bimagePixelRandom(bimageTypeDepth(t)));
+    }
+
+    return im;
+}
+
