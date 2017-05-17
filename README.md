@@ -32,7 +32,42 @@ To uninstall:
 * [R/W] 32 bit (floating point) HDR files (using `stb_image`)
 
 ## Usage
+Loading an image:
 
-Coming soon
+    bimage *im = bimageOpen("my-image.tiff");
+    if (!im){
+        // Handle invalid image
+    }
 
+Resizing an image:
 
+    bimage *resized = bimageResize(NULL, im, 500, 0);
+    if (!resized){
+        // Handle resize error
+    }
+
+Get a pixel:
+
+    bimagePixel px;
+    if (bimageGet(resized, x, y, &px) != BIMAGE_OK){
+        // Handle out-of-bounds
+    }
+
+Set a pixel:
+
+    if (bimageSet(resized, x, y, px) != BIMAGE_OK){
+        // Handle out of bounds
+    }
+
+Iterate over a range of pixels:
+
+    bimageIter(im, 0, 0, im->width, im->height, 1, 1){
+        // Do something
+    }
+
+Release the images:
+
+    bimageRelease(resized);
+    bimageRelease(im);
+
+See `src/bimage.h` for more information.
