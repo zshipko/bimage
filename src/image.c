@@ -9,6 +9,8 @@
 #include <math.h>
 #include <string.h>
 
+#define BIMAGE_PIXEL_INIT bimagePixelCreate(0, 0, 0, 0, BIMAGE_UNKNOWN)
+
 /* BIMAGE TYPE */
 
 uint32_t
@@ -97,14 +99,25 @@ bimageCreateOnDiskFd (int fd, uint32_t width, uint32_t height, BIMAGE_TYPE t)
     bool loadFile = width == 0 || height == 0 || bimageTypeDepth(t) == BIMAGE_UNKNOWN;
     if (loadFile){
         char hdr[4];
-        read(fd, &hdr, 4);
+        if (read(fd, &hdr, 4) != 4){
+            return NULL;
+        }
+
         if (strncmp(hdr, "BIMG", 4) != 0){
             return NULL;
         }
 
-        read(fd, &t, sizeof(BIMAGE_TYPE));
-        read(fd, &width, sizeof(uint32_t));
-        read(fd, &height, sizeof(uint32_t));
+        if (read(fd, &t, sizeof(BIMAGE_TYPE)) != sizeof(BIMAGE_TYPE)){
+            return NULL;
+        }
+
+        if (read(fd, &width, sizeof(uint32_t)) != sizeof(uint32_t)){
+            return NULL;
+        }
+
+        if (read(fd, &height, sizeof(uint32_t)) != sizeof(int32_t)){
+            return NULL;
+        }
 
         if (width == 0 || height == 0 || bimageTypeDepth(t) == BIMAGE_UNKNOWN || bimageTypeChannels(t) == 0){
             return NULL;
@@ -119,14 +132,27 @@ bimageCreateOnDiskFd (int fd, uint32_t width, uint32_t height, BIMAGE_TYPE t)
 
     // Write header for new images
     if (!loadFile){
-        write(fd, "BIMG", 4);
-        write(fd, &t, sizeof(BIMAGE_TYPE));
-        write(fd, &width, sizeof(uint32_t));
-        write(fd, &height, sizeof(uint32_t));
+        if (write(fd, "BIMG", 4) != 4){
+            return NULL;
+        }
+
+        if (write(fd, &t, sizeof(BIMAGE_TYPE)) != sizeof(BIMAGE_TYPE)){
+            return NULL;
+        }
+
+        if(write(fd, &width, sizeof(uint32_t)) != sizeof(uint32_t)){
+            return NULL;
+        }
+
+        if (write(fd, &height, sizeof(uint32_t)) != sizeof(uint32_t)){
+            return NULL;
+        }
 
         // Allocate enough memory on disk
         lseek(fd, bimageTotalSize(width, height, t), SEEK_SET);
-        write(fd, "\0", 1);
+        if (write(fd, "\0", 1) != 1){
+            return NULL;
+        }
     }
 
     void *data = mmap(NULL, bimageTotalSize(width, height, t) + MMAP_HEADER_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, false);
@@ -278,7 +304,7 @@ bimageGetPixel(bimage *im, uint32_t x, uint32_t y, bimagePixel *p)
     }
 
     if (!bimageBoundsCheck(im, x, y)){
-        bimagePixelZero(p, -1);
+        bimagePixelZero(p, BIMAGE_UNKNOWN);
         return BIMAGE_ERR;
     }
 
@@ -317,6 +343,7 @@ BIMAGE_STATUS
 bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bimagePixel p)
 {
     bimagePixel q;
+    bimagePixelZero(&q, p.depth);
 
     if (!bimageBoundsCheck(im, x, y)){
         return BIMAGE_ERR;
@@ -334,7 +361,7 @@ bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bimagePixel p)
 bimage*
 bimageConvertDepth(bimage *dst, bimage *im, BIMAGE_DEPTH depth)
 {
-    bimagePixel px, pdst;
+    bimagePixel px = BIMAGE_PIXEL_INIT, pdst = BIMAGE_PIXEL_INIT;
     bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, depth | bimageTypeChannels(im->type));
     if (!im2){
         return NULL;
@@ -362,7 +389,7 @@ bimageConvertChannels(bimage* dst, bimage* im, BIMAGE_CHANNEL nchannels)
         return NULL;
     }
 
-    bimagePixel px;
+    bimagePixel px = BIMAGE_PIXEL_INIT;
     bimageIterAll(im, x, y){
         if (bimageGetPixelUnsafe(im, x, y, &px) != BIMAGE_ERR){
             bimageSetPixel(im2, x, y, px);
@@ -383,7 +410,7 @@ bimageCrop (bimage* dst, bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_
         return NULL;
     }
 
-    bimagePixel px;
+    bimagePixel px = BIMAGE_PIXEL_INIT;
     bimageIter(im, i, j, x, y, w, h, 1, 1){
         if (bimageGetPixel(im, i, j, &px) == BIMAGE_OK){
             bimageSetPixel(im2, i-x, j-y, px);
@@ -402,7 +429,7 @@ bimageCopyTo (bimage* dst, bimage* src, uint32_t offs_x, uint32_t offs_y)
         return;
     }
 
-    bimagePixel px;
+    bimagePixel px = BIMAGE_PIXEL_INIT;
     bimageIterAll(src, x, y){
         bimageGetPixelUnsafe(src, x, y, &px);
         bimageSetPixel(dst, x+offs_x, y+offs_y, px);
@@ -416,7 +443,7 @@ bimageAdjustGamma (bimage* im, float g)
     c = c > 3 ? 3 : c; // Ignore alpha channel
     float mx = (float)bimageTypeMax(im->type);
 
-    bimagePixel px;
+    bimagePixel px = BIMAGE_PIXEL_INIT;
     bimageIterAll(im, x, y){
         bimageGetPixelUnsafe(im, x, y, &px);
         for(i = 0; i < c; i++){
@@ -430,7 +457,8 @@ bimagePixel
 bimageAverageInRect(bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
     int64_t n = -1;
-    bimagePixel px, dst = bimagePixelCreate(0, 0, 0, 0, bimageTypeDepth(im->type));
+    bimagePixel px = BIMAGE_PIXEL_INIT,
+                dst = bimagePixelCreate(0, 0, 0, 0, bimageTypeDepth(im->type));
     bimageIter(im, i, j, x, y, w, h, 1, 1){
         if (bimageGetPixel(im, i, j, &px) == BIMAGE_OK){
             bimagePixelAdd(&dst, px);
