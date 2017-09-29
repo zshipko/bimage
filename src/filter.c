@@ -312,8 +312,8 @@ bimageRotate(bimage* dst, bimage* im, float deg)
 
     bimagePixel px;
     bimageIterAll(im2, i, j){
-        dx = i - midX;
-        dy = j - midY;
+        dx = i + 0.5 - midX;
+        dy = j + 0.5 - midY;
 
         rotX = (uint32_t)(midX + dx * cos(angle) - dy * sin(angle));
         rotY = (uint32_t)(midY + dx * sin(angle) + dy * cos(angle));
