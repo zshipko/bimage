@@ -54,7 +54,9 @@ uint64_t bimageHash(bimage *im)
         }
     }
 
-    bimageRelease(sm);
+    if (sm != im){
+        bimageRelease(sm);
+    }
 
     return hash;
 }
