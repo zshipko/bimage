@@ -17,7 +17,9 @@ extern "C" {
 #define BIMAGE_NO_INTRIN
 #endif
 #else
+#ifndef BIMAGE_NO_INTRIN
 #define BIMAGE_NO_INTRIN
+#endif
 #endif
 
 #ifdef __linux__

@@ -46,7 +46,11 @@ bimagePixelConvertDepth (bimagePixel *dst, bimagePixel src, BIMAGE_DEPTH depth)
         goto ok;
     }
 
+
+#ifndef BIMAGE_SEE
     int i;
+#endif
+
 
     // Conversion to F32 is the same for every type
     if (depth == BIMAGE_F32){
