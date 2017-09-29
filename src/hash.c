@@ -32,11 +32,16 @@ uint64_t bimageHash(bimage *im)
 
     for(j = 0; j < HASH_SIZE; j++){
         for(i = 0; i < HASH_SIZE; i++){
-            // Set current pixel
             if (bimageGetPixelUnsafe(x, i, j, &px) == BIMAGE_ERR){
                 continue;
             }
+        }
+    }
 
+    apx /= HASH_SIZE * HASH_SIZE;
+
+    for(j = 0; j < HASH_SIZE; j++){
+        for(i = 0; i < HASH_SIZE; i++){
             // Compare current pixel against the average
             if (px.data.f[0] > apx){
                 hash |= 1<<n;
