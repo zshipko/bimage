@@ -7,6 +7,7 @@ bimage
 
 * Simple API
 * Handles 8, 16 and 32 bit images
+* A choice between in-memory and memory-mapped image data
 
 ## Dependencies
 
