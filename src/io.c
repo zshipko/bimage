@@ -1,3 +1,5 @@
+#define _DEFAULT_SOURCE
+
 #include "bimage.h"
 
 #define STBI_NO_FAILURE_STRING

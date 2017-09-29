@@ -96,7 +96,7 @@ bimageCreate (uint32_t width, uint32_t height, BIMAGE_TYPE t)
 bimage*
 bimageCreateOnDiskFd (int fd, uint32_t width, uint32_t height, BIMAGE_TYPE t)
 {
-    bool loadFile = width == 0 || height == 0 || bimageTypeDepth(t) == BIMAGE_UNKNOWN;
+    bool loadFile = (width == 0 && height == 0) || bimageTypeDepth(t) == BIMAGE_UNKNOWN;
     if (loadFile){
         char hdr[4];
         if (read(fd, &hdr, 4) != 4){
@@ -168,7 +168,7 @@ bimageCreateOnDiskFd (int fd, uint32_t width, uint32_t height, BIMAGE_TYPE t)
 bimage*
 bimageCreateOnDisk (const char *filename, uint32_t width, uint32_t height, BIMAGE_TYPE t)
 {
-    bool loadExisting = width == 0 || height == 0 || t == BIMAGE_UNKNOWN;
+    bool loadExisting = (width == 0 && height == 0) || t == BIMAGE_UNKNOWN;
     int fd = open(filename,  loadExisting ? O_RDWR : O_RDWR|O_CREAT, 0655);
     if (fd < 0){
         return NULL;
