@@ -32,6 +32,9 @@ bimage *bimageOpen16(const char *filename)
     if (!data){
         // Make sure TIFF is the correct depth
         bimage *im = bimageOpenTIFF(filename);
+        if (!im){
+            return NULL;
+        }
         if (bimageTypeDepth(im->type) != BIMAGE_U16){
             bimageRelease(im);
             return NULL;
@@ -53,6 +56,10 @@ bimageOpenFloat(const char *filename)
     if (!data){
         // Make sure TIFF is the correct depth
         bimage *im = bimageOpenTIFF(filename);
+        if (!im){
+            return NULL;
+        }
+
         if (bimageTypeDepth(im->type) != BIMAGE_F32){
             bimageRelease(im);
             return NULL;
