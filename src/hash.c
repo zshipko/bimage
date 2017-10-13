@@ -8,9 +8,10 @@
 uint64_t bimageHash(bimage *im)
 {
     uint64_t hash = 0UL;      // Output
+    uint64_t n = 0UL;
     bimagePixel px;           // Current pixel
     float apx = 0.0f;         // Average pixel
-    int i, j, n = 0;
+    int i, j;
 
     bimage* sm = NULL;
 
@@ -46,7 +47,7 @@ uint64_t bimageHash(bimage *im)
             if (px.data.f[0] > apx){
                 hash |= 1<<n;
             } else {
-                hash &= ~(1<<n);
+                hash &= ~(1UL<<n);
             }
 
             apx = px.data.f[0];
