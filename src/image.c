@@ -8,6 +8,7 @@
 #include <limits.h>
 #include <math.h>
 #include <string.h>
+#include <pthread.h>
 
 #define BIMAGE_PIXEL_INIT bimagePixelCreate(0, 0, 0, 0, BIMAGE_UNKNOWN)
 
@@ -484,3 +485,68 @@ bimage* bimageRandom(bimage* dst, uint32_t w, uint32_t h, BIMAGE_TYPE t)
     return im;
 }
 
+#ifndef BIMAGE_NO_PTHREAD
+
+typedef void (*bimageParallelFn)(uint32_t, uint32_t, bimagePixel *);
+
+struct bimageParallelIterator {
+    uint32_t x0, y0, x1, y1;
+    bimage *image;
+    bimageParallelFn f;
+};
+
+void *bimageParallelWrapper(void *_iter){
+    struct bimageParallelIterator *iter =
+        (struct bimageParallelIterator*)_iter;
+    bimagePixel px;
+
+    for (uint32_t j = iter->y0; j < iter->y1; j++){
+        for(uint32_t i = iter->x0; i < iter->x1; i++){
+            if (bimageGetPixel(iter->image, i, j, &px) == BIMAGE_OK){
+                iter->f(i, j, &px);
+                bimageSetPixel(iter->image, i, j, px);
+            }
+        }
+    }
+
+    pthread_exit(NULL);
+    return NULL;
+}
+
+BIMAGE_STATUS bimageParallel(bimage* im, bimageParallelFn fn, int nthreads){
+    pthread_t threads[nthreads];
+    int tries = 1;
+    uint32_t width, height;
+
+    width = im->width / nthreads;
+    height = im->height / nthreads;
+
+    for (uint32_t x = 0; x < nthreads; x++){
+        struct bimageParallelIterator iter;
+        iter.x0 = width * x;
+        iter.x1 = width;
+        iter.y0 = height * x;
+        iter.y1 = height;
+        iter.image = im;
+        iter.f = fn;
+        if (pthread_create(&threads[x], NULL, bimageParallelWrapper, &iter) != 0){
+            if (tries < 10){
+                x -= 1;
+                tries += 1;
+            } else {
+                return BIMAGE_ERR;
+            }
+        } else {
+            tries = 0;
+        }
+    }
+
+    for(int n = 0; n < nthreads; n++){
+        // Maybe do something if this fails?
+        pthread_join(threads[n], NULL);
+    }
+
+    return BIMAGE_OK;
+}
+
+#endif // BIMAGE_NO_PTHREAD
