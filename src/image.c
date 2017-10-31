@@ -500,8 +500,9 @@ void *bimageParallelWrapper(void *_iter){
         (struct bimageParallelIterator*)_iter;
     bimagePixel px;
 
-    for (uint32_t j = iter->y0; j < iter->y1; j++){
-        for(uint32_t i = iter->x0; i < iter->x1; i++){
+    uint32_t i, j;
+    for (j = iter->y0; j < iter->y1; j++){
+        for(i = iter->x0; i < iter->x1; i++){
             if (bimageGetPixel(iter->image, i, j, &px) == BIMAGE_OK){
                 iter->f(i, j, &px);
                 bimageSetPixel(iter->image, i, j, px);
@@ -515,13 +516,13 @@ void *bimageParallelWrapper(void *_iter){
 
 BIMAGE_STATUS bimageParallel(bimage* im, bimageParallelFn fn, int nthreads){
     pthread_t threads[nthreads];
-    int tries = 1;
-    uint32_t width, height;
+    int tries = 1, n;
+    uint32_t width, height, x;
 
     width = im->width / nthreads;
     height = im->height / nthreads;
 
-    for (uint32_t x = 0; x < nthreads; x++){
+    for (x = 0; x < nthreads; x++){
         struct bimageParallelIterator iter;
         iter.x0 = width * x;
         iter.x1 = width;
@@ -541,7 +542,7 @@ BIMAGE_STATUS bimageParallel(bimage* im, bimageParallelFn fn, int nthreads){
         }
     }
 
-    for(int n = 0; n < nthreads; n++){
+    for(n = 0; n < nthreads; n++){
         // Maybe do something if this fails?
         pthread_join(threads[n], NULL);
     }
