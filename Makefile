@@ -6,7 +6,13 @@ UNAME := $(shell uname)
 PREFIX=/usr/local
 
 CFLAGS+=-I/usr/local/include $(CFLAGS_$(UNAME_M))
-LDFLAGS+=-L/usr/local/lib -ltiff -lpthread
+LDFLAGS+=-L/usr/local/lib -ltiff
+
+ifeq ($(THREADS),NO)
+	CFLAGS+= -DBIMAGE_NO_PTHREAD
+else
+	LDFLAGS+= -lpthread
+endif
 
 
 # Set correct library extension
