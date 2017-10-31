@@ -189,6 +189,13 @@ bimageAverageInRect(bimage* im, uint32_t x, uint32_t y, uint32_t width, uint32_t
 bimage*
 bimageRandom(bimage* dst, uint32_t width, uint32_t height, BIMAGE_TYPE t);
 
+#ifndef BIMAGE_NO_PTHREAD
+typedef void (*bimageParallelFn)(uint32_t, uint32_t, bimagePixel *);
+
+BIMAGE_STATUS
+bimageParallel(bimage* im, bimageParallelFn fn, int nthreads);
+#endif // BIMAGE_NO_PTHREAD
+
 /* TIFF */
 
 bimage*

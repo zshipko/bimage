@@ -186,6 +186,20 @@ START_TEST (test_bimageCopyTo)
     }
 } END_TEST;
 
+void parallel_fn(uint32_t x, uint32_t y, bimagePixel *px){
+    px->data.m = (__m128){1.0, 1.0, 1.0, 1.0};
+}
+
+START_TEST (test_bimageParallel)
+{
+    bimage* im = randomImage(WIDTH, HEIGHT, BIMAGE_F32);
+    ck_assert(bimageParallel(im, parallel_fn, 8) == BIMAGE_OK);
+
+    for(size_t i = 0; i < im->width * im->height * bimageTypeChannels(im->type); i++){
+        ck_assert(bimageAt(im, i, float) == 1.0);
+    }
+} END_TEST;
+
 Suite *bimage_suite(void)
 {
     Suite *s;
@@ -202,6 +216,7 @@ Suite *bimage_suite(void)
     tcase_add_test(tc, test_bimageAdd);
     tcase_add_test(tc, test_bimageResizeHash);
     tcase_add_test(tc, test_bimageCopyTo);
+    tcase_add_test(tc, test_bimageParallel);
     suite_add_tcase(s, tc);
     return s;
 }
