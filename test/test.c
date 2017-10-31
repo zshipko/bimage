@@ -216,7 +216,9 @@ Suite *bimage_suite(void)
     tcase_add_test(tc, test_bimageAdd);
     tcase_add_test(tc, test_bimageResizeHash);
     tcase_add_test(tc, test_bimageCopyTo);
+#ifndef BIMAGE_NO_PTHREAD
     tcase_add_test(tc, test_bimageParallel);
+#endif
     suite_add_tcase(s, tc);
     return s;
 }
