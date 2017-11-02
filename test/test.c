@@ -186,14 +186,14 @@ START_TEST (test_bimageCopyTo)
     }
 } END_TEST;
 
-void parallel_fn(uint32_t x, uint32_t y, bimagePixel *px){
+void parallel_fn(uint32_t x, uint32_t y, bimagePixel *px, void *userdata){
     px->data.m = (__m128){1.0, 1.0, 1.0, 1.0};
 }
 
 START_TEST (test_bimageParallel)
 {
     bimage* im = randomImage(WIDTH, HEIGHT, BIMAGE_F32);
-    ck_assert(bimageParallel(im, parallel_fn, 8) == BIMAGE_OK);
+    ck_assert(bimageParallel(im, parallel_fn, 8, NULL) == BIMAGE_OK);
 
     for(size_t i = 0; i < im->width * im->height * bimageTypeChannels(im->type); i++){
         ck_assert(bimageAt(im, i, float) == 1.0);
