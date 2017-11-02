@@ -487,12 +487,13 @@ bimage* bimageRandom(bimage* dst, uint32_t w, uint32_t h, BIMAGE_TYPE t)
 
 #ifndef BIMAGE_NO_PTHREAD
 
-typedef void (*bimageParallelFn)(uint32_t, uint32_t, bimagePixel *);
+typedef void (*bimageParallelFn)(uint32_t, uint32_t, bimagePixel *, void*);
 
 struct bimageParallelIterator {
     uint32_t x0, y0, x1, y1;
     bimage *image;
     bimageParallelFn f;
+    void *userdata;
 };
 
 void *bimageParallelWrapper(void *_iter){
@@ -504,7 +505,7 @@ void *bimageParallelWrapper(void *_iter){
     for (j = iter->y0; j < iter->y1; j++){
         for(i = iter->x0; i < iter->x1; i++){
             if (bimageGetPixel(iter->image, i, j, &px) == BIMAGE_OK){
-                iter->f(i, j, &px);
+                iter->f(i, j, &px, iter->userdata);
                 bimageSetPixel(iter->image, i, j, px);
             }
         }
@@ -514,7 +515,7 @@ void *bimageParallelWrapper(void *_iter){
     return NULL;
 }
 
-BIMAGE_STATUS bimageParallel(bimage* im, bimageParallelFn fn, int nthreads){
+BIMAGE_STATUS bimageParallel(bimage* im, bimageParallelFn fn, int nthreads, void *userdata){
     pthread_t threads[nthreads];
     int tries = 1, n;
     uint32_t width, height, x;
