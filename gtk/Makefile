@@ -24,7 +24,7 @@ install:
 	install bin/bimage-gtk /usr/local/bin
 
 uninstall:
-	rm -f /usr/local/lib/libbimage-gtk .* /usr/local/include/bimage-gtk .h /usr/local/bin/bimage-gtk
+	rm -f /usr/local/lib/libbimage-gtk .* /usr/local/include/bimage-gtk.h /usr/local/bin/bimage-gtk
 
 clean:
 	rm *.o *.a *.$(EXT)
