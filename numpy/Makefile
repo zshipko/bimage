@@ -5,14 +5,18 @@ ifeq ($(UNAME),Darwin)
 	EXT=dylib
 endif
 
+CFLAGS+= -I/usr/local/include
+LDFLAGS+= -L/usr/local/lib
+PYTHON?=python3
+
 lib: static shared
 
 static:
-	$(CC) -fPIC -c -o bimage-numpy.o `pkg-config --cflags python3` bimage-numpy.c
+	$(CC) $(CFLAGS) -fPIC -c -o bimage-numpy.o `pkg-config --cflags $(PYTHON)` bimage-numpy.c
 	ar rcs libbimage-numpy.a bimage-numpy.o
 
 shared:
-	$(CC) -shared -o libbimage-numpy.$(EXT) `pkg-config --cflags python3` bimage-numpy.o
+	$(CC) $(CFLAGS) -shared -o libbimage-numpy.$(EXT) `pkg-config --cflags $(PYTHON)` bimage-numpy.o $(LDFLAGS)
 
 install:
 	install libbimage-numpy.$(EXT) libbimage-numpy.a /usr/local/lib
