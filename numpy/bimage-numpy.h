@@ -4,4 +4,7 @@
 #include <bimage.h>
 #include <Python.h>
 
+PyObject* bimageToNumpy(bimage *im);
+bimage* bimageFromNumpy(PyObject *obj);
+
 #endif
