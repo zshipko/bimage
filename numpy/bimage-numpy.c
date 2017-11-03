@@ -54,6 +54,7 @@ bimage* bimageFromNumpy(PyObject *obj){
         return NULL;
     }
 
+    // Get image dimensions
     int ndim = PyArray_NDIM(obj);
     if (ndim < 2){
         return NULL;
@@ -63,7 +64,13 @@ bimage* bimageFromNumpy(PyObject *obj){
     uint32_t width = dims[1];
     uint32_t height = dims[0];
     int channels = ndim == 2 ? 1 : dims[2];
+
+    // Get image type
     PyArray_Descr *dtype = PyArray_DTYPE((PyArrayObject*)obj);
     int type = bimage_type(dtype->type_num);
+    if (type == BIMAGE_UNKNOWN) {
+        return NULL;
+    }
+
     return bimageCreateWithData(width, height, type | channels, PyArray_DATA(obj), false, false);
 }

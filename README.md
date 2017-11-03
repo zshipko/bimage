@@ -7,7 +7,8 @@ bimage
 
 * Simple API
 * Handles 8, 16 and 32 bit images
-* A choice between in-memory and memory-mapped image data
+* Parallel iterator
+* In-memory and memory mapped image data
 
 ## Dependencies
 
@@ -15,6 +16,11 @@ bimage
 * libtiff
 * C99 compiler
 * check (for building tests)
+
+## Optional Dependencies
+
+* NumPy (for bimage-numpy)
+* GTK3 (for bimage-gtk)
 
 ## Installation
 
