@@ -8,6 +8,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #if defined(__has_include) && !defined(BIMAGE_NO_INTRIN)
 #if (__has_include(<emmintrin.h>))
@@ -314,6 +315,11 @@ bimageHistogramImage(bimageHistogram h);
 #define BIMAGE_CREATE_DEST(dst, w, h, t) \
     ((dst) == NULL ? bimageCreate((w), (h), (t)) \
         : ((dst)->width >= (w) && (dst)->height >= (h) && (dst)->type == (t) ? dst : NULL))
+
+
+#define BIMAGE_PIXEL_INIT bimagePixelCreate(0, 0, 0, 0, BIMAGE_UNKNOWN)
+
+extern int BIMAGE_NUM_CPU;
 
 #ifdef __cplusplus
 }
