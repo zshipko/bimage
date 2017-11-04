@@ -8,9 +8,12 @@
 #include <limits.h>
 #include <math.h>
 #include <string.h>
+#ifndef BIMAGE_NO_PTHREAD
 #include <pthread.h>
+#endif
 
-#define BIMAGE_PIXEL_INIT bimagePixelCreate(0, 0, 0, 0, BIMAGE_UNKNOWN)
+int BIMAGE_NUM_CPU = -1;
+
 
 /* BIMAGE TYPE */
 
@@ -369,8 +372,8 @@ bimageConvertDepth(bimage *dst, bimage *im, BIMAGE_DEPTH depth)
     }
 
     bimageIterAll(im, x, y){
-        if (bimageGetPixelUnsafe(im, x, y, &px) == BIMAGE_ERR
-                || bimagePixelConvertDepth(&pdst, px, depth) != BIMAGE_ERR){
+        if (bimageGetPixelUnsafe(im, x, y, &px) != BIMAGE_ERR
+                && bimagePixelConvertDepth(&pdst, px, depth) != BIMAGE_ERR){
             bimageSetPixel(im2, x, y, pdst);
         } else {
             break;
@@ -516,6 +519,9 @@ void *bimageParallelWrapper(void *_iter){
 }
 
 BIMAGE_STATUS bimageParallel(bimage* im, bimageParallelFn fn, int nthreads, void *userdata){
+    if (nthreads <= 0){
+        nthreads = sysconf(_SC_NPROCESSORS_ONLN);
+    }
     pthread_t threads[nthreads];
     int tries = 1, n;
     uint32_t width, height, x;

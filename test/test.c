@@ -186,10 +186,29 @@ START_TEST (test_bimageCopyTo)
     }
 } END_TEST;
 
+START_TEST (test_bimageGrayscale)
+{
+    int i;
+    for (i = 0; i < num_types; i++){
+        bimage* im = randomImage(WIDTH, HEIGHT, types[i]);
+        bimage* im2 = bimageGrayscale(NULL, im, 1);
+
+        bimagePixel px;
+        bimageGetPixel(im2, 0, 0, &px);
+        ck_assert(px.data.f[0] == px.data.f[1] && px.data.f[1] == px.data.f[2]);
+        bimageGetPixel(im2, WIDTH-1, HEIGHT-1, &px);
+        ck_assert(px.data.f[0] == px.data.f[1] && px.data.f[1] == px.data.f[2]);
+
+        bimageRelease(im2);
+        bimageRelease(im);
+    }
+} END_TEST;
+
 void parallel_fn(uint32_t x, uint32_t y, bimagePixel *px, void *userdata){
-    px->data.m = (__m128){1.0, 1.0, 1.0, 1.0};
+    px->data.f[0] = px->data.f[1] = px->data.f[2] = px->data.f[3] = 1.0;
 }
 
+#ifndef BIMAGE_NO_PTHREAD
 START_TEST (test_bimageParallel)
 {
     bimage* im = randomImage(WIDTH, HEIGHT, BIMAGE_F32);
@@ -199,6 +218,7 @@ START_TEST (test_bimageParallel)
         ck_assert(bimageAt(im, i, float) == 1.0);
     }
 } END_TEST;
+#endif
 
 Suite *bimage_suite(void)
 {
@@ -216,6 +236,7 @@ Suite *bimage_suite(void)
     tcase_add_test(tc, test_bimageAdd);
     tcase_add_test(tc, test_bimageResizeHash);
     tcase_add_test(tc, test_bimageCopyTo);
+    tcase_add_test(tc, test_bimageGrayscale);
 #ifndef BIMAGE_NO_PTHREAD
     tcase_add_test(tc, test_bimageParallel);
 #endif

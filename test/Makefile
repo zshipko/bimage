@@ -3,7 +3,7 @@ LDFLAGS+=-L.. -lbimage -L/usr/local/lib -ltiff -lcheck -lm -lpthread
 UNAME:=$(shell uname)
 
 ifeq ($(UNAME),Linux)
-	LDFLAGS+=-lrt -lsubunit 
+	LDFLAGS+=-lrt -lsubunit
 endif
 
 run: test

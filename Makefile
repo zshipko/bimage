@@ -7,6 +7,7 @@ PREFIX=/usr/local
 
 CFLAGS+=-I/usr/local/include $(CFLAGS_$(UNAME_M))
 LDFLAGS+=-L/usr/local/lib -ltiff
+THREADS?=YES
 
 ifeq ($(THREADS),NO)
 	CFLAGS+= -DBIMAGE_NO_PTHREAD
@@ -49,5 +50,5 @@ uninstall:
 
 .PHONY: test
 test:
-	@$(MAKE) -C test
+	@CFLAGS='$(CFLAGS)' $(MAKE) -C test
 
