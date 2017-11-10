@@ -8,13 +8,13 @@ PREFIX=/usr/local
 CFLAGS+=-I/usr/local/include $(CFLAGS_$(UNAME_M))
 LDFLAGS+=-L/usr/local/lib -ltiff
 THREADS?=YES
+BENCHMARK?=YES
 
 ifeq ($(THREADS),NO)
 	CFLAGS+= -DBIMAGE_NO_PTHREAD
 else
 	LDFLAGS+= -lpthread
 endif
-
 
 # Set correct library extension
 ifeq ($(UNAME),Darwin)
@@ -50,5 +50,5 @@ uninstall:
 
 .PHONY: test
 test:
-	@CFLAGS='$(CFLAGS)' $(MAKE) -C test
+	@CFLAGS='$(CFLAGS)' BENCHMARK='$(BENCHMARK)' $(MAKE) -C test
 

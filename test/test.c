@@ -1,3 +1,4 @@
+#include "bench.h"
 #include "../src/bimage.h"
 
 #include <check.h>
@@ -43,7 +44,9 @@ START_TEST (test_bimageCreate)
 {
     int i;
     for (i = 0; i < num_types; i++){
+        BENCH_START(create);
         bimage* im = bimageCreate(WIDTH, HEIGHT, types[i]);
+        BENCH_STOP(create);
         ck_assert_int_eq(im->width, WIDTH);
         ck_assert_int_eq(im->height, HEIGHT);
         ck_assert_int_eq(im->type, types[i]);
@@ -141,7 +144,10 @@ START_TEST (test_bimageAdd)
 
     bimagePixel c = bimagePixelCreate(255, 0, 0, 255, BIMAGE_U8), d;
     bimageSetPixelUnsafe(im2, 50, 50, c);
+
+    BENCH_START(add);
     bimageAdd(im, im2);
+    BENCH_STOP(add);
 
     bimageGetPixelUnsafe(im2, 50, 50, &d);
     ck_assert(d.data.f[0] == c.data.f[0] && d.data.f[1] == c.data.f[1] && d.data.f[2] == c.data.f[2]);
@@ -171,7 +177,10 @@ START_TEST (test_bimageCopyTo)
     for (i = 0; i < num_types; i++){
         bimage* im = randomImage(WIDTH, HEIGHT, types[i]);
         bimage* im2 = randomImage(WIDTH/2, HEIGHT/2, types[i]);
+
+        BENCH_START(copyTo);
         bimageCopyTo(im, im2, 10, 10);
+        BENCH_STOP(copyTo);
 
         bimagePixel a, b;
         bimageGetPixel(im, 10, 10, &a);
@@ -191,7 +200,10 @@ START_TEST (test_bimageGrayscale)
     int i;
     for (i = 0; i < num_types; i++){
         bimage* im = randomImage(WIDTH, HEIGHT, types[i]);
+
+        BENCH_START(grayscale);
         bimage* im2 = bimageGrayscale(NULL, im, 1);
+        BENCH_STOP(grayscale);
 
         bimagePixel px;
         bimageGetPixel(im2, 0, 0, &px);
@@ -215,7 +227,9 @@ START_TEST (test_bimageParallel)
     ck_assert(bimageParallel(im, parallel_fn, 8, NULL) == BIMAGE_OK);
 
     for(size_t i = 0; i < im->width * im->height * bimageTypeChannels(im->type); i++){
+        BENCH_START(parallel);
         ck_assert(bimageAt(im, i, float) == 1.0);
+        BENCH_STOP(parallel);
     }
 } END_TEST;
 #endif
