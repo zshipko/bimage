@@ -2,7 +2,7 @@
 
 #include <numpy/arrayobject.h>
 
-int numpy_type(bimage *im){
+static int _numpyType(bimage *im){
     switch bimageTypeDepth(im->type) {
     case BIMAGE_U8:
         return NPY_UINT8;
@@ -17,7 +17,7 @@ int numpy_type(bimage *im){
     return -1;
 }
 
-int bimage_type(int ntype){
+static int _bimageType(int ntype){
     switch (ntype) {
     case NPY_UINT8:
         return BIMAGE_U8;
@@ -33,7 +33,7 @@ int bimage_type(int ntype){
 }
 
 PyObject* bimageToNumpy(bimage *im){
-    int t = numpy_type(im);
+    int t = _numpyType(im);
     if (t < 0){
         return NULL;
     }
@@ -46,7 +46,7 @@ PyObject* bimageToNumpy(bimage *im){
         dims[3] = bimageTypeChannels(im->type);
     }
 
-    return PyArray_SimpleNewFromData(ndims, dims, numpy_type(im), im->data);
+    return PyArray_SimpleNewFromData(ndims, dims, t, im->data);
 }
 
 bimage* bimageFromNumpy(PyObject *obj){
@@ -67,7 +67,7 @@ bimage* bimageFromNumpy(PyObject *obj){
 
     // Get image type
     PyArray_Descr *dtype = PyArray_DTYPE((PyArrayObject*)obj);
-    int type = bimage_type(dtype->type_num);
+    int type = _bimageType(dtype->type_num);
     if (type == BIMAGE_UNKNOWN) {
         return NULL;
     }
