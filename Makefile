@@ -1,19 +1,19 @@
-SRC=src/pixel.c src/image.c src/tiff.c src/io.c src/resize.c \
+SRC=src/pixel.c src/image.c src/io.c src/resize.c \
 	src/filter.c src/hash.c src/histogram.c
-OBJ=$(SRC:.c=.o)
 
 UNAME := $(shell uname)
 PREFIX=/usr/local
 
 CFLAGS+=-I/usr/local/include $(CFLAGS_$(UNAME_M))
-LDFLAGS+=-L/usr/local/lib -ltiff
+LDFLAGS+=-L/usr/local/lib
 THREADS?=YES
 BENCHMARK?=YES
+TIFF?=YES
 
-ifeq ($(THREADS),NO)
-	CFLAGS+= -DBIMAGE_NO_PTHREAD
-else
+ifeq ($(THREADS),YES)
 	LDFLAGS+= -lpthread
+else
+	CFLAGS+= -DBIMAGE_NO_PTHREAD
 endif
 
 # Set correct library extension
@@ -22,6 +22,15 @@ ifeq ($(UNAME),Darwin)
 else
 	EXT=so
 endif
+
+ifeq ($(TIFF),YES)
+	LDFLAGS+= -ltiff
+	SRC+=src/tiff.c
+else
+	CFLAGS+= -DBIMAGE_NO_TIFF
+endif
+
+OBJ=$(SRC:.c=.o)
 
 lib: shared static
 

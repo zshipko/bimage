@@ -19,8 +19,13 @@ bimage* bimageOpen(const char *filename)
     uint8_t* data = stbi_load(filename, &w, &h, &c, 0);
 
     if (!data){
+#ifdef BIMAGE_NO_TIFF
+        return NULL;
+#else
         return bimageOpenTIFF(filename);
+#endif
     }
+
 
     return bimageCreateWithData(w, h, BIMAGE_U8 | c, data, true, false);
 }
@@ -30,6 +35,9 @@ bimage *bimageOpen16(const char *filename)
     int w, h, c;
     uint16_t* data = stbi_load_16(filename, &w, &h, &c, 0);
     if (!data){
+#ifdef BIMAGE_NO_TIFF
+        return NULL;
+#else
         // Make sure TIFF is the correct depth
         bimage *im = bimageOpenTIFF(filename);
         if (!im){
@@ -40,6 +48,7 @@ bimage *bimageOpen16(const char *filename)
             return NULL;
         }
         return im;
+#endif
     }
 
     return bimageCreateWithData(w, h, BIMAGE_U16 | c, data, true, false);
@@ -54,6 +63,9 @@ bimageOpenFloat(const char *filename)
     int w, h, c;
     float* data = stbi_loadf(filename, &w, &h, &c, 0);
     if (!data){
+#ifdef BIMAGE_NO_TIFF
+        return NULL;
+#else
         // Make sure TIFF is the correct depth
         bimage *im = bimageOpenTIFF(filename);
         if (!im){
@@ -65,6 +77,7 @@ bimageOpenFloat(const char *filename)
             return NULL;
         }
         return im;
+#endif
     }
 
     return bimageCreateWithData(w, h, BIMAGE_F32 | c, data, true, false);
@@ -94,9 +107,13 @@ bimageSave(bimage *im, const char *filename)
                 im->height,
                 bimageTypeChannels(im->type),
                 im->data) == 0 ? BIMAGE_ERR : BIMAGE_OK;
+#ifdef BIMAGE_NO_TIFF
+    }
+#else
     } else if (strncasecmp(x, "tif", 3) == 0 || strncasecmp(x, "tiff", 4) == 0){
 		return bimageSaveTIFF(im, filename);
 	}
+#endif
 
 	return BIMAGE_ERR;
 }

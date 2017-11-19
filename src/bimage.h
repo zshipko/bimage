@@ -199,11 +199,15 @@ bimageParallel(bimage* im, bimageParallelFn fn, int nthreads, void *);
 
 /* TIFF */
 
+#ifndef BIMAGE_NO_TIFF
+
 bimage*
 bimageOpenTIFF(const char* filename);
 
 BIMAGE_STATUS
 bimageSaveTIFF(bimage* im, const char* filename);
+
+#endif // BIMAGE_NO_TIFF
 
 /* IO */
 
