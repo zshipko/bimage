@@ -195,10 +195,10 @@ bimagePixel##name(bimagePixel *a, bimagePixel b) \
 }
 #endif
 
-PIXEL_OP(Add, +);
-PIXEL_OP(Sub, -);
-PIXEL_OP(Mul, *);
-PIXEL_OP(Div, /);
+PIXEL_OP(Add, +)
+PIXEL_OP(Sub, -)
+PIXEL_OP(Mul, *)
+PIXEL_OP(Div, /)
 
 bimagePixel
 bimagePixelRandom(BIMAGE_DEPTH t)

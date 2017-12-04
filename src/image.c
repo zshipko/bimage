@@ -490,8 +490,6 @@ bimage* bimageRandom(bimage* dst, uint32_t w, uint32_t h, BIMAGE_TYPE t)
 
 #ifndef BIMAGE_NO_PTHREAD
 
-typedef void (*bimageParallelFn)(uint32_t, uint32_t, bimagePixel *, void*);
-
 struct bimageParallelIterator {
     uint32_t x0, y0, x1, y1;
     bimage *image;
