@@ -131,6 +131,11 @@ START_TEST (test_bimageConsume)
     ck_assert_int_eq(a->height, 50);
     ck_assert_int_eq(bimageHash(a), bimageHash(b));
 
+    char as[9], bs[9];
+    bimageHashString(as, bimageHash(a));
+    bimageHashString(bs, bimageHash(b));
+    ck_assert(strncmp(as, bs, 8) == 0);
+
     bimagePixel px;
     bimageGetPixel(a, 10, 10, &px);
     ck_assert(px.data.f[0] == p.data.f[0] && px.data.f[1] == p.data.f[1] && px.data.f[2] == p.data.f[2] && px.data.f[3] == p.data.f[3]);

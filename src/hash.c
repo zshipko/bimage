@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 #define HASH_SIZE 8
 
@@ -73,5 +74,5 @@ int bimageHashDiff (uint64_t a, uint64_t b)
 
 void bimageHashString(char dst[9], uint64_t hash)
 {
-    snprintf(dst, 9, "%08llx\n", hash);
+    snprintf(dst, 8, "%" PRIx64, hash);
 }

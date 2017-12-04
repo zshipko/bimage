@@ -40,7 +40,6 @@ bimageColor(bimage* dst, bimage* im, BIMAGE_CHANNEL c)
     }
 
     BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
-    bimagePixel px;
 
     bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, depth | c);
     if (im2 == NULL){
@@ -50,6 +49,7 @@ bimageColor(bimage* dst, bimage* im, BIMAGE_CHANNEL c)
 #ifndef BIMAGE_NO_PTHREAD
     bimageParallel(im, bimageColorFn, BIMAGE_NUM_CPU, im2);
 #else
+    bimagePixel px;
     bimageIterAll(im2, x, y){
         bimageGetPixelUnsafe(im, x, y, &px);
         bimageSetPixel(im2, x, y, px);
@@ -73,7 +73,7 @@ static void bimageGrayscaleFn(uint32_t x, uint32_t y, bimagePixel *px, void *use
 bimage*
 bimageGrayscale(bimage* dst, bimage* im, BIMAGE_CHANNEL chan)
 {
-    bimagePixel p, px;
+
     BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
 
     bimage *im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, depth | chan);
@@ -84,6 +84,7 @@ bimageGrayscale(bimage* dst, bimage* im, BIMAGE_CHANNEL chan)
 #ifndef BIMAGE_NO_PTHREAD
     bimageParallel(im, bimageGrayscaleFn, BIMAGE_NUM_CPU, im2);
 #else
+    bimagePixel p, px;
     bimageIterAll(im, x, y){
         bimageGetPixelUnsafe(im, x, y, &px);
         bimageGrayscaleFn(x, y, &px, im2);

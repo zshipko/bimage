@@ -96,10 +96,10 @@ bimagePixelConvertDepth (bimagePixel *dst, bimagePixel src, BIMAGE_DEPTH depth)
         break;
     case BIMAGE_U16:
        switch (depth) {
-#ifdef BIMAGE_SSE
-        (*dst).data.m = _mm_castsi128_ps(_mm_srli_si128(x, 8));
-#else
         case BIMAGE_U8:  // Convert to U8 from U16
+#ifdef BIMAGE_SSE
+            (*dst).data.m = _mm_castsi128_ps(_mm_srli_si128(x, 8));
+#else
             for (i = 0; i < 4; i++){
                 (*dst).data.f[i] = (uint32_t)src.data.f[i] >> 8;
             }
