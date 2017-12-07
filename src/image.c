@@ -95,7 +95,8 @@ bimageCreate (uint32_t width, uint32_t height, BIMAGE_TYPE t)
     return bimageCreateWithData(width, height, t, data, true, false);
 }
 
-#define MMAP_HEADER_SIZE sizeof(uint32_t) * 2 + sizeof(BIMAGE_TYPE) + 4
+#define MMAP_HEADER_SIZE ((sizeof(uint32_t) * 3) + 4)
+
 
 bimage*
 bimageCreateOnDiskFd (int fd, uint32_t width, uint32_t height, BIMAGE_TYPE t)
@@ -111,17 +112,21 @@ bimageCreateOnDiskFd (int fd, uint32_t width, uint32_t height, BIMAGE_TYPE t)
             return NULL;
         }
 
-        if (read(fd, &t, sizeof(BIMAGE_TYPE)) != sizeof(BIMAGE_TYPE)){
+        uint32_t tmp;
+        if (read(fd, &tmp, sizeof(tmp)) != sizeof(tmp)){
             return NULL;
         }
+        t = (BIMAGE_TYPE)ntohl(tmp);
 
-        if (read(fd, &width, sizeof(uint32_t)) != sizeof(uint32_t)){
+        if (read(fd, &tmp, sizeof(tmp)) != sizeof(tmp)){
             return NULL;
         }
+        width = ntohl(tmp);
 
-        if (read(fd, &height, sizeof(uint32_t)) != sizeof(int32_t)){
+        if (read(fd, &height, sizeof(tmp)) != sizeof(tmp)){
             return NULL;
         }
+        height = ntohl(tmp);
 
         if (width == 0 || height == 0 || bimageTypeDepth(t) == BIMAGE_UNKNOWN || bimageTypeChannels(t) == 0){
             return NULL;
@@ -140,15 +145,18 @@ bimageCreateOnDiskFd (int fd, uint32_t width, uint32_t height, BIMAGE_TYPE t)
             return NULL;
         }
 
-        if (write(fd, &t, sizeof(BIMAGE_TYPE)) != sizeof(BIMAGE_TYPE)){
+        uint32_t tmp = htonl((uint32_t)t);
+        if (write(fd, &tmp, sizeof(tmp)) != sizeof(tmp)){
             return NULL;
         }
 
-        if(write(fd, &width, sizeof(uint32_t)) != sizeof(uint32_t)){
+        tmp = htonl(width);
+        if(write(fd, &tmp, sizeof(tmp)) != sizeof(tmp)){
             return NULL;
         }
 
-        if (write(fd, &height, sizeof(uint32_t)) != sizeof(uint32_t)){
+        tmp = htonl(height);
+        if (write(fd, &tmp, sizeof(tmp)) != sizeof(tmp)){
             return NULL;
         }
 

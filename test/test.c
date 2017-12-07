@@ -236,8 +236,30 @@ START_TEST (test_bimageParallel)
         ck_assert(bimageAt(im, i, float) == 1.0);
         BENCH_STOP(parallel);
     }
+    bimageRelease(im);
 } END_TEST;
 #endif
+
+START_TEST (test_bimageDisk)
+{
+    BENCH_START(disk0);
+    bimage *im = bimageCreateOnDisk ("/tmp/bimage", 500, 500, BIMAGE_F32|3);
+    BENCH_STOP(disk0);
+    bimagePixel px = bimagePixelRandom(BIMAGE_F32), px2;
+    bimageSetPixelUnsafe(im, 25, 25, px);
+    bimageRelease(im);
+
+    BENCH_START(disk1);
+    im = bimageCreateOnDisk ("/tmp/bimage", 0, 0, 0);
+    BENCH_STOP(disk1);
+    ck_assert((im->width == 500 && im->height == 500 && (im->type == (BIMAGE_F32|3))));
+
+    bimageGetPixelUnsafe(im, 25, 25, &px2);
+    ck_assert((px2.data.f[0] == px.data.f[0] && px2.data.f[1] == px.data.f[1] && px2.data.f[2] == px.data.f[2]));
+
+    bimageRelease(im);
+    unlink("/tmp/bimage");
+} END_TEST;
 
 Suite *bimage_suite(void)
 {
@@ -259,6 +281,7 @@ Suite *bimage_suite(void)
 #ifndef BIMAGE_NO_PTHREAD
     tcase_add_test(tc, test_bimageParallel);
 #endif
+    tcase_add_test(tc, test_bimageDisk);
     suite_add_tcase(s, tc);
     return s;
 }
