@@ -73,8 +73,14 @@ typedef struct bimagePixel {
     BIMAGE_DEPTH depth;
 } bimagePixel;
 
+#ifndef bAlloc
 #define bAlloc(n) calloc(n, 1)
+#endif
+
+#ifndef bFree
 #define bFree(x) if(x) free(x)
+#endif
+
 #define bimageTotalSize(w, h, t) (int64_t)w * (int64_t)h * (int64_t)bimageDepthSize(bimageTypeDepth(t)) * (int64_t)bimageTypeChannels(t)
 #define bimageIndex(im, x, y) y * bimageTypeChannels(im->type) * im->width + x * bimageTypeChannels(im->type)
 #define bimageAt(im, index, t) (((t*)im->data)[index])
