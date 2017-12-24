@@ -255,39 +255,6 @@ bimage*
 bimageGrayscale(bimage* dst, bimage* im, BIMAGE_CHANNEL c);
 
 bimage*
-bimageFilter(bimage* dst, bimage* im, float *K, int Ks, float divisor, float offset);
-
-bimage*
-bimageSobelX(bimage* dst, bimage* src);
-
-bimage*
-bimageSobelY(bimage* dst, bimage* src);
-
-bimage*
-bimageSobel(bimage* dst, bimage* src);
-
-bimage*
-bimagePrewittX(bimage* dst, bimage* src);
-
-bimage*
-bimagePrewittY(bimage* dst, bimage* src);
-
-bimage*
-bimagePrewitt(bimage* dst, bimage* src);
-
-bimage*
-bimageOutline(bimage* dst, bimage* src);
-
-bimage*
-bimageSharpen(bimage* dst, bimage* src);
-
-bimage*
-bimageBlur(bimage* dst, bimage* src);
-
-bimage*
-bimageGaussianBlur(bimage* dst, bimage* src);
-
-bimage*
 bimageInvert(bimage* dst, bimage* im);
 
 bimage*
@@ -303,24 +270,6 @@ bimageHashString(char dst[9], uint64_t hash);
 
 int
 bimageHashDiff(uint64_t a, uint64_t b);
-
-/* HISTOGRAM */
-
-typedef struct bimageHistogram {
-    int64_t total;
-    float bucket[256];
-} bimageHistogram;
-
-BIMAGE_STATUS
-bimageGetHistogram(bimage* im, bimageHistogram h[], BIMAGE_CHANNEL ch);
-
-int
-bimageHistogramMax(bimageHistogram h);
-int
-bimageHistogramMin(bimageHistogram h);
-
-bimage*
-bimageHistogramImage(bimageHistogram h);
 
 #define BIMAGE_CREATE_DEST(dst, w, h, t) \
     ((dst) == NULL ? bimageCreate((w), (h), (t)) \
