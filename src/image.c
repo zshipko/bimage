@@ -8,6 +8,7 @@
 #include <limits.h>
 #include <math.h>
 #include <string.h>
+#include <arpa/inet.h>
 #ifndef BIMAGE_NO_PTHREAD
 #include <pthread.h>
 #endif
