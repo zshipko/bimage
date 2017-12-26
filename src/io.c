@@ -30,6 +30,30 @@ bimage* bimageOpen(const char *filename)
     return bimageCreateWithData(w, h, BIMAGE_U8 | c, data, true, false);
 }
 
+bimage*
+bimageRead(const char *buffer, size_t len)
+{
+    int w, h, c;
+    uint8_t* data = stbi_load_from_memory(buffer, len, &w, &h, &c, 0);
+    if (!data){
+        return NULL;
+    }
+
+    return bimageCreateWithData(w, h, BIMAGE_U8 | c, data, true, false);
+}
+
+bimage*
+bimageRead16(const char *buffer, size_t len)
+{
+    int w, h, c;
+    uint16_t* data = stbi_load_16_from_memory(buffer, len, &w, &h, &c, 0);
+    if (!data){
+        return NULL;
+    }
+
+    return bimageCreateWithData(w, h, BIMAGE_U16 | c, data, true, false);
+}
+
 bimage *bimageOpen16(const char *filename)
 {
     int w, h, c;
