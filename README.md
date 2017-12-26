@@ -13,12 +13,14 @@ bimage
 ## Dependencies
 
 * GNU make
-* libtiff
 * C99 compiler
-* check (for building tests)
+
+* libcheck (for building tests)
 
 ## Optional Dependencies
 
+* libtiff (enabled by default)
+    - set the environment variable `TIFF=NO` before building to disable libtiff
 * NumPy (for bimage-numpy)
 * GTK3 (for bimage-gtk)
 
@@ -33,9 +35,10 @@ To uninstall:
 
 ## Formats
 
-* [R/W] 8, 16 and 32 bit TIFF files
-* [R/W] 8 bit PNG files
-* [R] 8 and 16 bit PNG, JPG, PSD, GIF, BMP, TGA files (using `stb_image`)
+* [R/W] 8, 16 and 32 bit TIFFs
+* [R/W] 8 bit PNGs
+* [R/W] 8 bit JPGs
+* [R] 8 and 16 bit PNG, PSD, GIF, BMP, TGA files (using `stb_image`)
 * [R/W] 32 bit (floating point) HDR files (using `stb_image`)
 
 ## Usage
@@ -56,13 +59,13 @@ Resizing an image:
 Get a pixel:
 
     bimagePixel px;
-    if (bimageGet(resized, x, y, &px) != BIMAGE_OK){
+    if (bimageGetPixel(resized, x, y, &px) != BIMAGE_OK){
         // Handle out-of-bounds
     }
 
 Set a pixel:
 
-    if (bimageSet(resized, x, y, px) != BIMAGE_OK){
+    if (bimageSetPixel(resized, x, y, px) != BIMAGE_OK){
         // Handle out of bounds
     }
 

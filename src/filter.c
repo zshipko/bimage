@@ -9,9 +9,9 @@ bimage##name(bimage* a, bimage* b) \
 { \
     bimagePixel p, q; \
     bimageIterAll(a, x, y){ \
-        if (bimageGetPixelUnsafe(a, x, y, &p) == BIMAGE_ERR  || \
-            bimageGetPixel(b, x, y, &q) == BIMAGE_ERR || \
-            bimagePixel##name(&p, q) == BIMAGE_ERR){ \
+        if (bimageGetPixelUnsafe(a, x, y, &p) != BIMAGE_OK  || \
+            bimageGetPixel(b, x, y, &q) != BIMAGE_OK || \
+            bimagePixel##name(&p, q) != BIMAGE_OK){ \
             break; \
         } \
         bimagePixelClamp(&p); \

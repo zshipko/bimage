@@ -30,8 +30,9 @@ extern "C" {
 #endif
 
 typedef enum BIMAGE_STATUS {
+    BIMAGE_OK,
     BIMAGE_ERR,
-    BIMAGE_OK
+    BIMAGE_ERR_INVALID_FORMAT
 } BIMAGE_STATUS;
 
 typedef uint16_t BIMAGE_TYPE;
@@ -228,6 +229,9 @@ bimageOpenFloat(const char* filename);
 
 BIMAGE_STATUS
 bimageSave(bimage* im, const char* filename);
+
+BIMAGE_STATUS
+bimageSaveJPG(bimage *im, const char *filename, int quality);
 
 /* RESIZE */
 

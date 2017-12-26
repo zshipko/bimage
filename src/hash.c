@@ -34,7 +34,7 @@ uint64_t bimageHash(bimage *im)
 
     for(j = 0; j < HASH_SIZE; j++){
         for(i = 0; i < HASH_SIZE; i++){
-            if (bimageGetPixelUnsafe(x, i, j, &px) == BIMAGE_ERR){
+            if (bimageGetPixelUnsafe(x, i, j, &px) != BIMAGE_OK){
                 continue;
             }
         }

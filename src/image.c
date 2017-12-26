@@ -381,8 +381,8 @@ bimageConvertDepth(bimage *dst, bimage *im, BIMAGE_DEPTH depth)
     }
 
     bimageIterAll(im, x, y){
-        if (bimageGetPixelUnsafe(im, x, y, &px) != BIMAGE_ERR
-                && bimagePixelConvertDepth(&pdst, px, depth) != BIMAGE_ERR){
+        if (bimageGetPixelUnsafe(im, x, y, &px) == BIMAGE_OK
+                && bimagePixelConvertDepth(&pdst, px, depth) == BIMAGE_OK){
             bimageSetPixel(im2, x, y, pdst);
         } else {
             break;
@@ -404,10 +404,8 @@ bimageConvertChannels(bimage* dst, bimage* im, BIMAGE_CHANNEL nchannels)
 
     bimagePixel px = BIMAGE_PIXEL_INIT;
     bimageIterAll(im, x, y){
-        if (bimageGetPixelUnsafe(im, x, y, &px) != BIMAGE_ERR){
+        if (bimageGetPixelUnsafe(im, x, y, &px) == BIMAGE_OK){
             bimageSetPixel(im2, x, y, px);
-        } else {
-            break;
         }
     }
 

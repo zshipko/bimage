@@ -52,9 +52,6 @@ bimage *bimageOpen16(const char *filename)
     }
 
     return bimageCreateWithData(w, h, BIMAGE_U16 | c, data, true, false);
-
-    bFree(data);
-    return NULL;
 }
 
 bimage*
@@ -92,6 +89,20 @@ const char *get_ext(const char *filename)
 }
 
 BIMAGE_STATUS
+bimageSaveJPG(bimage *im, const char *filename, int quality)
+{
+    if (bimageTypeDepth(im->type) != BIMAGE_U8){
+        return BIMAGE_ERR_INVALID_FORMAT;
+    }
+
+    return stbi_write_jpg(filename,
+                im->width,
+                im->height,
+                bimageTypeChannels(im->type),
+                im->data, quality) == 0 ? BIMAGE_ERR : BIMAGE_OK;
+}
+
+BIMAGE_STATUS
 bimageSave(bimage *im, const char *filename)
 {
     const char *x = get_ext(filename);
@@ -107,6 +118,10 @@ bimageSave(bimage *im, const char *filename)
                 im->height,
                 bimageTypeChannels(im->type),
                 im->data) == 0 ? BIMAGE_ERR : BIMAGE_OK;
+    } else if ((strncasecmp(x, "jpg", 3) == 0 ||
+                strncasecmp(x, "jpeg", 3) == 0) &&
+                bimageTypeDepth(im->type) == BIMAGE_U8){
+        return bimageSaveJPG(im, filename, 95);
 #ifdef BIMAGE_NO_TIFF
     }
 #else
@@ -115,7 +130,7 @@ bimageSave(bimage *im, const char *filename)
 	}
 #endif
 
-	return BIMAGE_ERR;
+	return BIMAGE_ERR_INVALID_FORMAT;
 }
 
 
