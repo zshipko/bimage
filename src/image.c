@@ -508,7 +508,6 @@ void *bimageParallelWrapper(void *_iter){
     struct bimageParallelIterator *iter =
         (struct bimageParallelIterator*)_iter;
     bimagePixel px;
-
     uint32_t i, j;
     for (j = iter->y0; j < iter->y1; j++){
         for(i = iter->x0; i < iter->x1; i++){
@@ -519,7 +518,6 @@ void *bimageParallelWrapper(void *_iter){
         }
     }
 
-    pthread_exit(NULL);
     return NULL;
 }
 
@@ -536,21 +534,21 @@ BIMAGE_STATUS bimageParallel(bimage* im, bimageParallelFn fn, int nthreads, void
 
     for (x = 0; x < nthreads; x++){
         struct bimageParallelIterator iter;
-        iter.x0 = width * x;
-        iter.x1 = width;
-        iter.y0 = height * x;
-        iter.y1 = height;
+        iter.x1 = width * x;
+        iter.x0 = width;
+        iter.y1 = height * x;
+        iter.y0 = height;
         iter.image = im;
         iter.f = fn;
         if (pthread_create(&threads[x], NULL, bimageParallelWrapper, &iter) != 0){
-            if (tries < 10){
+            if (tries <= 5){
                 x -= 1;
                 tries += 1;
             } else {
                 return BIMAGE_ERR;
             }
         } else {
-            tries = 0;
+            tries = 1;
         }
     }
 
