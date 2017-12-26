@@ -202,6 +202,9 @@ typedef void (*bimageParallelFn)(uint32_t, uint32_t, bimagePixel *, void *);
 
 BIMAGE_STATUS
 bimageParallel(bimage* im, bimageParallelFn fn, int nthreads, void *);
+
+BIMAGE_STATUS
+bimageParallelCopy(bimage *dst, bimage *im, bimageParallelFn fn, int nthreads, void *userdata);
 #endif // BIMAGE_NO_PTHREAD
 
 /* TIFF */

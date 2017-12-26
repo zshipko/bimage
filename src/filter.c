@@ -26,8 +26,7 @@ IMAGE_OP(Mul);
 IMAGE_OP(Div);
 
 static void bimageColorFn(uint32_t x, uint32_t y, bimagePixel *px, void *userdata){
-    bimage* im2 = userdata;
-    bimageSetPixel(im2, x, y, *px);
+    // do nothing, the color conversion will be handled automatically
 }
 
 
@@ -60,14 +59,10 @@ bimageColor(bimage* dst, bimage* im, BIMAGE_CHANNEL c)
 }
 
 static void bimageGrayscaleFn(uint32_t x, uint32_t y, bimagePixel *px, void *userdata){
-    bimage *im2 = userdata;
-    float mx = (float)bimageTypeMax(im2->type);
+    float mx = (float)bimageTypeMax(px->depth);
     bimagePixel p;
-    p.depth = bimageTypeDepth(im2->type);
-    p.data.f[3] = bimageTypeMax(im2->type);
+    p.data.f[3] = mx;
     p.data.f[0] = p.data.f[1] = p.data.f[2] = (px->data.f[0] * 0.2126) + (px->data.f[1] * 0.7152) + (px->data.f[2] * 0.0722) * (px->data.f[3] / mx);
-    bimageSetPixelUnsafe(im2, x, y, p);
-
 }
 
 bimage*
@@ -82,7 +77,7 @@ bimageGrayscale(bimage* dst, bimage* im, BIMAGE_CHANNEL chan)
     }
 
 #ifndef BIMAGE_NO_PTHREAD
-    bimageParallel(im, bimageGrayscaleFn, BIMAGE_NUM_CPU, im2);
+    bimageParallelCopy(im2, im, bimageGrayscaleFn, BIMAGE_NUM_CPU, NULL);
 #else
     bimagePixel p, px;
     bimageIterAll(im, x, y){

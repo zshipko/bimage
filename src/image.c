@@ -29,7 +29,7 @@ bimageTypeMax(BIMAGE_TYPE t)
     case BIMAGE_U32:
         return 0xFFFFFFFF;
     case BIMAGE_F32:
-        return 1;
+        return 1.0;
     default:
         return 0;
     }
@@ -481,7 +481,8 @@ bimageAverageInRect(bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
     return dst;
 }
 
-bimage* bimageRandom(bimage* dst, uint32_t w, uint32_t h, BIMAGE_TYPE t)
+bimage*
+bimageRandom(bimage* dst, uint32_t w, uint32_t h, BIMAGE_TYPE t)
 {
     bimage* im = BIMAGE_CREATE_DEST(dst, w, h, t);
     if (!im){
@@ -499,21 +500,23 @@ bimage* bimageRandom(bimage* dst, uint32_t w, uint32_t h, BIMAGE_TYPE t)
 
 struct bimageParallelIterator {
     uint32_t x0, y0, x1, y1;
-    bimage *image;
+    bimage *image0, *image1;
     bimageParallelFn f;
     void *userdata;
 };
 
-void *bimageParallelWrapper(void *_iter){
+void*
+bimageParallelWrapper(void *_iter)
+{
     struct bimageParallelIterator *iter =
         (struct bimageParallelIterator*)_iter;
     bimagePixel px;
     uint32_t i, j;
     for (j = iter->y0; j < iter->y1; j++){
         for(i = iter->x0; i < iter->x1; i++){
-            if (bimageGetPixel(iter->image, i, j, &px) == BIMAGE_OK){
+            if (bimageGetPixelUnsafe(iter->image1, i, j, &px) == BIMAGE_OK){
                 iter->f(i, j, &px, iter->userdata);
-                bimageSetPixel(iter->image, i, j, px);
+                bimageSetPixel(iter->image0, i, j, px);
             }
         }
     }
@@ -521,10 +524,17 @@ void *bimageParallelWrapper(void *_iter){
     return NULL;
 }
 
-BIMAGE_STATUS bimageParallel(bimage* im, bimageParallelFn fn, int nthreads, void *userdata){
+BIMAGE_STATUS
+bimageParallelCopy(bimage *dst, bimage *im, bimageParallelFn fn, int nthreads, void *userdata)
+{
+    if (im == NULL){
+        im = dst;
+    }
+
     if (nthreads <= 0){
         nthreads = sysconf(_SC_NPROCESSORS_ONLN);
     }
+
     pthread_t threads[nthreads];
     int tries = 1, n;
     uint32_t width, height, x;
@@ -538,7 +548,9 @@ BIMAGE_STATUS bimageParallel(bimage* im, bimageParallelFn fn, int nthreads, void
         iter.x0 = width;
         iter.y1 = height * x;
         iter.y0 = height;
-        iter.image = im;
+        iter.userdata = userdata;
+        iter.image0 = dst;
+        iter.image1 = im;
         iter.f = fn;
         if (pthread_create(&threads[x], NULL, bimageParallelWrapper, &iter) != 0){
             if (tries <= 5){
@@ -558,6 +570,12 @@ BIMAGE_STATUS bimageParallel(bimage* im, bimageParallelFn fn, int nthreads, void
     }
 
     return BIMAGE_OK;
+}
+
+BIMAGE_STATUS
+bimageParallel(bimage* im, bimageParallelFn fn, int nthreads, void *userdata)
+{
+    return bimageParallelCopy(im, NULL, fn, nthreads, userdata);
 }
 
 #endif // BIMAGE_NO_PTHREAD

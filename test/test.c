@@ -216,6 +216,10 @@ START_TEST (test_bimageGrayscale)
         bimageGetPixel(im2, WIDTH-1, HEIGHT-1, &px);
         ck_assert(px.data.f[0] == px.data.f[1] && px.data.f[1] == px.data.f[2]);
 
+        if (types[i] == BIMAGE_U8 | BIMAGE_RGB){
+            bimageSave(im2, "test.jpg");
+        }
+
         bimageRelease(im2);
         bimageRelease(im);
     }
