@@ -515,8 +515,9 @@ bimageParallelWrapper(void *_iter)
     for (j = iter->y0; j < iter->y1; j++){
         for(i = iter->x0; i < iter->x1; i++){
             if (bimageGetPixelUnsafe(iter->image1, i, j, &px) == BIMAGE_OK){
-                iter->f(i, j, &px, iter->userdata);
-                bimageSetPixel(iter->image0, i, j, px);
+                if (iter->f(i, j, &px, iter->userdata)){
+                    bimageSetPixel(iter->image0, i, j, px);
+                }
             }
         }
     }

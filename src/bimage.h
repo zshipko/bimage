@@ -198,7 +198,7 @@ bimage*
 bimageRandom(bimage* dst, uint32_t width, uint32_t height, BIMAGE_TYPE t);
 
 #ifndef BIMAGE_NO_PTHREAD
-typedef void (*bimageParallelFn)(uint32_t, uint32_t, bimagePixel *, void *);
+typedef bool (*bimageParallelFn)(uint32_t, uint32_t, bimagePixel *, void *);
 
 BIMAGE_STATUS
 bimageParallel(bimage* im, bimageParallelFn fn, int nthreads, void *);

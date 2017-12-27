@@ -225,8 +225,9 @@ START_TEST (test_bimageGrayscale)
     }
 } END_TEST;
 
-void parallel_fn(uint32_t x, uint32_t y, bimagePixel *px, void *userdata){
+bool parallel_fn(uint32_t x, uint32_t y, bimagePixel *px, void *userdata){
     px->data.f[0] = px->data.f[1] = px->data.f[2] = px->data.f[3] = 1.0;
+    return true;
 }
 
 #ifndef BIMAGE_NO_PTHREAD
