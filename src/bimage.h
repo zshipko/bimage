@@ -231,10 +231,10 @@ bimage*
 bimageOpenFloat(const char* filename);
 
 bimage*
-bimageRead(const char *buffer, size_t len);
+bimageRead(const unsigned char *buffer, size_t len);
 
 bimage*
-bimageRead16(const char *buffer, size_t len);
+bimageRead16(const unsigned char *buffer, size_t len);
 
 BIMAGE_STATUS
 bimageSave(bimage* im, const char* filename);

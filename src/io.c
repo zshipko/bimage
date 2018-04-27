@@ -31,7 +31,7 @@ bimage* bimageOpen(const char *filename)
 }
 
 bimage*
-bimageRead(const char *buffer, size_t len)
+bimageRead(const unsigned char *buffer, size_t len)
 {
     int w, h, c;
     uint8_t* data = stbi_load_from_memory(buffer, len, &w, &h, &c, 0);
@@ -43,7 +43,7 @@ bimageRead(const char *buffer, size_t len)
 }
 
 bimage*
-bimageRead16(const char *buffer, size_t len)
+bimageRead16(const unsigned char *buffer, size_t len)
 {
     int w, h, c;
     uint16_t* data = stbi_load_16_from_memory(buffer, len, &w, &h, &c, 0);
