@@ -203,7 +203,14 @@ bimagePixel##name(bimagePixel a, bimagePixel b) \
         c.data.f[i] = (a.data.f[i] op c.data.f[i]); \
     } \
     return c; \
+} \
+\
+bool \
+bimagePixelIs##name(bimagePixel a, bimagePixel b) \
+{ \
+    return BIMAGE_PIXEL_IS_TRUE(bimagePixel##name(a, b)); \
 }
+
 
 PIXEL_OP(Add, +)
 PIXEL_OP(Sub, -)
@@ -212,6 +219,18 @@ PIXEL_OP(Div, /)
 PIXEL_COMPARE_OP(Eq, ==)
 PIXEL_COMPARE_OP(Gt, >)
 PIXEL_COMPARE_OP(Lt, <)
+
+bool
+bimagePixelIsTrue(bimagePixel *p)
+{
+    return BIMAGE_PIXEL_IS_TRUE(*p);
+}
+
+bool
+bimagePixelIsFalse(bimagePixel *p)
+{
+    return BIMAGE_PIXEL_IS_FALSE(*p);
+}
 
 bimagePixel
 bimagePixelRandom(BIMAGE_DEPTH t)

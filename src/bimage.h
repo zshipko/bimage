@@ -146,6 +146,21 @@ bimagePixelGt(bimagePixel p, bimagePixel q);
 bimagePixel
 bimagePixelLt(bimagePixel p, bimagePixel q);
 
+bool
+bimagePixelIsTrue(bimagePixel *p);
+
+bool
+bimagePixelIsFalse(bimagePixel *p);
+
+bool
+bimagePixelIsEq(bimagePixel p, bimagePixel q);
+
+bool
+bimagePixelIsGt(bimagePixel p, bimagePixel q);
+
+bool
+bimagePixelIsLt(bimagePixel p, bimagePixel q);
+
 bimagePixel
 bimagePixelRandom(BIMAGE_DEPTH depth);
 
@@ -264,6 +279,12 @@ bimageResize(bimage* dst, bimage* im, int32_t width, int32_t height);
 
 /* FILTER */
 
+bool
+bimageAny(bimage* im, bool (*fn)(bimagePixel*));
+
+bool
+bimageAll(bimage* im, bool (*fn)(bimagePixel*));
+
 BIMAGE_STATUS
 bimageAdd(bimage* dst, bimage* b);
 
@@ -362,6 +383,7 @@ bimageHashDiff(uint64_t a, uint64_t b);
 
 #define BIMAGE_PIXEL_IS_TRUE(px) BIMAGE_PIXEL_IS_ALL(px, 1)
 #define BIMAGE_PIXEL_IS_FALSE(px) BIMAGE_PIXEL_IS_ALL(px, 0)
+
 #define BIMAGE_PIXEL_IS_BOOL(px) \
     (((px).data.f[0] == 1 || (px).data.f[0] == 0) && \
      ((px).data.f[1] == 1 || (px).data.f[1] == 0) && \

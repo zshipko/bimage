@@ -42,6 +42,30 @@ IMAGE_COMPARE_OP(Eq);
 IMAGE_COMPARE_OP(Gt);
 IMAGE_COMPARE_OP(Lt);
 
+bool bimageAny(bimage *im, bool (*fn)(bimagePixel*)){
+    bimagePixel px;
+    bimageIterAll(im, x, y){
+        bimageGetPixelUnsafe(im, x, y, &px);
+        if (fn(&px)){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool bimageAll(bimage *im, bool (*fn)(bimagePixel*)){
+    bimagePixel px;
+    bimageIterAll(im, x, y){
+        bimageGetPixelUnsafe(im, x, y, &px);
+        if (!fn(&px)){
+            return false;
+        }
+    }
+
+    return true;
+}
+
 static bool bimageColorFn(uint32_t x, uint32_t y, bimagePixel *px, void *userdata){
     // do nothing, the color conversion will be handled automatically by bimageSetPixel
     return true;

@@ -167,13 +167,9 @@ START_TEST (test_bimageEq)
     BENCH_START(eq);
     bimageEq(im, im);
     BENCH_STOP(eq);
-    bimagePixel px;
-    bimageIterAll(im, x, y){
-        bimageGetPixel(im, x, y, &px);
-        ck_assert(BIMAGE_PIXEL_IS_TRUE(px));
-    }
-
+    ck_assert(bimageAll(im, bimagePixelIsTrue));
     bimageRelease(im);
+
 } END_TEST;
 
 START_TEST (test_bimageResizeHash)
