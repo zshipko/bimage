@@ -276,6 +276,36 @@ bimageRotate(bimage* dst, bimage* im, float deg);
 bimage*
 bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float offset);
 
+bimage*
+bimageSobelX(bimage* dst, bimage* src);
+
+bimage*
+bimageSobelY(bimage* dst, bimage* src);
+
+bimage*
+bimageSobel(bimage* dst, bimage* src);
+
+bimage*
+bimagePrewittX(bimage* dst, bimage* src);
+
+bimage*
+bimagePrewittY(bimage* dst, bimage* src);
+
+bimage*
+bimagePrewitt(bimage* dst, bimage* src);
+
+bimage*
+bimageOutline(bimage* dst, bimage* src);
+
+bimage*
+bimageSharpen(bimage* dst, bimage* src);
+
+bimage*
+bimageBlur(bimage* dst, bimage* src);
+
+bimage*
+bimageGaussianBlur(bimage* dst, bimage* src);
+
 /* HASH */
 
 uint64_t

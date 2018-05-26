@@ -204,3 +204,141 @@ bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float off
 
     return oi;
 }
+
+static float sobel_x[9] = {
+    1, 0, -1,
+    2, 0, -2,
+    1, 0, -1
+};
+
+bimage*
+bimageSobelX(bimage* dst, bimage* src)
+{
+    return bimageFilter(dst, src, sobel_x, 3, 1, 0);
+}
+
+static float sobel_y[9] = {
+    1, 2, 1,
+    0, 0, 0,
+    -1, -2, -1
+};
+
+bimage*
+bimageSobelY(bimage* dst, bimage* src)
+{
+    return bimageFilter(dst, src, sobel_y, 3, 1, 0);
+}
+
+bimage*
+bimageSobel(bimage* dst, bimage* src){
+    bimage* src2 = bimageSobelX(dst, src);
+    if (!src2){
+        return NULL;
+    }
+
+    bimage* tmp = bimageSobelY(NULL, src2);
+    if (!tmp){
+        if (!dst){
+            bimageRelease(src2);
+        }
+        return NULL;
+    }
+
+    bimageAdd(src2, tmp);
+    return src2;
+}
+
+static float prewitt_x[9] = {
+    1, 0, -1,
+    1, 0, -1,
+    1, 0, -1
+};
+
+bimage*
+bimagePrewittX(bimage* dst, bimage* src)
+{
+    return bimageFilter(dst, src, prewitt_x, 3, 1, 0);
+}
+
+static float prewitt_y[9] = {
+    1, 1, 1,
+    0, 0, 0,
+    -1, -1, -1
+};
+
+bimage*
+bimagePrewittY(bimage* dst, bimage* src)
+{
+    return bimageFilter(dst, src, prewitt_y, 3, 1, 0);
+}
+
+bimage*
+bimagePrewitt(bimage* dst, bimage* src){
+    bimage* src2 = bimagePrewittX(dst, src);
+    if (!src2){
+        return NULL;
+    }
+
+    bimage* tmp = bimagePrewittY(NULL, src2);
+    if (!tmp){
+        if (!dst){
+            bimageRelease(src2);
+        }
+        return NULL;
+    }
+
+    bimageAdd(src2, tmp);
+
+    return src2;
+}
+
+static float outline[9] = {
+    -1, -1, -1
+    -1,  8, -1,
+    -1, -1, -1
+};
+
+bimage*
+bimageOutline(bimage* dst, bimage* im)
+{
+    return bimageFilter(dst, im, outline, 3, 1, 0);
+}
+
+
+static float sharpen[9] = {
+     0, -1,  0,
+    -1,  5, -1,
+     0, -1,  0
+};
+
+bimage*
+bimageSharpen(bimage* dst, bimage* im)
+{
+    return bimageFilter(dst, im, sharpen, 3, 1, 0);
+}
+
+static float blur[9] = {
+    1, 1, 1,
+    1, 1, 1,
+    1, 1, 1
+};
+
+bimage*
+bimageBlur(bimage* dst, bimage* im)
+{
+    return bimageFilter(dst, im, blur, 3, 9, 0);
+}
+
+static float gaussian_blur[25] = {
+    1,  4,  7,  4,  1,
+    4, 16, 26, 16,  4,
+    7, 26, 41, 26,  7,
+    4, 16, 26, 16,  4,
+    1,  4,  7,  4,  1
+};
+
+bimage*
+bimageGaussianBlur(bimage* dst, bimage* im)
+{
+    return bimageFilter(dst, im, gaussian_blur, 5, 273, 0);
+}
