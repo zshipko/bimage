@@ -149,3 +149,58 @@ bimageRotate(bimage* dst, bimage* im, float deg)
 
     return im2;
 }
+
+bimage*
+bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float offset)
+{
+    bimage *oi = BIMAGE_CREATE_DEST(dst, im->width, im->height, im->type);
+    if (oi == NULL){
+        return NULL;
+    }
+
+    Ks = Ks/2;
+
+    int kx, ky;
+    bimagePixel p, px;
+    px.depth = bimageTypeDepth(im->type);
+    px.data.f[3] = bimageTypeMax(im->type);
+
+    // Divisor can never be zero
+    if (divisor == 0.0){
+        divisor = 1.0;
+    }
+
+#ifdef BIMAGE_SSE
+    __m128 divi = _mm_load_ps1(&divisor),
+           offs = _mm_load_ps1(&offset);
+#else
+    int channels = bimageTypeChannels(im->type), l;
+
+    // Ignore alpha channel
+    if (channels > BIMAGE_RGB){
+        channels = BIMAGE_RGB;
+    }
+#endif
+
+    bimageIterAll(im, ix, iy){
+        px.data.f[0] = px.data.f[1] = px.data.f[2] = 0.0;
+        for(kx = -Ks; kx <= Ks; kx++){
+            for(ky = -Ks; ky <= Ks; ky++){
+                bimageGetPixel(im, ix+kx, iy+ky, &p);
+#ifdef BIMAGE_SSE
+                px.data.m += (_mm_load_ps1(&K[(kx+Ks) + (ky+Ks)*(2*Ks+1)])/divi) * p.data.m + offs;
+#else
+                for (l = 0; l < channels; l++){
+                    px.data.f[l] += (K[(kx+Ks) + (ky+Ks)*(2*Ks+1)]/divisor) * p.data.f[l] + offset;
+                }
+#endif
+            }
+        }
+
+        bimagePixelClamp(&px);
+        bimageSetPixel(oi, ix, iy, px);
+    }
+
+
+    return oi;
+}

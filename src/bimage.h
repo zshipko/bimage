@@ -273,6 +273,9 @@ bimageInvert(bimage* dst, bimage* im);
 bimage*
 bimageRotate(bimage* dst, bimage* im, float deg);
 
+bimage*
+bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float offset);
+
 /* HASH */
 
 uint64_t
