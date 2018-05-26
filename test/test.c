@@ -266,6 +266,19 @@ START_TEST (test_bimageDisk)
     unlink("/tmp/bimage");
 } END_TEST;
 
+START_TEST (test_bimageSobel)
+{
+    int i;
+    for (i = 0; i < num_types; i++){
+        bimage* im = randomImage(WIDTH, HEIGHT, types[i]);
+        BENCH_START(sobel);
+        bimage *dst = bimageSobel(NULL, im);
+        BENCH_STOP(sobel);
+        bimageRelease(dst);
+        bimageRelease(im);
+    }
+} END_TEST;
+
 Suite *bimage_suite(void)
 {
     Suite *s;
@@ -287,6 +300,7 @@ Suite *bimage_suite(void)
     tcase_add_test(tc, test_bimageParallel);
 #endif
     tcase_add_test(tc, test_bimageDisk);
+    tcase_add_test(tc, test_bimageSobel);
     suite_add_tcase(s, tc);
     return s;
 }
