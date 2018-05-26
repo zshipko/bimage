@@ -14,8 +14,22 @@ bimage##name(bimage* a, bimage* b) \
             bimagePixel##name(&p, q) != BIMAGE_OK){ \
             break; \
         } \
-        bimagePixelClamp(&p); \
         bimageSetPixelUnsafe(a, x, y, p); \
+    } \
+    return BIMAGE_OK; \
+}
+
+#define IMAGE_COMPARE_OP(name) \
+BIMAGE_STATUS \
+bimage##name(bimage* a, bimage* b) \
+{ \
+    bimagePixel p, q; \
+    bimageIterAll(a, x, y){ \
+        if (bimageGetPixelUnsafe(a, x, y, &p) != BIMAGE_OK  || \
+            bimageGetPixel(b, x, y, &q) != BIMAGE_OK){ \
+            break; \
+        } \
+        bimageSetPixelUnsafe(a, x, y, bimagePixel##name(p, q)); \
     } \
     return BIMAGE_OK; \
 }
@@ -24,9 +38,12 @@ IMAGE_OP(Add);
 IMAGE_OP(Sub);
 IMAGE_OP(Mul);
 IMAGE_OP(Div);
+IMAGE_COMPARE_OP(Eq);
+IMAGE_COMPARE_OP(Gt);
+IMAGE_COMPARE_OP(Lt);
 
 static bool bimageColorFn(uint32_t x, uint32_t y, bimagePixel *px, void *userdata){
-    // do nothing, the color conversion will be handled automatically
+    // do nothing, the color conversion will be handled automatically by bimageSetPixel
     return true;
 }
 
@@ -47,7 +64,7 @@ bimageColor(bimage* dst, bimage* im, BIMAGE_CHANNEL c)
     }
 
 #ifndef BIMAGE_NO_PTHREAD
-    bimageParallel(im, bimageColorFn, BIMAGE_NUM_CPU, im2);
+    bimageEachPixel2(im2, im, bimageColorFn, BIMAGE_NUM_CPU, NULL);
 #else
     bimagePixel px;
     bimageIterAll(im2, x, y){
@@ -79,7 +96,7 @@ bimageGrayscale(bimage* dst, bimage* im, BIMAGE_CHANNEL chan)
     }
 
 #ifndef BIMAGE_NO_PTHREAD
-    bimageParallelCopy(im2, im, bimageGrayscaleFn, BIMAGE_NUM_CPU, NULL);
+    bimageEachPixel2(im2, im, bimageGrayscaleFn, BIMAGE_NUM_CPU, NULL);
 #else
     bimagePixel p, px;
     bimageIterAll(im, x, y){
@@ -107,7 +124,7 @@ bimageInvert(bimage* dst, bimage* src)
 
     bimageIterAll(im2, x, y){
         bimageGetPixelUnsafe(im2, x, y, &px);
-        for(i = 0; i < ch % 5; i++){
+        for(i = 0; i < ch; i++){
             px.data.f[i] = mx - px.data.f[i];
         }
         bimageSetPixelUnsafe(im2, x, y, px);

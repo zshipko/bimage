@@ -1,5 +1,5 @@
-CFLAGS+=-I/usr/local/include
-LDFLAGS+=-L.. -lbimage -L/usr/local/lib -ltiff -lcheck -lm -lpthread
+CFLAGS+=$(shell cat ../.cflags) -I/usr/local/include
+LDFLAGS+=$(shell cat ../.ldflags) -L.. -lbimage -L/usr/local/lib -lcheck -lm -lpthread
 UNAME:=$(shell uname)
 BENCHMARK?=YES
 

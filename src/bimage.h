@@ -10,6 +10,10 @@ extern "C" {
 #include <stdlib.h>
 #include <unistd.h>
 
+#ifndef M_PI
+#define M_PI (3.14159265358979323846)
+#endif
+
 #if defined(__has_include) && !defined(BIMAGE_NO_INTRIN)
 #if (__has_include(<emmintrin.h>))
 #include <emmintrin.h>
@@ -23,10 +27,12 @@ extern "C" {
 #endif
 #endif
 
+#ifndef BIMAGE_RAND_RANGE
 #ifdef __linux__
 #define BIMAGE_RAND_RANGE(x) (random() % x)
 #else
 #define BIMAGE_RAND_RANGE(x) arc4random_uniform(x)
+#endif
 #endif
 
 typedef enum BIMAGE_STATUS {
@@ -132,6 +138,15 @@ BIMAGE_STATUS
 bimagePixelDiv(bimagePixel *p, bimagePixel q);
 
 bimagePixel
+bimagePixelEq(bimagePixel p, bimagePixel q);
+
+bimagePixel
+bimagePixelGt(bimagePixel p, bimagePixel q);
+
+bimagePixel
+bimagePixelLt(bimagePixel p, bimagePixel q);
+
+bimagePixel
 bimagePixelRandom(BIMAGE_DEPTH depth);
 
 bool
@@ -201,10 +216,10 @@ bimageRandom(bimage* dst, uint32_t width, uint32_t height, BIMAGE_TYPE t);
 typedef bool (*bimageParallelFn)(uint32_t, uint32_t, bimagePixel *, void *);
 
 BIMAGE_STATUS
-bimageParallel(bimage* im, bimageParallelFn fn, int nthreads, void *);
+bimageEachPixel(bimage* im, bimageParallelFn fn, int nthreads, void *);
 
 BIMAGE_STATUS
-bimageParallelCopy(bimage *dst, bimage *im, bimageParallelFn fn, int nthreads, void *userdata);
+bimageEachPixel2(bimage *dst, bimage *im, bimageParallelFn fn, int nthreads, void *userdata);
 #endif // BIMAGE_NO_PTHREAD
 
 /* TIFF */
@@ -260,6 +275,15 @@ bimageMul(bimage* dst, bimage* b);
 
 BIMAGE_STATUS
 bimageDiv(bimage* dst, bimage* b);
+
+BIMAGE_STATUS
+bimageEq(bimage *dst, bimage *b);
+
+BIMAGE_STATUS
+bimageGt(bimage *dst, bimage *b);
+
+BIMAGE_STATUS
+bimageLt(bimage *dst, bimage *b);
 
 bimage*
 bimageColor(bimage* dst, bimage* im, BIMAGE_CHANNEL c);
@@ -323,6 +347,26 @@ bimageHashDiff(uint64_t a, uint64_t b);
 
 
 #define BIMAGE_PIXEL_INIT bimagePixelCreate(0, 0, 0, 0, BIMAGE_UNKNOWN)
+
+#define BIMAGE_PIXEL_IS(px, r, g, b, a) \
+    (((px).data.f[0] == r) && \
+     ((px).data.f[1] == g) && \
+     ((px).data.f[2] == b) && \
+     ((px).data.f[3] == a))
+
+#define BIMAGE_PIXEL_IS_ALL(px, v) \
+    (((px).data.f[0] == v) && \
+     ((px).data.f[1] == v) && \
+     ((px).data.f[2] == v) && \
+     ((px).data.f[3] == v))
+
+#define BIMAGE_PIXEL_IS_TRUE(px) BIMAGE_PIXEL_IS_ALL(px, 1)
+#define BIMAGE_PIXEL_IS_FALSE(px) BIMAGE_PIXEL_IS_ALL(px, 0)
+#define BIMAGE_PIXEL_IS_BOOL(px) \
+    (((px).data.f[0] == 1 || (px).data.f[0] == 0) && \
+     ((px).data.f[1] == 1 || (px).data.f[1] == 0) && \
+     ((px).data.f[2] == 1 || (px).data.f[2] == 0) && \
+     ((px).data.f[3] == 1 || (px).data.f[3] == 0))
 
 extern int BIMAGE_NUM_CPU;
 

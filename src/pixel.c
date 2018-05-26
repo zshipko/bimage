@@ -46,12 +46,6 @@ bimagePixelConvertDepth (bimagePixel *dst, bimagePixel src, BIMAGE_DEPTH depth)
         goto ok;
     }
 
-
-#ifndef BIMAGE_SEE
-    int i;
-#endif
-
-
     // Conversion to F32 is the same for every type
     if (depth == BIMAGE_F32){
         float mx = bimageTypeMax(src.depth);
@@ -59,6 +53,7 @@ bimagePixelConvertDepth (bimagePixel *dst, bimagePixel src, BIMAGE_DEPTH depth)
 #ifdef BIMAGE_SSE
         (*dst).data.m = src.data.m/_mm_load_ps1(&mx);
 #else
+        int i;
         for(i = 0; i < 4; i++){
             (*dst).data.f[i] = src.data.f[i]/mx;
         }
@@ -164,7 +159,7 @@ bimagePixelClamp(bimagePixel *px)
     return BIMAGE_OK;
 }
 
-#if !defined(BIMAGE_SSE) // && !defined(BIMAGE_NEON)
+#if !defined(BIMAGE_SSE)
 #define PIXEL_OP(name, op) \
 BIMAGE_STATUS \
 bimagePixel##name(bimagePixel *a, bimagePixel b) \
@@ -175,9 +170,10 @@ bimagePixel##name(bimagePixel *a, bimagePixel b) \
     int i; \
     bimagePixel c; \
     bimagePixelConvertDepth(&c, b, a->depth); \
-    for (i = 0; i < 3; i++){ \
+    for (i = 0; i < 4; i++){ \
         a->data.f[i] = a->data.f[i] op c.data.f[i]; \
     } \
+    bimagePixelClamp(a); \
     return BIMAGE_OK; \
 }
 #else
@@ -191,14 +187,31 @@ bimagePixel##name(bimagePixel *a, bimagePixel b) \
     bimagePixel c; \
     bimagePixelConvertDepth(&c, b, a->depth); \
     a->data.m = a->data.m op c.data.m;\
+    bimagePixelClamp(a); \
     return BIMAGE_OK; \
 }
 #endif
+
+#define PIXEL_COMPARE_OP(name, op) \
+bimagePixel \
+bimagePixel##name(bimagePixel a, bimagePixel b) \
+{ \
+    int i; \
+    bimagePixel c; \
+    bimagePixelConvertDepth(&c, b, a.depth); \
+    for (i = 0; i < 4; i++){ \
+        c.data.f[i] = (a.data.f[i] op c.data.f[i]); \
+    } \
+    return c; \
+}
 
 PIXEL_OP(Add, +)
 PIXEL_OP(Sub, -)
 PIXEL_OP(Mul, *)
 PIXEL_OP(Div, /)
+PIXEL_COMPARE_OP(Eq, ==)
+PIXEL_COMPARE_OP(Gt, >)
+PIXEL_COMPARE_OP(Lt, <)
 
 bimagePixel
 bimagePixelRandom(BIMAGE_DEPTH t)

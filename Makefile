@@ -30,6 +30,9 @@ else
 	CFLAGS+= -DBIMAGE_NO_TIFF
 endif
 
+$(shell echo $(CFLAGS) > .cflags)
+$(shell echo $(LDFLAGS) > .ldflags)
+
 OBJ=$(SRC:.c=.o)
 
 lib: shared static
@@ -58,6 +61,6 @@ uninstall:
 	rm -f $(PREFIX)/include/bimage.h
 
 .PHONY: test
-test:
+test: debug
 	@CFLAGS='$(CFLAGS)' BENCHMARK='$(BENCHMARK)' $(MAKE) -C test
 

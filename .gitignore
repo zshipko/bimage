@@ -8,3 +8,6 @@
 test/test
 *.core
 bimage-gtk
+test/test_*.jpg
+.cflags
+.ldflags

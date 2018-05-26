@@ -34,7 +34,7 @@ bimage* randomImage(uint32_t w, uint32_t h, BIMAGE_TYPE t)
     }
 
     if (bimageTypeDepth(t) == BIMAGE_U8) {
-        bimageSave(im, "random.png");
+        bimageSave(im, "test_random.png");
     }
 
     return im;
@@ -94,7 +94,7 @@ START_TEST (test_bimageSize)
         case BIMAGE_F32:
             ck_assert_int_eq(bimageTypeDepth(im->type), BIMAGE_F32);
             break;
-        defailt:
+        default:
             ck_assert(false);
         }
         bimageRelease(im);
@@ -114,7 +114,7 @@ START_TEST (test_bimagePixelConvert)
         for (j = 0; j > 3; j++){
             bimagePixel px2;
             t = depth[j] | 4;
-            ck_assert_int_eq(bimagePixelConvertDepth(&px, px2, depth[j]), BIMAGE_OK);
+            ck_assert_int_eq(bimagePixelConvertDepth(&px2, px, depth[j]), BIMAGE_OK);
             ck_assert(px2.data.f[0] == bimageTypeMax(t) && px2.data.f[1] == 0);
         }
     }
@@ -144,8 +144,8 @@ START_TEST (test_bimageConsume)
 
 START_TEST (test_bimageAdd)
 {
-    bimage* im = randomImage(100, 100, BIMAGE_U8 | 3);
-    bimage* im2 = randomImage(100, 100, BIMAGE_U8 | 3);
+    bimage* im = bimageCreate(100, 100, BIMAGE_U8 | 3);
+    bimage* im2 = bimageCreate(100, 100, BIMAGE_U8 | 3);
 
     bimagePixel c = bimagePixelCreate(255, 0, 0, 255, BIMAGE_U8), d;
     bimageSetPixelUnsafe(im2, 50, 50, c);
@@ -154,10 +154,26 @@ START_TEST (test_bimageAdd)
     bimageAdd(im, im2);
     BENCH_STOP(add);
 
-    bimageGetPixelUnsafe(im2, 50, 50, &d);
-    ck_assert(d.data.f[0] == c.data.f[0] && d.data.f[1] == c.data.f[1] && d.data.f[2] == c.data.f[2]);
+    bimageGetPixelUnsafe(im, 50, 50, &d);
+    ck_assert(d.data.f[0] == 255 && d.data.f[1] == 0 && d.data.f[2] == 0 && d.data.f[3] == 255);
     bimageRelease(im);
     bimageRelease(im2);
+} END_TEST;
+
+START_TEST (test_bimageEq)
+{
+    bimage* im = randomImage(100, 100, BIMAGE_U8 | 4);
+
+    BENCH_START(eq);
+    bimageEq(im, im);
+    BENCH_STOP(eq);
+    bimagePixel px;
+    bimageIterAll(im, x, y){
+        bimageGetPixel(im, x, y, &px);
+        ck_assert(BIMAGE_PIXEL_IS_TRUE(px));
+    }
+
+    bimageRelease(im);
 } END_TEST;
 
 START_TEST (test_bimageResizeHash)
@@ -200,6 +216,38 @@ START_TEST (test_bimageCopyTo)
     }
 } END_TEST;
 
+START_TEST (test_bimageColor)
+{
+    int i;
+    for (i = 0; i < num_types; i++){
+        if (bimageTypeChannels(types[i]) != 1){
+            continue;
+        }
+
+        bimage* im = randomImage(WIDTH, HEIGHT, types[i]);
+        ck_assert(bimageTypeChannels(im->type) == 1);
+
+        BENCH_START(color);
+        bimage* im2 = bimageColor(NULL, im, 3);
+        BENCH_STOP(color);
+
+        ck_assert(bimageTypeChannels(im2->type) == 3);
+
+        bimagePixel px;
+        bimageGetPixel(im2, 0, 0, &px);
+        ck_assert(px.data.f[0] == px.data.f[1] && px.data.f[1] == px.data.f[2]);
+        bimageGetPixel(im2, WIDTH-1, HEIGHT-1, &px);
+        ck_assert(px.data.f[0] == px.data.f[1] && px.data.f[1] == px.data.f[2]);
+
+        if (types[i] == (BIMAGE_U8 | BIMAGE_RGB)){
+            bimageSave(im2, "test_color.jpg");
+        }
+
+        bimageRelease(im2);
+        bimageRelease(im);
+    }
+} END_TEST;
+
 START_TEST (test_bimageGrayscale)
 {
     int i;
@@ -217,7 +265,7 @@ START_TEST (test_bimageGrayscale)
         ck_assert(px.data.f[0] == px.data.f[1] && px.data.f[1] == px.data.f[2]);
 
         if (types[i] == (BIMAGE_U8 | BIMAGE_RGB)){
-            bimageSave(im2, "test.jpg");
+            bimageSave(im2, "test_grayscale.jpg");
         }
 
         bimageRelease(im2);
@@ -231,10 +279,10 @@ bool parallel_fn(uint32_t x, uint32_t y, bimagePixel *px, void *userdata){
 }
 
 #ifndef BIMAGE_NO_PTHREAD
-START_TEST (test_bimageParallel)
+START_TEST (test_bimageEachPixel)
 {
     bimage* im = randomImage(WIDTH, HEIGHT, BIMAGE_F32);
-    ck_assert(bimageParallel(im, parallel_fn, 8, NULL) == BIMAGE_OK);
+    ck_assert(bimageEachPixel(im, parallel_fn, 4, NULL) == BIMAGE_OK);
 
     for(size_t i = 0; i < im->width * im->height * bimageTypeChannels(im->type); i++){
         BENCH_START(parallel);
@@ -274,6 +322,11 @@ START_TEST (test_bimageSobel)
         BENCH_START(sobel);
         bimage *dst = bimageSobel(NULL, im);
         BENCH_STOP(sobel);
+
+        if (types[i] == (BIMAGE_U8 | BIMAGE_RGB)){
+            bimageSave(dst, "test_sobel.jpg");
+        }
+
         bimageRelease(dst);
         bimageRelease(im);
     }
@@ -293,11 +346,13 @@ Suite *bimage_suite(void)
     tcase_add_test(tc, test_bimageConsume);
     tcase_add_test(tc, test_bimagePixelConvert);
     tcase_add_test(tc, test_bimageAdd);
+    tcase_add_test(tc, test_bimageEq);
     tcase_add_test(tc, test_bimageResizeHash);
     tcase_add_test(tc, test_bimageCopyTo);
+    tcase_add_test(tc, test_bimageColor);
     tcase_add_test(tc, test_bimageGrayscale);
 #ifndef BIMAGE_NO_PTHREAD
-    tcase_add_test(tc, test_bimageParallel);
+    tcase_add_test(tc, test_bimageEachPixel);
 #endif
     tcase_add_test(tc, test_bimageDisk);
     tcase_add_test(tc, test_bimageSobel);
@@ -313,6 +368,8 @@ int main (int argc, char *argv[])
 
     s = bimage_suite();
     sr = srunner_create(s);
+
+    srand(time(NULL));
 
     srunner_run_all(sr, CK_NORMAL);
     num_failed = srunner_ntests_failed(sr);

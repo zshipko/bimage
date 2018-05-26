@@ -526,14 +526,31 @@ bimageParallelWrapper(void *_iter)
 }
 
 BIMAGE_STATUS
-bimageParallelCopy(bimage *dst, bimage *im, bimageParallelFn fn, int nthreads, void *userdata)
+bimageEachPixel2(bimage *dst, bimage *im, bimageParallelFn fn, int nthreads, void *userdata)
 {
     if (im == NULL){
-        im = dst;
+        return BIMAGE_ERR;
+    }
+
+    if (dst == NULL){
+        dst = im;
     }
 
     if (nthreads <= 0){
         nthreads = sysconf(_SC_NPROCESSORS_ONLN);
+    } else if (nthreads == 1){
+        int i, j;
+        bimagePixel px;
+        for (j = 0; j < im->height; j++){
+            for(i = 0; i < im->width; i++){
+                if (bimageGetPixelUnsafe(im, i, j, &px) == BIMAGE_OK){
+                    if (fn(i, j, &px, userdata)){
+                        bimageSetPixel(dst, i, j, px);
+                    }
+                }
+            }
+        }
+        return BIMAGE_OK;
     }
 
     pthread_t threads[nthreads];
@@ -574,9 +591,9 @@ bimageParallelCopy(bimage *dst, bimage *im, bimageParallelFn fn, int nthreads, v
 }
 
 BIMAGE_STATUS
-bimageParallel(bimage* im, bimageParallelFn fn, int nthreads, void *userdata)
+bimageEachPixel(bimage* im, bimageParallelFn fn, int nthreads, void *userdata)
 {
-    return bimageParallelCopy(im, NULL, fn, nthreads, userdata);
+    return bimageEachPixel2(NULL, im, fn, nthreads, userdata);
 }
 
 #endif // BIMAGE_NO_PTHREAD
