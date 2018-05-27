@@ -422,7 +422,7 @@ bimageConvertDepth(bimage *dst, bimage *im, BIMAGE_DEPTH depth)
     bimageIterAll(im, x, y){
         if (bimageGetPixelUnsafe(im, x, y, &px) == BIMAGE_OK
                 && bimagePixelConvertDepth(&pdst, px, depth) == BIMAGE_OK){
-            bimageSetPixel(im2, x, y, pdst);
+            bimageSetPixelUnsafe(im2, x, y, pdst);
         } else {
             break;
         }

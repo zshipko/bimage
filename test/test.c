@@ -377,11 +377,13 @@ START_TEST (test_bimageFFT)
         bimage *dst = bimageFFT(NULL, im);
         BENCH_STOP(fft);
 
-        if (types[i] == (BIMAGE_F32 | BIMAGE_RGB)){
-            bimage *tmp = bimageConvertDepth(NULL, dst, BIMAGE_U8);
-            bimageSave(tmp, "test_fft.jpg");
-            bimageRelease(tmp);
-        }
+        BENCH_START(ifft);
+        im = bimageIFFT(im, dst);
+        BENCH_STOP(ifft);
+
+        bimage *tmp = bimageConvertDepth(NULL, im, BIMAGE_U8);
+        bimageSave(tmp, "test_fft.jpg");
+        bimageRelease(tmp);
 
         bimageRelease(dst);
         bimageRelease(im);
