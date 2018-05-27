@@ -635,4 +635,43 @@ bimageEachPixel(bimage* im, bimageParallelFn fn, int nthreads, void *userdata)
     return bimageEachPixel2(NULL, im, fn, nthreads, userdata);
 }
 
+bimage*
+bimageGetChannel(bimage *dest, bimage *im, int c)
+{
+    if (c >= bimageTypeChannels(im->type)) {
+        return NULL;
+    }
+
+    bimage *tmp = BIMAGE_CREATE_DEST(dest, im->width, im->height, bimageTypeDepth(im->type) | 1);
+    if (!tmp){
+        return NULL;
+    }
+
+    bimagePixel px;
+    bimageIterAll(im, x, y){
+        bimageGetPixelUnsafe(im, x, y, &px);
+        px.data.f[0] = px.data.f[c];
+        bimageSetPixelUnsafe(tmp, x, y, px);
+    }
+
+    return tmp;
+}
+
+BIMAGE_STATUS
+bimageSetChannel(bimage *dest, bimage *im, int c)
+{
+    if (c >= bimageTypeChannels(im->type) || im->width != dest->width || im->height != dest->height) {
+        return BIMAGE_ERR;
+    }
+
+    bimagePixel px;
+    bimageIterAll(im, x, y){
+        bimageGetPixelUnsafe(im, x, y, &px);
+        px.data.f[0] = px.data.f[c];
+        bimageSetPixel(dest, x, y, px);
+    }
+
+    return BIMAGE_OK;
+}
+
 #endif // BIMAGE_NO_PTHREAD

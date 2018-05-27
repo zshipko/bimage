@@ -243,6 +243,12 @@ BIMAGE_STATUS
 bimageEachPixel2(bimage *dst, bimage *im, bimageParallelFn fn, int nthreads, void *userdata);
 #endif // BIMAGE_NO_PTHREAD
 
+BIMAGE_STATUS
+bimageSetChannel(bimage *dest, bimage *im, int c);
+
+bimage*
+bimageGetChannel(bimage *dest, bimage *im, int c);
+
 /* TIFF */
 
 #ifndef BIMAGE_NO_TIFF
@@ -357,10 +363,19 @@ bimageBlur(bimage* dst, bimage* src);
 bimage*
 bimageGaussianBlur(bimage* dst, bimage* src);
 
+bimage*
+bimageFFT(bimage* dst, bimage *src);
+
+bimage*
+bimageIFFT(bimage* dst, bimage *src);
+
 /* HASH */
 
 uint64_t
 bimageHash(bimage *im);
+
+uint32_t
+bimageHash32(bimage *im);
 
 void
 bimageHashString(char dst[9], uint64_t hash);

@@ -1,5 +1,5 @@
 SRC=src/pixel.c src/image.c src/io.c src/resize.c \
-	src/filter.c src/hash.c
+	src/filter.c src/hash.c src/kiss_fft.c
 
 UNAME := $(shell uname)
 PREFIX=/usr/local

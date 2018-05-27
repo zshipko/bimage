@@ -2,6 +2,7 @@
 #include <math.h>
 
 #include "bimage.h"
+#include "kiss_fft.h"
 
 #define IMAGE_OP(name) \
 BIMAGE_STATUS \
@@ -384,4 +385,32 @@ bimage*
 bimageGaussianBlur(bimage* dst, bimage* im)
 {
     return bimageFilter(dst, im, gaussian_blur, 5, 273, 0);
+}
+
+bimage*
+bimageFFT(bimage* dst, bimage *src)
+{
+    bimage *tmp = BIMAGE_CREATE_DEST(dst, src->width, src->height, src->type);
+    if (!tmp){
+        return NULL;
+    }
+    size_t size = bimageSize(src->width, src->height, src->type);
+    kiss_fft_cfg cfg = kiss_fft_alloc(size, 0, NULL, NULL);
+    kiss_fft(cfg, (kiss_fft_cpx*)src->data, (kiss_fft_cpx*)dst->data);
+    kiss_fft_free(cfg);
+    return tmp;
+}
+
+bimage*
+bimageIFFT(bimage* dst, bimage *src)
+{
+    bimage *tmp = BIMAGE_CREATE_DEST(dst, src->width, src->height, src->type);
+    if (!tmp){
+        return NULL;
+    }
+    size_t size = bimageSize(src->width, src->height, src->type);
+    kiss_fft_cfg cfg = kiss_fft_alloc(size, 1, NULL, NULL);
+    kiss_fft(cfg, (kiss_fft_cpx*)src->data, (kiss_fft_cpx*)dst->data);
+    kiss_fft_free(cfg);
+    return tmp;
 }
