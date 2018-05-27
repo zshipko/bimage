@@ -399,7 +399,7 @@ bimageFFT(bimage* dst, bimage *src)
         return NULL;
     }
 
-    size_t size = src->width * src->height * bimageTypeChannels(src->type);
+    size_t size = bimageSize(src->width, src->height, src->type);
     kiss_fftr_cfg cfg = kiss_fftr_alloc(size, 0, NULL, NULL);
     kiss_fftr(cfg, (kiss_fft_scalar*)src->data, (kiss_fft_cpx*)tmp->data);
     kiss_fft_free(cfg);
@@ -418,7 +418,7 @@ bimageIFFT(bimage* dst, bimage *src)
         return NULL;
     }
 
-    size_t size =  src->width * src->height * bimageTypeChannels(src->type);
+    size_t size = bimageSize(src->width, src->height, src->type);
     kiss_fftr_cfg cfg = kiss_fftr_alloc(size, 1, NULL, NULL);
     kiss_fftri(cfg, (kiss_fft_cpx*)src->data, (kiss_fft_scalar*)tmp->data);
     kiss_fft_free(cfg);

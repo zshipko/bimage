@@ -26,7 +26,7 @@ static BIMAGE_TYPE types[] = {
     BIMAGE_RGBA | BIMAGE_F64,
 };
 
-static int num_types = 8;
+static int num_types = 18;
 
 bimage* randomImage(uint32_t w, uint32_t h, BIMAGE_TYPE t)
 {
@@ -367,15 +367,15 @@ START_TEST (test_bimageFFT)
 {
     int i;
     for (i = 0; i < num_types; i++){
-        if (bimageTypeDepth(types[i]) != BIMAGE_F32){
-            continue;
-        }
-
         bimage* im = randomImage(WIDTH, HEIGHT, types[i]);
 
         BENCH_START(fft);
         bimage *dst = bimageFFT(NULL, im);
         BENCH_STOP(fft);
+        if (!dst){
+            bimageRelease(im);
+            continue;
+        }
 
         BENCH_START(ifft);
         im = bimageIFFT(im, dst);
@@ -397,6 +397,7 @@ Suite *bimage_suite(void)
 
     s = suite_create ("Bimage");
     tc = tcase_create ("Core");
+    tcase_set_timeout(tc, 30.0);
 
     tcase_add_test(tc, test_bimageCreate);
     tcase_add_test(tc, test_bimageChannels);
