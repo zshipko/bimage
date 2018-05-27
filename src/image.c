@@ -323,6 +323,7 @@ bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel *p)
             break;
         case BIMAGE_C32:
             p->data.f[i] = bimageAt(im,offs+i, float _Complex);
+            break;
         case BIMAGE_F64:
             p->data.f[i] = bimageAt(im, offs+i, double);
             break;
@@ -333,11 +334,7 @@ bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel *p)
 
     // Grayscale bimagePixels should have the same value for RGB channels
     if (bimageTypeChannels(im->type) == 1){
-        p->data.f[1] = p->data.f[2] = p->data.f[0];
-    }
-
-    if (bimageTypeChannels(im->type) < 4){
-        p->data.f[3] = bimageTypeMax(im->type);
+        p->data.f[1] = p->data.f[2] = p->data.f[3] = p->data.f[0];
     }
 
     return BIMAGE_OK;
