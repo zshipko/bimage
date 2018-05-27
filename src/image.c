@@ -334,7 +334,7 @@ bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel *p)
 
     // Grayscale bimagePixels should have the same value for RGB channels
     if (bimageTypeChannels(im->type) == 1){
-        p->data.f[1] = p->data.f[2] = p->data.f[3] = p->data.f[0];
+        p->data.f[1] = p->data.f[2] = p->data.f[0];
     }
 
     return BIMAGE_OK;
