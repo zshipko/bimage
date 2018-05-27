@@ -165,10 +165,11 @@ START_TEST (test_bimageEq)
     bimage* im = randomImage(100, 100, BIMAGE_U8 | 4);
 
     BENCH_START(eq);
-    bimageEq(im, im);
+    bimage* im2 = bimageEq(NULL, im, im);
     BENCH_STOP(eq);
-    ck_assert(bimageAll(im, bimagePixelIsTrue));
+    ck_assert(bimageAll(im2, bimagePixelIsTrue));
     bimageRelease(im);
+    bimageRelease(im2);
 
 } END_TEST;
 

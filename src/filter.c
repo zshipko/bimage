@@ -20,18 +20,20 @@ bimage##name(bimage* a, bimage* b) \
 }
 
 #define IMAGE_COMPARE_OP(name) \
-BIMAGE_STATUS \
-bimage##name(bimage* a, bimage* b) \
+bimage* \
+bimage##name(bimage *dst, bimage* a, bimage* b) \
 { \
+    bimage *tmp = BIMAGE_CREATE_DEST(dst, a->width, a->height, a->type); \
+    if (!tmp) return NULL; \
     bimagePixel p, q; \
     bimageIterAll(a, x, y){ \
         if (bimageGetPixelUnsafe(a, x, y, &p) != BIMAGE_OK  || \
             bimageGetPixel(b, x, y, &q) != BIMAGE_OK){ \
             break; \
         } \
-        bimageSetPixelUnsafe(a, x, y, bimagePixel##name(p, q)); \
+        bimageSetPixelUnsafe(tmp, x, y, bimagePixel##name(p, q)); \
     } \
-    return BIMAGE_OK; \
+    return tmp; \
 }
 
 IMAGE_OP(Add);

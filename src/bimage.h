@@ -298,14 +298,14 @@ bimageMul(bimage* dst, bimage* b);
 BIMAGE_STATUS
 bimageDiv(bimage* dst, bimage* b);
 
-BIMAGE_STATUS
-bimageEq(bimage *dst, bimage *b);
+bimage*
+bimageEq(bimage *dst, bimage *a, bimage *b);
 
-BIMAGE_STATUS
-bimageGt(bimage *dst, bimage *b);
+bimage*
+bimageGt(bimage *dst, bimage *a, bimage *b);
 
-BIMAGE_STATUS
-bimageLt(bimage *dst, bimage *b);
+bimage*
+bimageLt(bimage *dst, bimage *a, bimage *b);
 
 bimage*
 bimageColor(bimage* dst, bimage* im, BIMAGE_CHANNEL c);
