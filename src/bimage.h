@@ -60,6 +60,8 @@ typedef enum BIMAGE_DEPTH {
     BIMAGE_U16 = 0x0200,
     BIMAGE_U32 = 0x0300,
     BIMAGE_F32 = 0x0400,
+    BIMAGE_C32 = 0x0500,
+    BIMAGE_F64 = 0x0600,
 } BIMAGE_DEPTH;
 
 typedef struct bimage {

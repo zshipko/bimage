@@ -50,10 +50,10 @@ bimagePixelConvertDepth (bimagePixel *dst, bimagePixel src, BIMAGE_DEPTH depth)
     int i;
 #endif
 
-    // Conversion to F32 is the same for every type
-    if (depth == BIMAGE_F32){
+    // Conversion to and from F32 is the same for every type
+    if (depth == BIMAGE_F32 || depth == BIMAGE_F64 || depth == BIMAGE_C32){
         float mx = bimageTypeMax(src.depth);
-        (*dst).depth = BIMAGE_F32;
+        (*dst).depth = depth;
 #ifdef BIMAGE_SSE
         (*dst).data.m = src.data.m/_mm_load_ps1(&mx);
 #else
@@ -62,6 +62,18 @@ bimagePixelConvertDepth (bimagePixel *dst, bimagePixel src, BIMAGE_DEPTH depth)
         }
 #endif
         goto ok;
+    } else if (src.depth == BIMAGE_F32 || src.depth == BIMAGE_F64 || src.depth == BIMAGE_C32){
+        float mx = bimageTypeMax(depth);
+        (*dst).depth = depth;
+#ifdef BIMAGE_SSE
+        (*dst).data.m = src.data.m * _mm_load_ps1(&mx);
+#else
+        for(i = 0; i < 4; i++){
+            (*dst).data.f[i] = src.data.f[i] * mx;
+        }
+#endif
+        goto ok;
+
     }
 
 #ifdef BIMAGE_SSE

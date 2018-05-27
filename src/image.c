@@ -30,6 +30,10 @@ bimageTypeMax(BIMAGE_TYPE t)
         return 0xFFFFFFFF;
     case BIMAGE_F32:
         return 1.0;
+    case BIMAGE_C32:
+        return 1.0+0.0i;
+    case BIMAGE_F64:
+        return 1.0;
     default:
         return 0;
     }
@@ -77,6 +81,8 @@ bimageDepthSize(BIMAGE_DEPTH d)
     case BIMAGE_U16: return 16;
     case BIMAGE_U32: return 32;
     case BIMAGE_F32: return 32;
+    case BIMAGE_C32: return 32;
+    case BIMAGE_F64: return 64;
     default: return 0;
     }
 }
@@ -294,6 +300,11 @@ bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel *p)
         case BIMAGE_F32:
             p->data.f[i] = bimageAt(im, offs+i, float);
             break;
+        case BIMAGE_C32:
+            p->data.f[i] = bimageAt(im,offs+i, float _Complex);
+        case BIMAGE_F64:
+            p->data.f[i] = bimageAt(im, offs+i, double);
+            break;
         default:
             return BIMAGE_ERR;
         }
@@ -302,6 +313,10 @@ bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel *p)
     // Grayscale bimagePixels should have the same value for RGB channels
     if (bimageTypeChannels(im->type) == 1){
         p->data.f[1] = p->data.f[2] = p->data.f[0];
+    }
+
+    if (bimageTypeChannels(im->type) < 4){
+        p->data.f[3] = bimageTypeMax(im->type);
     }
 
     return BIMAGE_OK;
@@ -342,6 +357,12 @@ bimageSetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel p)
             break;
         case BIMAGE_F32:
             bimageAt(im, offs+i, float) = p.data.f[i];
+            break;
+        case BIMAGE_C32:
+            bimageAt(im, offs+i, float _Complex) = p.data.f[i];
+            break;
+        case BIMAGE_F64:
+            bimageAt(im, offs+i, double) = p.data.f[i];
             break;
         default:
             return BIMAGE_ERR;

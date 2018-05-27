@@ -10,14 +10,20 @@ static BIMAGE_TYPE types[] = {
     BIMAGE_GRAY | BIMAGE_U16,
     BIMAGE_GRAY | BIMAGE_U32,
     BIMAGE_GRAY | BIMAGE_F32,
+    BIMAGE_GRAY | BIMAGE_C32,
+    BIMAGE_GRAY | BIMAGE_F64,
     BIMAGE_RGB | BIMAGE_U8,
     BIMAGE_RGB | BIMAGE_U16,
     BIMAGE_RGB | BIMAGE_U32,
     BIMAGE_RGB | BIMAGE_F32,
+    BIMAGE_RGB | BIMAGE_C32,
+    BIMAGE_RGB | BIMAGE_F64,
     BIMAGE_RGBA | BIMAGE_U8,
     BIMAGE_RGBA | BIMAGE_U16,
     BIMAGE_RGBA | BIMAGE_U32,
     BIMAGE_RGBA | BIMAGE_F32,
+    BIMAGE_RGBA | BIMAGE_C32,
+    BIMAGE_RGBA | BIMAGE_F64,
 };
 
 static int num_types = 8;
@@ -93,6 +99,12 @@ START_TEST (test_bimageSize)
             break;
         case BIMAGE_F32:
             ck_assert_int_eq(bimageTypeDepth(im->type), BIMAGE_F32);
+            break;
+        case BIMAGE_C32:
+            ck_assert_int_eq(bimageTypeDepth(im->type), BIMAGE_C32);
+            break;
+        case BIMAGE_F64:
+            ck_assert_int_eq(bimageTypeDepth(im->type), BIMAGE_F64);
             break;
         default:
             ck_assert(false);
