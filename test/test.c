@@ -174,15 +174,21 @@ START_TEST (test_bimageAdd)
 
 START_TEST (test_bimageEq)
 {
-    bimage* im = randomImage(100, 100, BIMAGE_U8 | 4);
-
-    BENCH_START(eq);
-    bimage* im2 = bimageEq(NULL, im, im);
-    BENCH_STOP(eq);
-    ck_assert(bimageAll(im2, bimagePixelIsTrue));
-    bimageRelease(im);
-    bimageRelease(im2);
-
+    int i;
+    for (i = 0; i < num_types; i++){
+        bimage* im = randomImage(WIDTH, HEIGHT, types[i]);
+        BENCH_START(eq);
+        bimage* im2 = bimageEq(NULL, im, im);
+        BENCH_STOP(eq);
+        if (!bimageAll(im2, bimagePixelIsTrue)){
+            printf("Failed equality: %d\n", i);
+        }
+        BENCH_START(all);
+        ck_assert(bimageAll(im2, bimagePixelIsTrue));
+        BENCH_STOP(all);
+        bimageRelease(im);
+        bimageRelease(im2);
+    }
 } END_TEST;
 
 START_TEST (test_bimageResizeHash)

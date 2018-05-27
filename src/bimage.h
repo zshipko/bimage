@@ -387,14 +387,28 @@ bimageHashDiff(uint64_t a, uint64_t b);
      ((px).data.f[2] == v) && \
      ((px).data.f[3] == v))
 
-#define BIMAGE_PIXEL_IS_TRUE(px) BIMAGE_PIXEL_IS_ALL(px, 1)
-#define BIMAGE_PIXEL_IS_FALSE(px) BIMAGE_PIXEL_IS_ALL(px, 0)
+#define BIMAGE_PIXEL_IS_ALL3(px, v) \
+    (((px).data.f[0] == v) && \
+     ((px).data.f[1] == v) && \
+     ((px).data.f[2] == v))
+
+#define BIMAGE_PIXEL_IS_TRUE(px) \
+    (((px).data.f[0] == 1) && \
+     ((px).data.f[1] == 1) && \
+     ((px).data.f[2] == 1 ) && \
+     ((px).data.f[3] == 1 || (px).data.f[3] == bimageTypeMax((px).depth)))
+
+#define BIMAGE_PIXEL_IS_FALSE(px) \
+    (((px).data.f[0] == 0) && \
+     ((px).data.f[1] == 0) && \
+     ((px).data.f[2] == 0) && \
+     ((px).data.f[3] == 0 || (px).data.f[3] == bimageTypeMax((px).depth)))
 
 #define BIMAGE_PIXEL_IS_BOOL(px) \
     (((px).data.f[0] == 1 || (px).data.f[0] == 0) && \
      ((px).data.f[1] == 1 || (px).data.f[1] == 0) && \
      ((px).data.f[2] == 1 || (px).data.f[2] == 0) && \
-     ((px).data.f[3] == 1 || (px).data.f[3] == 0))
+     ((px).data.f[3] == 1 || (px).data.f[3] == 0 || (px).data.f[3] == bimageTypeMax((px).depth)))
 
 extern int BIMAGE_NUM_CPU;
 
