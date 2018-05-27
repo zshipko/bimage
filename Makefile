@@ -5,7 +5,7 @@ UNAME := $(shell uname)
 PREFIX=/usr/local
 
 CFLAGS+=-I/usr/local/include $(CFLAGS_$(UNAME_M))
-LDFLAGS+=-L/usr/local/lib
+LDFLAGS+=-L/usr/local/lib -lm
 THREADS?=YES
 BENCHMARK?=YES
 TIFF?=YES

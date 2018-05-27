@@ -20,4 +20,10 @@ bimageGtkImage(bimage* im, bool owner);
 GtkWidget*
 bimageGtkWindow(bimage* im, bool owner);
 
+GtkWidget*
+bimageShow(bimage* im, const char *name);
+
+void
+bimageDestroyWindow(GtkWidget *window);
+
 #endif

@@ -53,3 +53,30 @@ bimageGtkWindow(bimage* im, bool owner)
     gtk_widget_show_all(win);
     return win;
 }
+
+static bool gtk_initialized = false;
+static char* default_argv[] = { "bimage-gtk", NULL };
+
+GtkWidget*
+bimageShow(bimage* im, const char *title)
+{
+    if (!gtk_initialized){
+        int argc = 1;
+        gtk_init(&argc, (char***)&default_argv);
+        gtk_initialized = true;
+    }
+
+    GtkWidget* window = bimageGtkWindow(im, true);
+    g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(gtk_main_quit), NULL);
+    gtk_window_set_title(GTK_WINDOW(window), title);
+    gtk_widget_show(window);
+    gtk_main();
+    return window;
+}
+
+void
+bimageDestroyWindow(GtkWidget *window)
+{
+    gtk_widget_destroy(window);
+}
