@@ -272,6 +272,27 @@ bimageConsume(bimage **dst, bimage *src)
     return *dst;
 }
 
+void*
+bimageDataOffs(bimage *im, uint32_t x, uint32_t y){
+    int64_t offs = bimageIndex(im, x, y);
+    switch (bimageTypeDepth(im->type)){
+    case BIMAGE_U8:
+        return ((uint8_t*)im->data) + offs;
+    case BIMAGE_U16:
+        return ((uint16_t*)im->data) + offs;
+    case BIMAGE_U32:
+        return ((uint32_t*)im->data) + offs;
+    case BIMAGE_F32:
+        return ((float*)im->data) + offs;
+    case BIMAGE_C32:
+        return ((float _Complex*)im->data) + offs;
+    case BIMAGE_F64:
+        return ((double*)im->data) + offs;
+    default:
+        return NULL;
+    }
+}
+
 BIMAGE_STATUS
 bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel *p)
 {

@@ -197,6 +197,9 @@ bimageMapToDisk(const char *filename, bimage **im);
 bimage*
 bimageConsume(bimage **dst, bimage *src);
 
+void*
+bimageDataOffs(bimage *im, uint32_t x, uint32_t y);
+
 BIMAGE_STATUS
 bimageGetPixelUnsafe(bimage* im, uint32_t x, uint32_t y, bimagePixel *p);
 
