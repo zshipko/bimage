@@ -81,7 +81,7 @@ bimageDepthSize(BIMAGE_DEPTH d)
     case BIMAGE_U16: return 16;
     case BIMAGE_U32: return 32;
     case BIMAGE_F32: return 32;
-    case BIMAGE_C32: return 32;
+    case BIMAGE_C32: return 64;
     case BIMAGE_F64: return 64;
     default: return 0;
     }

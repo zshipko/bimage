@@ -2,7 +2,7 @@
 #include <math.h>
 
 #include "bimage.h"
-#include "kiss_fft.h"
+#include "kiss_fftr.h"
 
 #define IMAGE_OP(name) \
 BIMAGE_STATUS \
@@ -390,13 +390,18 @@ bimageGaussianBlur(bimage* dst, bimage* im)
 bimage*
 bimageFFT(bimage* dst, bimage *src)
 {
-    bimage *tmp = BIMAGE_CREATE_DEST(dst, src->width, src->height, src->type);
+    if (bimageTypeDepth(src->type) != BIMAGE_F32){
+        return NULL;
+    }
+
+    bimage *tmp = BIMAGE_CREATE_DEST(dst, src->width, src->height, BIMAGE_C32 | bimageTypeChannels(src->type));
     if (!tmp){
         return NULL;
     }
-    size_t size = bimageSize(src->width, src->height, src->type);
-    kiss_fft_cfg cfg = kiss_fft_alloc(size, 0, NULL, NULL);
-    kiss_fft(cfg, (kiss_fft_cpx*)src->data, (kiss_fft_cpx*)dst->data);
+
+    size_t size = src->width * src->height * bimageTypeChannels(src->type);
+    kiss_fftr_cfg cfg = kiss_fftr_alloc(size, 0, NULL, NULL);
+    kiss_fftr(cfg, (kiss_fft_scalar*)src->data, (kiss_fft_cpx*)tmp->data);
     kiss_fft_free(cfg);
     return tmp;
 }
@@ -404,13 +409,18 @@ bimageFFT(bimage* dst, bimage *src)
 bimage*
 bimageIFFT(bimage* dst, bimage *src)
 {
-    bimage *tmp = BIMAGE_CREATE_DEST(dst, src->width, src->height, src->type);
+    if (bimageTypeDepth(src->type) != BIMAGE_C32){
+        return NULL;
+    }
+
+    bimage *tmp = BIMAGE_CREATE_DEST(dst, src->width, src->height, BIMAGE_F32 | bimageTypeChannels(src->type));
     if (!tmp){
         return NULL;
     }
-    size_t size = bimageSize(src->width, src->height, src->type);
-    kiss_fft_cfg cfg = kiss_fft_alloc(size, 1, NULL, NULL);
-    kiss_fft(cfg, (kiss_fft_cpx*)src->data, (kiss_fft_cpx*)dst->data);
+
+    size_t size =  src->width * src->height * bimageTypeChannels(src->type);
+    kiss_fftr_cfg cfg = kiss_fftr_alloc(size, 1, NULL, NULL);
+    kiss_fftri(cfg, (kiss_fft_cpx*)src->data, (kiss_fft_scalar*)tmp->data);
     kiss_fft_free(cfg);
     return tmp;
 }

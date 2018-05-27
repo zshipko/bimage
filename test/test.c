@@ -363,6 +363,31 @@ START_TEST (test_bimageSobel)
     }
 } END_TEST;
 
+START_TEST (test_bimageFFT)
+{
+    int i;
+    for (i = 0; i < num_types; i++){
+        if (bimageTypeDepth(types[i]) != BIMAGE_F32){
+            continue;
+        }
+
+        bimage* im = randomImage(WIDTH, HEIGHT, types[i]);
+
+        BENCH_START(fft);
+        bimage *dst = bimageFFT(NULL, im);
+        BENCH_STOP(fft);
+
+        if (types[i] == (BIMAGE_F32 | BIMAGE_RGB)){
+            bimage *tmp = bimageConvertDepth(NULL, dst, BIMAGE_U8);
+            bimageSave(tmp, "test_fft.jpg");
+            bimageRelease(tmp);
+        }
+
+        bimageRelease(dst);
+        bimageRelease(im);
+    }
+} END_TEST;
+
 Suite *bimage_suite(void)
 {
     Suite *s;
@@ -388,6 +413,7 @@ Suite *bimage_suite(void)
 #endif
     tcase_add_test(tc, test_bimageDisk);
     tcase_add_test(tc, test_bimageSobel);
+    tcase_add_test(tc, test_bimageFFT);
     suite_add_tcase(s, tc);
     return s;
 }
