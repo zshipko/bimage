@@ -6,8 +6,11 @@ bimage
 `bimage` is a basic image library for C.
 
 * Simple API
-* Handles 8, 16 and 32 bit images
-* Parallel iterator
+* Handles a wide range of datatypes
+    - Integers, uint8, uint16, uint32
+    - Floating point: float, double
+    - Complex: complex32
+* Multithreaded iterators
 * In-memory and memory mapped image data
 
 ## Dependencies
