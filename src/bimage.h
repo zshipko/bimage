@@ -90,10 +90,11 @@ typedef struct bimagePixel {
 #define bFree(x) if(x) free(x)
 #endif
 
-#define bimageSize(w, h, t) ((int64_t)w * (int64_t)h * (int64_t)bimageTypeChannels(t))
-#define bimageTotalSize(w, h, t) ((int64_t)w * (int64_t)h * (int64_t)bimageDepthSize(bimageTypeDepth(t)) * (int64_t)bimageTypeChannels(t))
-#define bimageIndex(im, x, y) y * bimageTypeChannels(im->type) * im->width + x * bimageTypeChannels(im->type)
-#define bimageAt(im, index, t) (((t*)im->data)[index])
+#define bimageSize(w, h, t) ((int64_t)(w) * (int64_t)(h) * (int64_t)bimageTypeChannels(t))
+#define bimageTotalSize(w, h, t) ((int64_t)(w) * (int64_t)(h) * (int64_t)bimageDepthSize(bimageTypeDepth(t)) * (int64_t)bimageTypeChannels(t))
+#define bimageIndex(im, x, y) ((y) * bimageTypeChannels((im)->type) * (im)->width + (x) * bimageTypeChannels((im)->type))
+#define bimageOffs(im, x, y) ((y) * bimageTypeChannels((im)->type) * (im)->width * bimageDepthSize(bimageTypeDepth((im)->type)) + (x) * bimageTypeChannels((im)->type) * bimageDepthSize(bimageTypeDepth((im)->type)))
+#define bimageAt(im, index, t) (((t*)(im)->data)[index])
 #define bimageIter(im, x, y, _x, _y, _w, _h, sx, sy) \
     int32_t x, y; \
     for(y = _y; y < im->height && y < _y + _h; y+=sy) \
