@@ -369,6 +369,10 @@ START_TEST (test_bimageFFT)
     for (i = 0; i < num_types; i++){
         bimage* im = randomImage(WIDTH, HEIGHT, types[i]);
 
+        if (bimageTypeDepth(types[i]) != BIMAGE_F32){
+            continue;
+        }
+
         BENCH_START(fft);
         bimage *dst = bimageFFT(NULL, im);
         BENCH_STOP(fft);
