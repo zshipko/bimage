@@ -64,3 +64,13 @@ uninstall:
 test: debug
 	@CFLAGS='$(CFLAGS)' BENCHMARK='$(BENCHMARK)' $(MAKE) -C test
 
+update-deps:
+	curl https://raw.githubusercontent.com/nothings/stb/master/stb_image.h > src/stb_image.h
+	curl https://raw.githubusercontent.com/nothings/stb/master/stb_image_resize.h > src/stb_image_resize.h
+	curl https://raw.githubusercontent.com/nothings/stb/master/stb_image_write.h > src/stb_image_write.h
+	curl https://raw.githubusercontent.com/mborgerding/kissfft/master/_kiss_fft_guts.h > src/_kiss_fft_guts.h
+	curl https://raw.githubusercontent.com/mborgerding/kissfft/master/kiss_fft.h > src/kiss_fft.h
+	curl https://raw.githubusercontent.com/mborgerding/kissfft/master/kiss_fft.c > src/kiss_fft.c
+	curl https://raw.githubusercontent.com/mborgerding/kissfft/master/tools/kiss_fftr.h > src/kiss_fftr.h
+	curl https://raw.githubusercontent.com/mborgerding/kissfft/master/tools/kiss_fftr.c > src/kiss_fftr.c
+
