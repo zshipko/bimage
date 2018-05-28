@@ -399,11 +399,41 @@ bimageFFT(bimage* dst, bimage *src)
         return NULL;
     }
 
-    size_t size = bimageSize(src->width, src->height, src->type);
+    size_t size = src->width * src->height;
+    if (size & 1){
+        size -= 1;
+    }
     kiss_fftr_cfg cfg = kiss_fftr_alloc(size, 0, NULL, NULL);
-    kiss_fftr(cfg, (kiss_fft_scalar*)src->data, (kiss_fft_cpx*)tmp->data);
+    if (bimageTypeChannels(tmp->type) > 1){
+        int i;
+        bimage *_dst = bimageGetChannel(NULL, tmp, 0);
+        if (!_dst){
+            goto err;
+        }
+        for(i = 0; i < bimageTypeChannels(tmp->type); i++){
+            bimage *_src = bimageGetChannel(NULL, src, i);
+            if (!_src){
+                break;
+            }
+            kiss_fftr(cfg, (kiss_fft_scalar*)_src->data, (kiss_fft_cpx*)_dst->data);
+            bimageSetChannel(tmp, _dst, i);
+            bimageRelease(_src);
+        }
+        bimageRelease(_dst);
+    } else {
+        kiss_fftr(cfg, (kiss_fft_scalar*)src->data, (kiss_fft_cpx*)tmp->data);
+    }
+
+
     kiss_fft_free(cfg);
     return tmp;
+
+err:
+    if (dst != tmp){
+        bimageRelease(tmp);
+    }
+    kiss_fft_free(cfg);
+    return NULL;
 }
 
 bimage*
@@ -418,9 +448,37 @@ bimageIFFT(bimage* dst, bimage *src)
         return NULL;
     }
 
-    size_t size = bimageSize(src->width, src->height, src->type);
+    size_t size = src->width * src->height;
+    if (size & 1){
+        size -= 1;
+    }
+
     kiss_fftr_cfg cfg = kiss_fftr_alloc(size, 1, NULL, NULL);
-    kiss_fftri(cfg, (kiss_fft_cpx*)src->data, (kiss_fft_scalar*)tmp->data);
+    if (bimageTypeChannels(tmp->type) > 1){
+        int i;
+        bimage *_dst = bimageGetChannel(NULL, tmp, 0);
+        if (!_dst) goto err;
+        for(i = 0; i < bimageTypeChannels(tmp->type); i++){
+            bimage *_src = bimageGetChannel(NULL, src, i);
+            if (!_src){
+                break;
+            }
+            kiss_fftri(cfg, (kiss_fft_cpx*)_src->data, (kiss_fft_scalar*)_dst->data);
+            bimageSetChannel(tmp, _dst, i);
+            bimageRelease(_src);
+        }
+        bimageRelease(_dst);
+    } else {
+        kiss_fftri(cfg, (kiss_fft_cpx*)src->data, (kiss_fft_scalar*)tmp->data);
+    }
+
     kiss_fft_free(cfg);
     return tmp;
+
+err:
+    if (dst != tmp){
+        bimageRelease(tmp);
+    }
+    kiss_fft_free(cfg);
+    return NULL;
 }

@@ -253,6 +253,12 @@ bimageSetChannel(bimage *dest, bimage *im, int c);
 bimage*
 bimageGetChannel(bimage *dest, bimage *im, int c);
 
+bimage**
+bimageSplitChannels(bimage *im, int *num);
+
+bimage*
+bimageJoinChannels(bimage *dest, bimage** channels, int num);
+
 /* TIFF */
 
 #ifndef BIMAGE_NO_TIFF
@@ -396,7 +402,7 @@ bimageHashDiff(uint64_t a, uint64_t b);
 
 #define BIMAGE_CREATE_DEST(dst, w, h, t) \
     ((dst) == NULL ? bimageCreate((w), (h), (t)) \
-        : ((dst)->width >= (w) && (dst)->height >= (h) && (dst)->type == (t) ? dst : NULL))
+        : ((dst)->width >= (w) && (dst)->height >= (h) && (dst)->type == (t) ? dst : bimageConsume(&(dst), bimageCreate((w), (h), (t)))))
 
 
 #define BIMAGE_PIXEL_INIT bimagePixelCreate(0, 0, 0, 0, BIMAGE_UNKNOWN)

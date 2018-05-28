@@ -307,6 +307,7 @@ bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel *p)
     p->depth = bimageTypeDepth(im->type);
     p->data.f[3] = bimageTypeMax(im->type);
 
+
     for (i = 0; i < bimageTypeChannels(im->type); i++){
         switch (p->depth){
         case BIMAGE_U8:
@@ -657,10 +658,32 @@ bimageGetChannel(bimage *dest, bimage *im, int c)
     return tmp;
 }
 
+bimage**
+bimageSplitChannels(bimage *im, int *num)
+{
+    bimage **dest = malloc(sizeof(bimage*) * bimageTypeChannels(im->type));
+    if (!dest){
+        return NULL;
+    }
+
+    int i;
+    for(i = 0; i < bimageTypeChannels(im->type); i++){
+        dest[i] = bimageGetChannel(NULL, im, i);
+    }
+
+    if (num){
+        (*num) = i;
+    }
+
+    return dest;
+}
+
 BIMAGE_STATUS
 bimageSetChannel(bimage *dest, bimage *im, int c)
 {
     if (c >= bimageTypeChannels(im->type) || im->width != dest->width || im->height != dest->height) {
+        return BIMAGE_ERR;
+    } else if (!dest){
         return BIMAGE_ERR;
     }
 
@@ -672,6 +695,26 @@ bimageSetChannel(bimage *dest, bimage *im, int c)
     }
 
     return BIMAGE_OK;
+}
+
+bimage*
+bimageJoinChannels(bimage *dest, bimage** channels, int num)
+{
+    if (num <= 0){
+        return NULL;
+    }
+
+    bimage *tmp = BIMAGE_CREATE_DEST(dest, channels[0]->width, channels[0]->height, bimageTypeDepth(channels[0]->type) | num);
+    if (!tmp){
+        return NULL;
+    }
+
+    int i;
+    for(i = 0; i < num; i++){
+        bimageSetChannel(tmp, channels[i], i);
+    }
+
+    return tmp;
 }
 
 #endif // BIMAGE_NO_PTHREAD
