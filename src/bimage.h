@@ -108,17 +108,21 @@ typedef struct bimagePixel {
 typedef float (*bimagePixelOp)(float, float);
 typedef void (*bimageOp)(bimage **dst, bimage*, bimage*, bimagePixelOp);
 
+/* Get the size of a single channel of a single pixel  in bytes */
 size_t
 bimageDepthSize(BIMAGE_DEPTH d);
 
 /* BIMAGE */
 
+/* Initialize an existing pixel */
 BIMAGE_STATUS
 bimagePixelInit(bimagePixel *px, float r, float g, float b, float a, BIMAGE_DEPTH depth);
 
+/* Create a new pixel */
 bimagePixel
 bimagePixelCreate (float r, float g, float b, float a, BIMAGE_DEPTH depth);
 
+/* Zero an existing pixel */
 BIMAGE_STATUS
 bimagePixelZero(bimagePixel *px, BIMAGE_DEPTH depth);
 
@@ -318,18 +322,23 @@ bimageGt(bimage *dst, bimage *a, bimage *b);
 bimage*
 bimageLt(bimage *dst, bimage *a, bimage *b);
 
+/* Convert an image to color */
 bimage*
 bimageColor(bimage* dst, bimage* im, BIMAGE_CHANNEL c);
 
+/* Convert an image to grayscale */
 bimage*
 bimageGrayscale(bimage* dst, bimage* im, BIMAGE_CHANNEL c);
 
+/* Invert the color of an image */
 bimage*
 bimageInvert(bimage* dst, bimage* im);
 
+/* Rotate an image by `deg` degrees */
 bimage*
 bimageRotate(bimage* dst, bimage* im, float deg);
 
+/* Perform convolution over `im` using the square matrix `K` with side-length `Ks` */
 bimage*
 bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float offset);
 
@@ -363,9 +372,11 @@ bimageBlur(bimage* dst, bimage* src);
 bimage*
 bimageGaussianBlur(bimage* dst, bimage* src);
 
+/* Perform FFT of a BIMAGE_F32 image */
 bimage*
 bimageFFT(bimage* dst, bimage *src);
 
+/* Perform inverse FFT of a BIMAGE_C32 image */
 bimage*
 bimageIFFT(bimage* dst, bimage *src);
 
