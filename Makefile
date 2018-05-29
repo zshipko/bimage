@@ -10,7 +10,7 @@ THREADS?=YES
 BENCHMARK?=YES
 TIFF?=YES
 CCV?=YES
-PIC?=yes
+PIC?=YES
 
 ifeq ($(THREADS),YES)
 	LDFLAGS+= -lpthread
