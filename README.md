@@ -17,8 +17,7 @@ bimage
 
 * GNU make
 * C99 compiler
-
-* libcheck (for building tests)
+* libcheck (ony when building tests)
 
 ## Optional Dependencies
 
@@ -26,6 +25,7 @@ bimage
     - set the environment variable `TIFF=NO` before building to disable libtiff
 * NumPy (for bimage-numpy)
 * GTK 3.0 (for bimage-gtk)
+* OpenCV (for bimage-cv)
 
 ## Installation
 
