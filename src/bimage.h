@@ -20,11 +20,13 @@ extern "C" {
 #define BIMAGE_SSE
 #else
 #define BIMAGE_NO_INTRIN
+#define STBI_NO_SIMD
 #endif
 #else
 #ifndef BIMAGE_NO_INTRIN
 #define BIMAGE_NO_INTRIN
 #endif
+#define STBI_NO_SIMD
 #endif
 
 #ifndef BIMAGE_RAND_RANGE

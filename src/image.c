@@ -181,7 +181,7 @@ bimageCreateOnDiskFd (int fd, uint32_t width, uint32_t height, BIMAGE_TYPE t)
         return NULL;
     }
 
-    return bimageCreateWithData(width, height, t, data + MMAP_HEADER_SIZE, true, true);
+    return bimageCreateWithData(width, height, t, (uint8_t*)data + MMAP_HEADER_SIZE, true, true);
 }
 
 bimage*
@@ -210,7 +210,7 @@ bimageReleaseData(bimage* im)
 {
     if (im->data){
         if (im->ondisk){
-            munmap(im->data-MMAP_HEADER_SIZE, bimageTotalSize(im->width, im->height, im->type));
+            munmap((uint8_t*)im->data-MMAP_HEADER_SIZE, bimageTotalSize(im->width, im->height, im->type));
         } else {
             bFree(im->data);
         }
