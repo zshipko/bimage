@@ -9,6 +9,8 @@ LDFLAGS+=-L/usr/local/lib -lm
 THREADS?=YES
 BENCHMARK?=YES
 TIFF?=YES
+CCV?=YES
+PIC?=yes
 
 ifeq ($(THREADS),YES)
 	LDFLAGS+= -lpthread
@@ -16,11 +18,15 @@ else
 	CFLAGS+= -DBIMAGE_NO_PTHREAD
 endif
 
+ifeq ($(PIC),YES)
+	CFLAGS+= -fPIC
+endif
+
 # Set correct library extension
 ifeq ($(UNAME),Darwin)
-	EXT=dylib
+	SO_EXT=dylib
 else
-	EXT=so
+	SO_EXT=so
 endif
 
 ifeq ($(TIFF),YES)
@@ -41,19 +47,19 @@ debug:
 	$(MAKE) CFLAGS="$(CFLAGS) -g -Wall"
 
 shared: $(OBJ)
-	$(CC) -shared -fPIC -I/usr/local/include $(OBJ) -o libbimage.$(EXT) $(LDFLAGS)
+	$(CC) -shared $(CFLAGS) $(OBJ) -o libbimage.$(SO_EXT) $(LDFLAGS)
 
 static: $(SRC)
 	ar rcs libbimage.a $(OBJ)
 
 %.o: %.c
-	$(CC) -O3 -fPIC -c $*.c $(CFLAGS) -o $@
+	$(CC) -O3 -c $*.c $(CFLAGS) -o $@
 
 clean:
-	rm -f src/*.o libbimage.* test/test test/random.png
+	rm -f src/*.o libbimage.* test/test test/test_*.jpg
 
 install:
-	install libbimage.a libbimage.$(EXT) $(PREFIX)/lib
+	install libbimage.a libbimage.$(SO_EXT) $(PREFIX)/lib
 	install src/bimage.h $(PREFIX)/include
 
 uninstall:

@@ -64,65 +64,6 @@ bimageHash(bimage *im)
     return hash;
 }
 
-uint32_t
-bimageHash32(bimage *im)
-{
-    uint32_t hash = 0UL;      // Output
-    uint32_t n = 0UL;
-    bimagePixel px;           // Current pixel
-    float apx = 0.0f;         // Average pixel
-    int i, j;
-
-    bimage* sm = NULL;
-
-    if (im->width != HASH_SIZE/2 || im->height != HASH_SIZE/2){
-        sm = bimageResize(NULL, im, HASH_SIZE/2, HASH_SIZE/2);
-        if (!sm){
-            return 0UL;
-        }
-    }
-
-    if (bimageTypeChannels(sm ? sm->type : im->type) != BIMAGE_GRAY){
-        bimageConsume(&sm, bimageGrayscale(NULL, sm ? sm : im, BIMAGE_GRAY));
-        if (!sm){
-            return 0UL;
-        }
-    }
-
-    bimage *x = sm ? sm : im;
-
-    for(j = 0; j < HASH_SIZE/2; j++){
-        for(i = 0; i < HASH_SIZE/2; i++){
-            if (bimageGetPixelUnsafe(x, i, j, &px) != BIMAGE_OK){
-                continue;
-            }
-        }
-    }
-
-    apx /= HASH_SIZE/2 * HASH_SIZE/2;
-
-    for(j = 0; j < HASH_SIZE/2; j++){
-        for(i = 0; i < HASH_SIZE/2; i++){
-            // Compare current pixel against the average
-            if (px.data.f[0] > apx){
-                hash |= 1<<n;
-            } else {
-                hash &= ~(1L<<n);
-            }
-
-            apx = px.data.f[0];
-            n = n + 1;
-        }
-    }
-
-    if (sm != im){
-        bimageRelease(sm);
-    }
-
-    return hash;
-}
-
-
 int bimageHashDiff (uint64_t a, uint64_t b)
 {
     int i, n = 0;

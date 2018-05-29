@@ -1,6 +1,6 @@
-# bimage-cv
+# bimage-opencv
 
-A computer-vision addon for `bimage` using `OpenCV`
+`OpenCV` interop for `bimage`
 
 ## Building
 

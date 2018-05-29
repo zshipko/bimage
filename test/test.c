@@ -207,22 +207,6 @@ START_TEST (test_bimageResizeHash)
 
 } END_TEST;
 
-START_TEST (test_bimageResizeHash32)
-{
-    int i;
-    for (i = 0; i < num_types; i++){
-        bimage* im = randomImage(WIDTH, HEIGHT, types[i]);
-        bimage* im2 = randomImage(111, 222, types[i]);
-        bimageResize(im2, im, 111, 222);
-        ck_assert_int_eq(im2->width, 111);
-        ck_assert_int_eq(im2->height, 222);
-        ck_assert_int_eq(bimageHash32(im), bimageHash32(im2));
-        bimageRelease(im);
-        bimageRelease(im2);
-    }
-
-} END_TEST;
-
 START_TEST (test_bimageCopyTo)
 {
     int i;
@@ -411,7 +395,6 @@ Suite *bimage_suite(void)
     tcase_add_test(tc, test_bimageAdd);
     tcase_add_test(tc, test_bimageEq);
     tcase_add_test(tc, test_bimageResizeHash);
-    tcase_add_test(tc, test_bimageResizeHash32);
     tcase_add_test(tc, test_bimageCopyTo);
     tcase_add_test(tc, test_bimageColor);
     tcase_add_test(tc, test_bimageGrayscale);

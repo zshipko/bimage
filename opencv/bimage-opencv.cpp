@@ -1,15 +1,15 @@
-#include "bimage-cv.h"
+#include "bimage-opencv.h"
 
-bimagePixel
-bimagePixelFromScalar(cv::Scalar src)
-{
-    return bimagePixelCreate(src[0], src[1], src[2], src[3], BIMAGE_UNKNOWN);
-}
-
-cv::Scalar
+static cv::Scalar
 bimagePixelToScalar(bimagePixel *px)
 {
     return cv::Scalar(px->data.f[0], px->data.f[1], px->data.f[2], px->data.f[3]);
+}
+
+static bimagePixel
+bimagePixelFromScalar(cv::Scalar src)
+{
+    return bimagePixelCreate(src[0], src[1], src[2], src[3], BIMAGE_UNKNOWN);
 }
 
 static int
@@ -49,9 +49,9 @@ bimageTypeFromMatType(int channels, int depth)
         return BIMAGE_F32 | channels;
     case CV_64F:
         return BIMAGE_F64 | channels;
-    deffault:
-        return -1;
     }
+
+    return -1;
 }
 
 cv::Mat
@@ -79,7 +79,8 @@ bimageFromMat(cv::Mat& m)
     return bimageCreateWithData(m.cols, m.rows, t, m.data, false, false);
 }
 
-extern "C" bimagePixel
+BIMAGE_CV_API
+bimagePixel
 bimageVariance(bimage *_image)
 {
     cv::Mat image = bimageToMat(_image);
@@ -96,7 +97,8 @@ bimageVariance(bimage *_image)
     return px;
 }
 
-extern "C" bimagePixel
+BIMAGE_CV_API
+bimagePixel
 bimageMean(bimage *_image)
 {
     cv::Mat image = bimageToMat(_image);
@@ -111,8 +113,9 @@ bimageMean(bimage *_image)
     return bimagePixelFromScalar(mean);
 }
 
-extern "C" bimage *
-bimageMatchTemplate(bimage *_image, bimage *_templ, int method, bimage *_mask)
+BIMAGE_CV_API
+bimage *
+bimageMatchTemplate(bimage *_dest, bimage *_image, bimage *_templ, int method, bimage *_mask)
 {
 
     bimage *_tmp;
@@ -129,7 +132,7 @@ bimageMatchTemplate(bimage *_image, bimage *_templ, int method, bimage *_mask)
 
     int w = image.cols - templ.cols + 1;
     int h = image.rows - templ.rows + 1;
-    bimage *_dest = bimageCreate(w, h, BIMAGE_F32 | 1);
+    bimage *_tmpdest = BIMAGE_CREATE_DEST(_dest, w, h, BIMAGE_F32 | 1);
 
     cv::Mat dest = bimageToMat(_dest);
     try {
@@ -141,13 +144,16 @@ bimageMatchTemplate(bimage *_image, bimage *_templ, int method, bimage *_mask)
     if (_tmp != _image){
         bimageRelease(_tmp);
     }
-    return _dest;
+
+    return _tmpdest;
 
 error:
     if (_tmp != _image){
         bimageRelease(_tmp);
     }
-    bimageRelease(_dest);
+    if (_tmpdest != _dest){
+        bimageRelease(_tmpdest);
+    }
     return NULL;
 }
 

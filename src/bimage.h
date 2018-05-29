@@ -393,9 +393,6 @@ bimageIFFT(bimage* dst, bimage *src);
 uint64_t
 bimageHash(bimage *im);
 
-uint32_t
-bimageHash32(bimage *im);
-
 void
 bimageHashString(char dst[9], uint64_t hash);
 

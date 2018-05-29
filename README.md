@@ -25,7 +25,7 @@ bimage
     - set the environment variable `TIFF=NO` before building to disable libtiff
 * NumPy (for bimage-numpy)
 * GTK 3.0 (for bimage-gtk)
-* OpenCV (for bimage-cv)
+* OpenCV (for bimage-opencv)
 
 ## Installation
 
