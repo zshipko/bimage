@@ -11,8 +11,11 @@ bimage *bimageFromMat(cv::Mat&);
 
 extern "C" {
 
-double
+bimagePixel
 bimageVariance(bimage *_image);
+
+bimagePixel
+bimageMean(bimage *_image);
 
 bimage *
 bimageMatchTemplate(bimage *_image, bimage *_templ, int method, bimage *_mask);

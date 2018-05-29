@@ -1,5 +1,17 @@
 #include "bimage-cv.h"
 
+bimagePixel
+bimagePixelFromScalar(cv::Scalar src)
+{
+    return bimagePixelCreate(src[0], src[1], src[2], src[3], BIMAGE_UNKNOWN);
+}
+
+cv::Scalar
+bimagePixelToScalar(bimagePixel *px)
+{
+    return cv::Scalar(px->data.f[0], px->data.f[1], px->data.f[2], px->data.f[3]);
+}
+
 static int
 bimageTypeToMatType(BIMAGE_TYPE t)
 {
@@ -67,7 +79,7 @@ bimageFromMat(cv::Mat& m)
     return bimageCreateWithData(m.cols, m.rows, t, m.data, false, false);
 }
 
-extern "C" double
+extern "C" bimagePixel
 bimageVariance(bimage *_image)
 {
     cv::Mat image = bimageToMat(_image);
@@ -76,16 +88,42 @@ bimageVariance(bimage *_image)
     try {
         cv::meanStdDev(image, mean, stddev);
     } catch (cv::Exception exc) {
-        return 0;
+        return BIMAGE_PIXEL_INIT;
     }
 
-    return stddev.val[0] * stddev.val[0];
+    bimagePixel px = bimagePixelFromScalar(stddev);
+    bimagePixelMul(&px, px);
+    return px;
+}
+
+extern "C" bimagePixel
+bimageMean(bimage *_image)
+{
+    cv::Mat image = bimageToMat(_image);
+    cv::Scalar mean, stddev;
+
+    try {
+        cv::mean(image, mean);
+    } catch (cv::Exception exc) {
+        return BIMAGE_PIXEL_INIT;
+    }
+
+    return bimagePixelFromScalar(mean);
 }
 
 extern "C" bimage *
 bimageMatchTemplate(bimage *_image, bimage *_templ, int method, bimage *_mask)
 {
-    cv::Mat image = bimageToMat(_image);
+
+    bimage *_tmp;
+    int depth = bimageTypeDepth(_image->type);
+    if (depth != BIMAGE_F32 && depth != BIMAGE_U8){
+        _tmp = bimageConvertDepth(NULL, _image, BIMAGE_F32);
+    } else {
+        _tmp = _image;
+    }
+
+    cv::Mat image = bimageToMat(_tmp);
     cv::Mat templ = bimageToMat(_templ);
     cv::Mat mask = bimageToMat(_mask);
 
@@ -97,10 +135,20 @@ bimageMatchTemplate(bimage *_image, bimage *_templ, int method, bimage *_mask)
     try {
         cv::matchTemplate(image, templ, dest, method, mask);
     } catch (cv::Exception exc){
-        return NULL;
+        goto error;
     }
 
+    if (_tmp != _image){
+        bimageRelease(_tmp);
+    }
     return _dest;
+
+error:
+    if (_tmp != _image){
+        bimageRelease(_tmp);
+    }
+    bimageRelease(_dest);
+    return NULL;
 }
 
 
