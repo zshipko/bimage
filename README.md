@@ -25,7 +25,7 @@ bimage
 * libtiff (enabled by default)
     - set the environment variable `TIFF=NO` before building to disable libtiff
 * NumPy (for bimage-numpy)
-* GTK3 (for bimage-gtk)
+* GTK 3.0 (for bimage-gtk)
 
 ## Installation
 

@@ -1,13 +1,6 @@
-# bimage-opencv
+# bimage-cv
 
-Conversion between bimage and opencv image containers.
-
-## API
-
-- `Mat bimageToMat(bimage*)`
-    * Convert a `bimage` to `cv::Mat`
-- `bimage *bimageFromMat(Mat&)`
-    * Convert a `cv::Mat` to `bimage`
+A computer-vision addon for `bimage` using `OpenCV`
 
 ## Building
 
