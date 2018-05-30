@@ -31,6 +31,14 @@ bimagePixelCreate (float r, float g, float b, float a, BIMAGE_DEPTH depth)
     return px;
 }
 
+bimagePixel
+bimagePixelCopy (bimagePixel *src)
+{
+    bimagePixel px;
+    bimagePixelInit(&px, src->data.f[0], src->data.f[1], src->data.f[2], src->data.f[3], src->depth);
+    return px;
+}
+
 BIMAGE_STATUS
 bimagePixelZero(bimagePixel *px, BIMAGE_DEPTH depth)
 {

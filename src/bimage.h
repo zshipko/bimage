@@ -124,6 +124,10 @@ bimagePixelInit(bimagePixel *px, float r, float g, float b, float a, BIMAGE_DEPT
 bimagePixel
 bimagePixelCreate (float r, float g, float b, float a, BIMAGE_DEPTH depth);
 
+/* Copy an existing pixel */
+bimagePixel
+bimagePixelCopy(bimagePixel *src);
+
 /* Zero an existing pixel */
 BIMAGE_STATUS
 bimagePixelZero(bimagePixel *px, BIMAGE_DEPTH depth);
