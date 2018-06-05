@@ -102,6 +102,19 @@ bimageCreate (uint32_t width, uint32_t height, BIMAGE_TYPE t)
     return bimageCreateWithData(width, height, t, data, true, false);
 }
 
+bimage*
+bimageClone(bimage *image)
+{
+    bimage *tmp = bimageCreate(image->width, image->height, image->type);
+    if (!tmp){
+        return NULL;
+    }
+
+    memcpy(tmp->data, image->data, bimageTotalSize(image->type, image->width, image->height));
+
+    return tmp;
+}
+
 #define MMAP_HEADER_SIZE ((sizeof(uint32_t) * 3) + 4)
 
 

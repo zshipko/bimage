@@ -124,10 +124,6 @@ bimagePixelInit(bimagePixel *px, float r, float g, float b, float a, BIMAGE_DEPT
 bimagePixel
 bimagePixelCreate (float r, float g, float b, float a, BIMAGE_DEPTH depth);
 
-/* Copy an existing pixel */
-bimagePixel
-bimagePixelCopy(bimagePixel *src);
-
 /* Zero an existing pixel */
 BIMAGE_STATUS
 bimagePixelZero(bimagePixel *px, BIMAGE_DEPTH depth);
@@ -188,6 +184,9 @@ bimageCreateWithData (uint32_t width, uint32_t height, BIMAGE_TYPE t, void *data
 
 bimage*
 bimageCreate (uint32_t width, uint32_t height, BIMAGE_TYPE t);
+
+bimage*
+bimageClone(bimage* image);
 
 bimage*
 bimageCreateOnDiskFd (int fd, uint32_t width, uint32_t height, BIMAGE_TYPE t);
@@ -391,6 +390,13 @@ bimageFFT(bimage* dst, bimage *src);
 /* Perform inverse FFT of a BIMAGE_C32 image */
 bimage*
 bimageIFFT(bimage* dst, bimage *src);
+
+#ifndef BIMAGE_NO_CCV
+
+bimage*
+bimageCanny(bimage *dst, bimage *src, int size, double low_thresh, double high_thresh);
+
+#endif
 
 /* HASH */
 
