@@ -59,6 +59,8 @@ Resizing an image:
         // Handle resize error
     }
 
+Pixels are represented as an array of 4 floats ranging from 0-1. For example, red would is [1.0, 0, 0, 1.0]. This means that pixels are generic across all datatypes.
+
 Get a pixel:
 
     bimagePixel px;
@@ -68,6 +70,7 @@ Get a pixel:
 
 Set a pixel:
 
+    bimagePixel px = bimagePixelCreate(1.0, 0.5, 0.5, 1.0);
     if (bimageSetPixel(resized, x, y, px) != BIMAGE_OK){
         // Handle out of bounds
     }

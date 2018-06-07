@@ -81,7 +81,6 @@ typedef struct bimagePixel {
 #endif
         float f[4];
     } data;
-    BIMAGE_DEPTH depth;
 } bimagePixel;
 
 #ifndef bAlloc
@@ -118,18 +117,15 @@ bimageDepthSize(BIMAGE_DEPTH d);
 
 /* Initialize an existing pixel */
 BIMAGE_STATUS
-bimagePixelInit(bimagePixel *px, float r, float g, float b, float a, BIMAGE_DEPTH depth);
+bimagePixelInit(bimagePixel *px, float r, float g, float b, float a);
 
 /* Create a new pixel */
 bimagePixel
-bimagePixelCreate (float r, float g, float b, float a, BIMAGE_DEPTH depth);
+bimagePixelCreate (float r, float g, float b, float a);
 
 /* Zero an existing pixel */
 BIMAGE_STATUS
-bimagePixelZero(bimagePixel *px, BIMAGE_DEPTH depth);
-
-BIMAGE_STATUS
-bimagePixelConvertDepth (bimagePixel *dst, bimagePixel src, BIMAGE_DEPTH depth);
+bimagePixelZero(bimagePixel *px);
 
 BIMAGE_STATUS
 bimagePixelClamp(bimagePixel *p);
@@ -171,12 +167,12 @@ bool
 bimagePixelIsLt(bimagePixel p, bimagePixel q);
 
 bimagePixel
-bimagePixelRandom(BIMAGE_DEPTH depth);
+bimagePixelRandom();
 
 bool
 bimageIsValid(bimage *im);
 
-uint32_t
+double
 bimageTypeMax(BIMAGE_TYPE t);
 
 bimage*
@@ -414,7 +410,7 @@ bimageHashDiff(uint64_t a, uint64_t b);
         : ((dst)->width >= (w) && (dst)->height >= (h) && (dst)->type == (t) ? dst : bimageConsume(&(dst), bimageCreate((w), (h), (t)))))
 
 
-#define BIMAGE_PIXEL_INIT bimagePixelCreate(0, 0, 0, 0, BIMAGE_UNKNOWN)
+#define BIMAGE_PIXEL_INIT bimagePixelCreate(0, 0, 0, 0)
 
 #define BIMAGE_PIXEL_IS(px, r, g, b, a) \
     (((px).data.f[0] == r) && \
@@ -436,20 +432,20 @@ bimageHashDiff(uint64_t a, uint64_t b);
 #define BIMAGE_PIXEL_IS_TRUE(px) \
     (((px).data.f[0] == 1) && \
      ((px).data.f[1] == 1) && \
-     ((px).data.f[2] == 1 ) && \
-     ((px).data.f[3] == 1 || (px).data.f[3] == bimageTypeMax((px).depth)))
+     ((px).data.f[2] == 1) && \
+     ((px).data.f[3] == 1))
 
 #define BIMAGE_PIXEL_IS_FALSE(px) \
     (((px).data.f[0] == 0) && \
      ((px).data.f[1] == 0) && \
      ((px).data.f[2] == 0) && \
-     ((px).data.f[3] == 0 || (px).data.f[3] == bimageTypeMax((px).depth)))
+     ((px).data.f[3] == 0))
 
 #define BIMAGE_PIXEL_IS_BOOL(px) \
     (((px).data.f[0] == 1 || (px).data.f[0] == 0) && \
      ((px).data.f[1] == 1 || (px).data.f[1] == 0) && \
      ((px).data.f[2] == 1 || (px).data.f[2] == 0) && \
-     ((px).data.f[3] == 1 || (px).data.f[3] == 0 || (px).data.f[3] == bimageTypeMax((px).depth)))
+     ((px).data.f[3] == 1 || (px).data.f[3] == 0))
 
 extern int BIMAGE_NUM_CPU;
 

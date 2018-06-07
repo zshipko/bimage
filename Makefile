@@ -56,7 +56,7 @@ static: $(SRC)
 	$(CC) -O3 -c $*.c $(CFLAGS) -o $@
 
 clean:
-	rm -f src/*.o libbimage.* test/test test/test_*.jpg
+	rm -f src/*.o libbimage.* test/test test/test_*.jpg test/test_random.png
 
 install:
 	install libbimage.a libbimage.$(SO_EXT) $(PREFIX)/lib

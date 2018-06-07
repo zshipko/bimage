@@ -36,8 +36,10 @@ bimage* randomImage(uint32_t w, uint32_t h, BIMAGE_TYPE t)
     }
 
     bimageIterAll(im, x, y){
-        bimageSetPixel(im, x, y, bimagePixelRandom(bimageTypeDepth(t)));
+        bimageSetPixel(im, x, y, bimagePixelRandom());
     }
+
+    bimageSetPixel(im, 0, 0, bimagePixelCreate(1, 1, 1, 1));
 
     if (bimageTypeDepth(t) == BIMAGE_U8) {
         bimageSave(im, "test_random.png");
@@ -114,30 +116,14 @@ START_TEST (test_bimageSize)
 
 } END_TEST
 
-START_TEST (test_bimagePixelConvert)
-{
-    BIMAGE_DEPTH depth[] = {BIMAGE_U8, BIMAGE_U16, BIMAGE_U32, BIMAGE_F32}, i, j;
-
-    for(i = 0; i < 4; i++){
-        BIMAGE_TYPE t = depth[i] | 4;
-        int64_t m = bimageTypeMax(t);
-        bimagePixel px = bimagePixelCreate(m, 0, 0, m, depth[i]);
-
-        for (j = 0; j > 3; j++){
-            bimagePixel px2;
-            t = depth[j] | 4;
-            ck_assert_int_eq(bimagePixelConvertDepth(&px2, px, depth[j]), BIMAGE_OK);
-            ck_assert(px2.data.f[0] == bimageTypeMax(t) && px2.data.f[1] == 0);
-        }
-    }
-} END_TEST
-
 START_TEST (test_bimageConsume)
 {
-    bimagePixel p = bimagePixelCreate(65535.0, 0, 0, 65535.0, BIMAGE_U16);
+    bimagePixel p = bimagePixelCreate(1.0, 0.0, 0.0, 1.0);
     bimage* a = randomImage(100, 100, BIMAGE_U8 | 4);
     bimage* b = randomImage(50, 50, BIMAGE_U16 | 4);
     bimageSetPixel(b, 10, 10, p);
+    ck_assert_int_eq(a->width, 100);
+    ck_assert_int_eq(a->height, 100);
     bimageConsume(&a, b);
     ck_assert_int_eq(a->width, 50);
     ck_assert_int_eq(a->height, 50);
@@ -159,7 +145,7 @@ START_TEST (test_bimageAdd)
     bimage* im = bimageCreate(100, 100, BIMAGE_U8 | 3);
     bimage* im2 = bimageCreate(100, 100, BIMAGE_U8 | 3);
 
-    bimagePixel c = bimagePixelCreate(255, 0, 0, 255, BIMAGE_U8), d;
+    bimagePixel c = bimagePixelCreate(1, 0, 0, 1), d;
     bimageSetPixelUnsafe(im2, 50, 50, c);
 
     BENCH_START(add);
@@ -167,7 +153,7 @@ START_TEST (test_bimageAdd)
     BENCH_STOP(add);
 
     bimageGetPixelUnsafe(im, 50, 50, &d);
-    ck_assert(d.data.f[0] == 255 && d.data.f[1] == 0 && d.data.f[2] == 0 && d.data.f[3] == 255);
+    ck_assert(d.data.f[0] == 1 && d.data.f[1] == 0 && d.data.f[2] == 0 && d.data.f[3] == 1);
     bimageRelease(im);
     bimageRelease(im2);
 } END_TEST;
@@ -279,7 +265,7 @@ START_TEST (test_bimageGrayscale)
         bimageGetPixel(im2, WIDTH-1, HEIGHT-1, &px);
         ck_assert(px.data.f[0] == px.data.f[1] && px.data.f[1] == px.data.f[2]);
 
-        if (types[i] == (BIMAGE_U8 | BIMAGE_RGB)){
+        if (types[i] == (BIMAGE_U8 | BIMAGE_RGBA)){
             bimageSave(im2, "test_grayscale.jpg");
         }
 
@@ -391,7 +377,6 @@ Suite *bimage_suite(void)
     tcase_add_test(tc, test_bimageChannels);
     tcase_add_test(tc, test_bimageSize);
     tcase_add_test(tc, test_bimageConsume);
-    tcase_add_test(tc, test_bimagePixelConvert);
     tcase_add_test(tc, test_bimageAdd);
     tcase_add_test(tc, test_bimageEq);
     tcase_add_test(tc, test_bimageResizeHash);

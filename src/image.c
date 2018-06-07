@@ -18,16 +18,16 @@ int BIMAGE_NUM_CPU = -1;
 
 /* BIMAGE TYPE */
 
-uint32_t
+double
 bimageTypeMax(BIMAGE_TYPE t)
 {
     switch(bimageTypeDepth(t)){
     case BIMAGE_U8:
-        return 0xFF;
+        return (double)0xFF;
     case BIMAGE_U16:
-        return 0xFFFF;
+        return (double)0xFFFF;
     case BIMAGE_U32:
-        return 0xFFFFFFFF;
+        return (double)0xFFFFFFFF;
     case BIMAGE_F32:
         return 1.0;
     case BIMAGE_C32:
@@ -35,7 +35,7 @@ bimageTypeMax(BIMAGE_TYPE t)
     case BIMAGE_F64:
         return 1.0;
     default:
-        return 0;
+        return 1.0;
     }
 }
 
@@ -315,31 +315,28 @@ bimageGetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel *p)
 
     int i;
     int64_t offs = bimageIndex(im, x, y);
-
-    // Set bimagePixel depth
-    p->depth = bimageTypeDepth(im->type);
-    p->data.f[3] = bimageTypeMax(im->type);
-
+    double max = bimageTypeMax(im->type);
+    p->data.f[3] = 1.0;
 
     for (i = 0; i < bimageTypeChannels(im->type); i++){
-        switch (p->depth){
+        switch (bimageTypeDepth(im->type)){
         case BIMAGE_U8:
-            p->data.f[i] = (float)bimageAt(im, offs+i, uint8_t);
+            p->data.f[i] = (float)((double)bimageAt(im, offs+i, uint8_t)) / max;
             break;
         case BIMAGE_U16:
-            p->data.f[i] = (float)bimageAt(im, offs+i, uint16_t);
+            p->data.f[i] = (float)((double)bimageAt(im, offs+i, uint16_t)) / max;
             break;
         case BIMAGE_U32:
-            p->data.f[i] = (float)bimageAt(im, offs+i, uint32_t);
+            p->data.f[i] = (float)((double)bimageAt(im, offs+i, uint32_t)) / max;
             break;
         case BIMAGE_F32:
-            p->data.f[i] = bimageAt(im, offs+i, float);
+            p->data.f[i] = (bimageAt(im, offs+i, float));
             break;
         case BIMAGE_C32:
-            p->data.f[i] = bimageAt(im,offs+i, float _Complex);
+            p->data.f[i] = (float)(bimageAt(im,offs+i, float _Complex));
             break;
         case BIMAGE_F64:
-            p->data.f[i] = bimageAt(im, offs+i, double);
+            p->data.f[i] = (float)(bimageAt(im, offs+i, double));
             break;
         default:
             return BIMAGE_ERR;
@@ -364,7 +361,7 @@ bimageGetPixel(bimage *im, uint32_t x, uint32_t y, bimagePixel *p)
     }
 
     if (!bimageBoundsCheck(im, x, y)){
-        bimagePixelZero(p, BIMAGE_UNKNOWN);
+        bimagePixelZero(p);
         return BIMAGE_ERR;
     }
 
@@ -376,25 +373,26 @@ bimageSetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel p)
 {
     int i;
     int64_t offs = bimageIndex(im, x, y);
-    for (i = 0; i < bimageTypeChannels(im->type) % 5; i++){
+    double max = bimageTypeMax(im->type);
+    for (i = 0; i < bimageTypeChannels(im->type) && i < 4; i++){
         switch (bimageTypeDepth(im->type)){
         case BIMAGE_U8:
-            bimageAt(im, offs+i, uint8_t) = (uint8_t)p.data.f[i];
+            bimageAt(im, offs+i, uint8_t) = (uint8_t)((double)p.data.f[i] * max);
             break;
         case BIMAGE_U16:
-            bimageAt(im, offs+i, uint16_t) = (uint16_t)p.data.f[i];
+            bimageAt(im, offs+i, uint16_t) = (uint16_t)((double)p.data.f[i] * max);
             break;
         case BIMAGE_U32:
-            bimageAt(im, offs+i, uint32_t) = (uint32_t)p.data.f[i];
+            bimageAt(im, offs+i, uint32_t) = (uint32_t)((double)p.data.f[i] * max);
             break;
         case BIMAGE_F32:
             bimageAt(im, offs+i, float) = p.data.f[i];
             break;
         case BIMAGE_C32:
-            bimageAt(im, offs+i, float _Complex) = p.data.f[i];
+            bimageAt(im, offs+i, float _Complex) =  (float _Complex)p.data.f[i];
             break;
         case BIMAGE_F64:
-            bimageAt(im, offs+i, double) = p.data.f[i];
+            bimageAt(im, offs+i, double) = (double)p.data.f[i];
             break;
         default:
             return BIMAGE_ERR;
@@ -408,35 +406,26 @@ bimageSetPixelUnsafe(bimage *im, uint32_t x, uint32_t y, bimagePixel p)
 BIMAGE_STATUS
 bimageSetPixel(bimage *im, uint32_t x, uint32_t y, bimagePixel p)
 {
-    bimagePixel q;
-    bimagePixelZero(&q, p.depth);
-
     if (!bimageBoundsCheck(im, x, y)){
         return BIMAGE_ERR;
     }
 
-    // Set bimagePixel depth based on image
-    if (bimagePixelConvertDepth(&q, p, bimageTypeDepth(im->type)) != BIMAGE_OK){
-        return BIMAGE_ERR;
-    }
-
-    return bimageSetPixelUnsafe(im, x, y, q);
+    return bimageSetPixelUnsafe(im, x, y, p);
 }
 
 /* bimageConvertDepth converts between 8, 16 and 32 bit images */
 bimage*
 bimageConvertDepth(bimage *dst, bimage *im, BIMAGE_DEPTH depth)
 {
-    bimagePixel px = BIMAGE_PIXEL_INIT, pdst = BIMAGE_PIXEL_INIT;
+    bimagePixel px = BIMAGE_PIXEL_INIT;
     bimage* im2 = BIMAGE_CREATE_DEST(dst, im->width, im->height, depth | bimageTypeChannels(im->type));
     if (!im2){
         return NULL;
     }
 
     bimageIterAll(im, x, y){
-        if (bimageGetPixelUnsafe(im, x, y, &px) == BIMAGE_OK
-                && bimagePixelConvertDepth(&pdst, px, depth) == BIMAGE_OK){
-            bimageSetPixelUnsafe(im2, x, y, pdst);
+        if (bimageGetPixelUnsafe(im, x, y, &px) == BIMAGE_OK){
+            bimageSetPixelUnsafe(im2, x, y, px);
         } else {
             break;
         }
@@ -505,13 +494,11 @@ bimageAdjustGamma (bimage* im, float g)
 {
     int i, c = bimageTypeChannels(im->type);
     c = c > 3 ? 3 : c; // Ignore alpha channel
-    float mx = (float)bimageTypeMax(im->type);
-
     bimagePixel px = BIMAGE_PIXEL_INIT;
     bimageIterAll(im, x, y){
         bimageGetPixelUnsafe(im, x, y, &px);
         for(i = 0; i < c; i++){
-            px.data.f[i] = mx * pow((px.data.f[i]/mx), (1.0/g));
+            px.data.f[i] = pow((px.data.f[i]), (1.0/g));
         }
         bimageSetPixel(im, x, y, px);
     }
@@ -522,7 +509,7 @@ bimageAverageInRect(bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
     int64_t n = -1;
     bimagePixel px = BIMAGE_PIXEL_INIT,
-                dst = bimagePixelCreate(0, 0, 0, 0, bimageTypeDepth(im->type));
+                dst = bimagePixelCreate(0, 0, 0, 0);
     bimageIter(im, i, j, x, y, w, h, 1, 1){
         if (bimageGetPixel(im, i, j, &px) == BIMAGE_OK){
             bimagePixelAdd(&dst, px);
@@ -530,7 +517,7 @@ bimageAverageInRect(bimage* im, uint32_t x, uint32_t y, uint32_t w, uint32_t h)
         }
     }
 
-    bimagePixelDiv(&dst, bimagePixelCreate(n, n, n, n, bimageTypeDepth(im->type)));
+    bimagePixelDiv(&dst, bimagePixelCreate(n, n, n, n));
     return dst;
 }
 
@@ -543,7 +530,7 @@ bimageRandom(bimage* dst, uint32_t w, uint32_t h, BIMAGE_TYPE t)
     }
 
     bimageIterAll(im, x, y){
-        bimageSetPixel(im, x, y, bimagePixelRandom(bimageTypeDepth(t)));
+        bimageSetPixel(im, x, y, bimagePixelRandom());
     }
 
     return im;

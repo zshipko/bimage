@@ -104,10 +104,9 @@ bimageColor(bimage* dst, bimage* im, BIMAGE_CHANNEL c)
 }
 
 static bool bimageGrayscaleFn(uint32_t x, uint32_t y, bimagePixel *px, void *userdata){
-    float mx = (float)bimageTypeMax(px->depth);
     bimagePixel p;
-    p.data.f[3] = mx;
-    p.data.f[0] = p.data.f[1] = p.data.f[2] = (px->data.f[0] * 0.2126) + (px->data.f[1] * 0.7152) + (px->data.f[2] * 0.0722) * (px->data.f[3] / mx);
+    p.data.f[3] = 1.0;
+    p.data.f[0] = p.data.f[1] = p.data.f[2] = ((px->data.f[0] * 0.2126) + (px->data.f[1] * 0.7152) + (px->data.f[2] * 0.0722)) * (px->data.f[3]);
     return true;
 }
 
@@ -147,12 +146,10 @@ bimageInvert(bimage* dst, bimage* src)
     }
 
     BIMAGE_CHANNEL ch = bimageTypeChannels(src->type);
-    float mx = (float)bimageTypeMax(src->type);
-
     bimageIterAll(im2, x, y){
         bimageGetPixelUnsafe(im2, x, y, &px);
         for(i = 0; i < ch; i++){
-            px.data.f[i] = mx - px.data.f[i];
+            px.data.f[i] = 1.0 - px.data.f[i];
         }
         bimageSetPixelUnsafe(im2, x, y, px);
     }
@@ -206,8 +203,7 @@ bimageFilter(bimage* dst, bimage* im, float* K, int Ks, float divisor, float off
 
     int kx, ky;
     bimagePixel p, px;
-    px.depth = bimageTypeDepth(im->type);
-    px.data.f[3] = bimageTypeMax(im->type);
+    px.data.f[3] = 1.0;
 
     // Divisor can never be zero
     if (divisor == 0.0){
