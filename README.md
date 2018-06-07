@@ -59,7 +59,7 @@ Resizing an image:
         // Handle resize error
     }
 
-Pixels are represented as an array of 4 floats ranging from 0-1. For example, red would is [1.0, 0, 0, 1.0]. This means that pixels are generic across all datatypes.
+Pixels are represented as an array of 4 floats ranging from 0-1. For example, red is [1.0, 0, 0, 1.0]. This means that pixels are generic across all datatypes.
 
 Get a pixel:
 
