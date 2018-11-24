@@ -1,7 +1,7 @@
 SO_EXT?=so
 prefix?=/usr/local
 SRC=bimage-opencv.cpp
-CXXFLAGS=-I$(PWD)/../src `pkg-config --cflags opencv`
+CXXFLAGS=-I$(PWD)/../src `pkg-config --cflags opencv4`
 LDFLAGS=-lm ../libbimage.a
 TIFF?=YES
 
