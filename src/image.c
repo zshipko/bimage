@@ -652,7 +652,7 @@ bimageSetChannel(bimage *dest, bimage *im, int c) {
     return BIMAGE_ERR;
   }
 
-  bimagePixel px;
+  bimagePixel px = BIMAGE_PIXEL_INIT;
   bimageIterAll(im, x, y) {
     bimageGetPixelUnsafe(im, x, y, &px);
     px.data.f[0] = px.data.f[c];
