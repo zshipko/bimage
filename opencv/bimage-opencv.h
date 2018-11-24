@@ -1,8 +1,8 @@
 #ifndef __BIMAGE_OPENCV
 #define __BIMAGE_OPENCV
 
-#include <opencv2/opencv.hpp>
 #include "bimage.h"
+#include <opencv2/opencv.hpp>
 
 #ifndef __cplusplus
 #define BIMAGE_CV_API extern "C"
@@ -11,22 +11,20 @@
 #endif
 
 #ifdef __cplusplus
-cv::Mat bimageToMat(bimage*);
-bimage *bimageFromMat(cv::Mat&);
+cv::Mat bimageToMat(bimage *);
+bimage *bimageFromMat(cv::Mat &);
 #endif
 
 typedef enum cv::TemplateMatchModes bimageTemplateMatchMode;
 
 BIMAGE_CV_API
-bimagePixel
-bimageCvVariance(bimage *_image);
+bimagePixel bimageCvVariance(bimage *_image);
 
 BIMAGE_CV_API
-bimagePixel
-bimageCvMean(bimage *_image);
+bimagePixel bimageCvMean(bimage *_image);
 
 BIMAGE_CV_API
-bimage *
-bimageCvMatchTemplate(bimage *_image, bimage *_templ, int method, bimage *_mask);
+bimage *bimageCvMatchTemplate(bimage *_image, bimage *_templ, int method,
+                              bimage *_mask);
 
 #endif // __BIMAGE_OPENCV
