@@ -269,6 +269,7 @@ bimage *bimageSobel(bimage *dst, bimage *src) {
   }
 
   bimageAdd(src2, tmp);
+
   return src2;
 }
 
