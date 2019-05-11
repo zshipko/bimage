@@ -571,8 +571,8 @@ bimageEachPixel2(bimage *dst, bimage *im, bimageParallelFn fn, int nthreads,
 
   for (x = 0; x < nthreads; x++) {
     struct bimageParallelIterator iter;
-    iter.x1 = width * x;
-    iter.x0 = width;
+    iter.x1 = im->width;
+    iter.x0 = 0;
     iter.y1 = height * x;
     iter.y0 = height;
     iter.userdata = userdata;
