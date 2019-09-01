@@ -4,7 +4,7 @@ SRC=src/pixel.c src/image.c src/io.c src/resize.c \
 UNAME := $(shell uname)
 PREFIX=/usr/local
 
-CFLAGS+=-I/usr/local/include $(CFLAGS_$(UNAME_M))
+CFLAGS+=-I/usr/local/include $(CFLAGS_$(UNAME_M)) -fsanitize=undefined -Wall
 LDFLAGS+=-L/usr/local/lib -lm
 THREADS?=YES
 BENCHMARK?=YES
