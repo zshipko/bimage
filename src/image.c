@@ -564,9 +564,8 @@ bimageEachPixel2(bimage *dst, bimage *im, bimageParallelFn fn, int nthreads,
 
   pthread_t threads[nthreads];
   int tries = 1, n;
-  uint32_t width, height, x;
+  uint32_t height, x;
 
-  width = im->width / nthreads;
   height = im->height / nthreads;
 
   for (x = 0; x < nthreads; x++) {
