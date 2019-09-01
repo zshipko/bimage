@@ -4,7 +4,7 @@ SRC=src/pixel.c src/image.c src/io.c src/resize.c \
 UNAME := $(shell uname)
 PREFIX=/usr/local
 
-CFLAGS+=-I/usr/local/include $(CFLAGS_$(UNAME_M)) -fsanitize=undefined -Wall
+CFLAGS+=-I/usr/local/include $(CFLAGS_$(UNAME_M)) -Wall
 LDFLAGS+=-L/usr/local/lib -lm
 THREADS?=YES
 BENCHMARK?=YES
@@ -20,6 +20,10 @@ endif
 
 ifeq ($(PIC),YES)
 	CFLAGS+= -fPIC
+endif
+
+ifeq ($(shell $(CC) -v 2>&1 | grep -c "clang version"), 1)
+	CFLAGS += -fsanitize=undefined
 endif
 
 # Set correct library extension
