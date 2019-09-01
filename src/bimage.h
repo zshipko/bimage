@@ -236,10 +236,10 @@ bimageEachPixel2(bimage *dst, bimage *im, bimageParallelFn fn, int nthreads,
                  void *userdata);
 #endif // BIMAGE_NO_PTHREAD
 
+bimage *bimageGetChannel(bimage *dest, bimage *im, int c);
+
 BIMAGE_STATUS
 bimageSetChannel(bimage *dest, bimage *im, int c);
-
-bimage *bimageGetChannel(bimage *dest, bimage *im, int c);
 
 bimage **bimageSplitChannels(bimage *im, int *num);
 

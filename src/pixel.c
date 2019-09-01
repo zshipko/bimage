@@ -10,14 +10,10 @@ bimagePixelInit(bimagePixel *px, float r, float g, float b, float a) {
     return BIMAGE_ERR;
   }
 
-#ifdef BIMAGE_SSE
-  px->data.m = _mm_set_ps(a, b, g, r);
-#else
   px->data.f[0] = r;
   px->data.f[1] = g;
   px->data.f[2] = b;
   px->data.f[3] = a;
-#endif
 
   return BIMAGE_OK;
 }

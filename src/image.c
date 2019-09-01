@@ -571,8 +571,8 @@ bimageEachPixel2(bimage *dst, bimage *im, bimageParallelFn fn, int nthreads,
 
   for (x = 0; x < nthreads; x++) {
     struct bimageParallelIterator iter;
-    iter.x1 = width * x;
-    iter.x0 = width;
+    iter.x1 = im->width;
+    iter.x0 = 0;
     iter.y1 = height * x;
     iter.y0 = height;
     iter.userdata = userdata;
@@ -625,6 +625,25 @@ bimage *bimageGetChannel(bimage *dest, bimage *im, int c) {
   return tmp;
 }
 
+BIMAGE_STATUS
+bimageSetChannel(bimage *dest, bimage *im, int c) {
+  if (c >= bimageTypeChannels(im->type) || im->width != dest->width ||
+      im->height != dest->height) {
+    return BIMAGE_ERR;
+  } else if (!dest) {
+    return BIMAGE_ERR;
+  }
+
+  bimagePixel px = BIMAGE_PIXEL_INIT;
+  bimageIterAll(im, x, y) {
+    bimageGetPixelUnsafe(im, x, y, &px);
+    px.data.f[c] = px.data.f[0];
+    bimageSetPixel(dest, x, y, px);
+  }
+
+  return BIMAGE_OK;
+}
+
 bimage **bimageSplitChannels(bimage *im, int *num) {
   bimage **dest = malloc(sizeof(bimage *) * bimageTypeChannels(im->type));
   if (!dest) {
@@ -643,30 +662,12 @@ bimage **bimageSplitChannels(bimage *im, int *num) {
   return dest;
 }
 
-BIMAGE_STATUS
-bimageSetChannel(bimage *dest, bimage *im, int c) {
-  if (c >= bimageTypeChannels(im->type) || im->width != dest->width ||
-      im->height != dest->height) {
-    return BIMAGE_ERR;
-  } else if (!dest) {
-    return BIMAGE_ERR;
-  }
-
-  bimagePixel px = BIMAGE_PIXEL_INIT;
-  bimageIterAll(im, x, y) {
-    bimageGetPixelUnsafe(im, x, y, &px);
-    px.data.f[0] = px.data.f[c];
-    bimageSetPixel(dest, x, y, px);
-  }
-
-  return BIMAGE_OK;
-}
-
 bimage *bimageJoinChannels(bimage *dest, bimage **channels, int num) {
   if (num <= 0) {
     return NULL;
   }
 
+  int i;
   bimage *tmp =
       BIMAGE_CREATE_DEST(dest, channels[0]->width, channels[0]->height,
                          bimageTypeDepth(channels[0]->type) | num);
@@ -674,9 +675,15 @@ bimage *bimageJoinChannels(bimage *dest, bimage **channels, int num) {
     return NULL;
   }
 
-  int i;
-  for (i = 0; i < num; i++) {
-    bimageSetChannel(tmp, channels[i], i);
+  bimagePixel px = BIMAGE_PIXEL_INIT, py = BIMAGE_PIXEL_INIT;
+  bimageIterAll(dest, x, y) {
+
+    for (i = 0; i < num; i++) {
+      bimageGetPixel(channels[i], x, y, &px);
+      py.data.f[i] = px.data.f[0];
+    }
+
+    bimageSetPixel(dest, x, y, py);
   }
 
   return tmp;

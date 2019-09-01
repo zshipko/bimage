@@ -18,9 +18,7 @@ static void tiffInit() {
 
 BIMAGE_STATUS
 bimageSaveTIFF(bimage *im, const char *filename) {
-  if (bimageTypeDepth(im->type) == BIMAGE_F32) {
-    return BIMAGE_ERR;
-  }
+  BIMAGE_DEPTH depth = bimageTypeDepth(im->type);
 
   if (!tiffInitialized) {
     tiffInit();
@@ -43,6 +41,15 @@ bimageSaveTIFF(bimage *im, const char *filename) {
   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE,
                bimageDepthSize(bimageTypeDepth(im->type)));
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, bimageTypeChannels(im->type));
+
+  if (depth == BIMAGE_F32 || depth == BIMAGE_F64) {
+    TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);
+  } else if (depth == BIMAGE_C32) {
+    TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_COMPLEXIEEEFP);
+    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 32);
+  } else {
+    TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_UINT);
+  }
 
   uint64_t offs = (bimageDepthSize(bimageTypeDepth(im->type)) / 8) *
                   (uint64_t)bimageTypeChannels(im->type) * im->width;
@@ -80,18 +87,23 @@ bimage *bimageOpenTIFF(const char *filename) {
   TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &channels);
   TIFFGetField(tif, TIFFTAG_SAMPLEFORMAT, &fmt);
 
-  depth = depth == 8 ? BIMAGE_U8
-                     : depth == 16 ? BIMAGE_U16
-                                   : depth == 32 ? BIMAGE_U32 : BIMAGE_UNKNOWN;
-
-  if (!depth || fmt == SAMPLEFORMAT_IEEEFP) {
-    TIFFClose(tif);
-    return NULL;
+  if (fmt == SAMPLEFORMAT_IEEEFP) {
+    depth =
+        depth == 32 ? BIMAGE_F32 : depth == 64 ? BIMAGE_F64 : BIMAGE_UNKNOWN;
+  } else if (fmt == SAMPLEFORMAT_COMPLEXIEEEFP) {
+    depth = depth == 32 ? BIMAGE_C32 : BIMAGE_UNKNOWN;
+  } else if (fmt == SAMPLEFORMAT_UINT) {
+    depth = depth == 8
+                ? BIMAGE_U8
+                : depth == 16 ? BIMAGE_U16
+                              : depth == 32 ? BIMAGE_U32 : BIMAGE_UNKNOWN;
+  } else {
+    goto error0;
   }
 
   im = bimageCreate(w, h, depth | channels);
   if (!im) {
-    goto done;
+    goto error0;
   }
 
   tstrip_t strip;
@@ -110,7 +122,6 @@ bimage *bimageOpenTIFF(const char *filename) {
   }
 
   bFree(buf);
-done:
   TIFFClose(tif);
   return im;
 

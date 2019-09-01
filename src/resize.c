@@ -29,9 +29,6 @@ bimage *bimageResize(bimage *dst, bimage *im, int32_t w, int32_t h) {
   case BIMAGE_F32:
     dt = 3;
     break;
-  case BIMAGE_C32:
-    dt = 3;
-    break;
   default:
     return NULL;
   }
